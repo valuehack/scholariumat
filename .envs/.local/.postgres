@@ -1,0 +1,7 @@
+# PostgreSQL
+# ------------------------------------------------------------------------------
+POSTGRES_HOST=postgres
+POSTGRES_PORT=5432
+POSTGRES_DB=scholariumat
+POSTGRES_USER=fMIPkdHLDSMRzqRVtrHuOUVFKLJISeLQ
+POSTGRES_PASSWORD=7HpzcIyiHNoVA4FwdmmVj9j16C6YlpyqaPdXZ0hPvhIr8nu7tnmSjAf5oDvZlHMc
