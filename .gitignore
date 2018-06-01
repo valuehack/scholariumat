@@ -283,4 +283,3 @@ pip-selfcheck.json
 scholariumat/media/
 .env
 .envs/*
-!.envs/.local/
