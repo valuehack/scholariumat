@@ -1,9 +1,10 @@
 from django.db import models
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
-from django_extension.db.models import TimeStampedModel, TitleDescriptionModel
+from django_extensions.db.models import TimeStampedModel, TitleDescriptionModel
 
-from products.models import Purchase, ProductBase
+from products.models import Item, ProductBase
+from framework.behaviours import PublishAble, PermalinkAble
 
 
 class EventType(TitleDescriptionModel):
@@ -15,9 +16,11 @@ class EventType(TitleDescriptionModel):
         verbose_name_plural = "Veranstaltungsarten"
 
 
-class Event(ProductBase):
+class Event(ProductBase, PublishAble, PermalinkAble):
+    """Events are not directly purchable products."""
+
     date = models.DateField()
-    type = models.ForeignKey(EventType)
+    type = models.ForeignKey(EventType, on_delete=models.PROTECT)
 
     class Meta:
         verbose_name = "Veranstaltung"
@@ -31,7 +34,9 @@ class Event(ProductBase):
 
 
 class Livestream(TimeStampedModel):
-    purchase = models.OneToOneRel(Purchase, on_delete=models.CASCADE)
+    """Every livestream is an purchaseable item."""
+
+    item = models.OneToOneField(Item, on_delete=models.CASCADE)
     link = models.CharField(max_length=100)
     chat = models.BooleanField(default=False)
 

@@ -63,11 +63,18 @@ THIRD_PARTY_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'rest_framework',
-    'annoying'
+    'annoying',
+    'django_extensions',
+    'django_countries',
+    'authtools',
 ]
 LOCAL_APPS = [
-    'scholariumat.users.apps.UsersConfig',
-    # Your stuff: custom apps go here
+    'users',
+    'framework',
+    'products',
+    'library',
+    'events',
+    'blog',
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -218,19 +225,13 @@ MANAGERS = ADMINS
 
 
 # django-allauth
+# https://django-allauth.readthedocs.io/en/latest/configuration.html
 # ------------------------------------------------------------------------------
 ACCOUNT_ALLOW_REGISTRATION = env.bool('DJANGO_ACCOUNT_ALLOW_REGISTRATION', True)
-# https://django-allauth.readthedocs.io/en/latest/configuration.html
-ACCOUNT_AUTHENTICATION_METHOD = 'username'
-# https://django-allauth.readthedocs.io/en/latest/configuration.html
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_EMAIL_REQUIRED = True
-# https://django-allauth.readthedocs.io/en/latest/configuration.html
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
-# https://django-allauth.readthedocs.io/en/latest/configuration.html
 ACCOUNT_ADAPTER = 'scholariumat.users.adapters.AccountAdapter'
-# https://django-allauth.readthedocs.io/en/latest/configuration.html
 SOCIALACCOUNT_ADAPTER = 'scholariumat.users.adapters.SocialAccountAdapter'
-
-
-# Your stuff...
-# ------------------------------------------------------------------------------
