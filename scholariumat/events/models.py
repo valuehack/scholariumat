@@ -4,7 +4,7 @@ from django.urls import reverse
 from django_extensions.db.models import TimeStampedModel, TitleDescriptionModel
 
 from products.models import Item, ProductBase
-from framework.behaviours import PublishAble, PermalinkAble
+from framework.behaviours import PublishAble
 
 
 class EventType(TitleDescriptionModel):
@@ -16,7 +16,7 @@ class EventType(TitleDescriptionModel):
         verbose_name_plural = "Veranstaltungsarten"
 
 
-class Event(ProductBase, PublishAble, PermalinkAble):
+class Event(ProductBase, PublishAble):
     """Events are not directly purchable products."""
 
     date = models.DateField()
@@ -40,5 +40,6 @@ class Livestream(TimeStampedModel):
     link = models.CharField(max_length=100)
     chat = models.BooleanField(default=False)
 
-    def embed_link(self):
+    @property
+    def link_embedded(self):
         return self.link.replace('watch?v=', 'embed/')

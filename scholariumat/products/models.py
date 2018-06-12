@@ -3,42 +3,69 @@ from django.db import models
 from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel, TitleDescriptionModel
 
 from users.models import Profile
-from framework.behaviours import CommentAble
+from framework.behaviours import CommentAble, PermalinkAble
 
 
-class Product(models.Model):
-    """Class to avoid MTI: Explicit OneToOneField with all products."""
+class Product(models.Model):  # TODO: direkte Links von hier stattdessen? https://lukeplant.me.uk/blog/posts/avoid-django-genericforeignkey/
+    """Class to avoid MTI/generic relations: Explicit OneToOneField with all products."""
 
-    @classmethod
-    def default_product(cls):
-        return cls.objects.create().id
+    @property
+    def type(self):
+        """Get product object"""
+        for product_rel in self._meta.related_objects:
+            if product_rel.one_to_one:
+                type = getattr(self, product_rel.name, None)
+                if type:
+                    return type
+        return None
+
+    def __str__(self):
+        return self.type.__str__()
 
 
-class ProductBase(TitleSlugDescriptionModel, TimeStampedModel):
+class ProductBase(TitleSlugDescriptionModel, TimeStampedModel, PermalinkAble):
     """Abstract parent class for all product type classes."""
 
-    product = models.OneToOneField(Product, on_delete=models.CASCADE, default=Product.default_product, editable=False)
+    product = models.OneToOneField(Product, on_delete=models.CASCADE, editable=False)
 
-    class Meta():
+    def __str__(self):
+        return self.title
+
+    def save(self, *args, **kwargs):
+        self.product = Product.objects.create()
+        super(ProductBase, self).save(*args, **kwargs)
+
+    class Meta:
         abstract = True
 
 
-class Item(TitleDescriptionModel, TimeStampedModel):
+class ItemType(TitleDescriptionModel, TimeStampedModel):
+    limited = models.BooleanField(default=True)
+    shipping = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        verbose_name = 'Item Typ'
+        verbose_name_plural = 'Item Typen'
+
+
+class Item(TimeStampedModel):
     """Purchaseable items."""
 
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    price = models.IntegerField()
-    limited = models.BooleanField(default=True)
+    type = models.ForeignKey(ItemType, on_delete=models.CASCADE)
+    price = models.SmallIntegerField()
     amount = models.IntegerField(null=True, blank=True)
-    shipping = models.BooleanField(default=False)
+    products = models.ManyToManyField(Product, related_name='items')
     file = models.FileField(blank=True)
 
-    # def __str__(self):
-        # return self.product.select_related().__str__()
+    def __str__(self):
+        return '%s für %d Punkte' % (self.type.__str__(), self.price)
 
-    class Meta():
-        verbose_name = 'Produkt'
-        verbose_name_plural = 'Produkte'
+    class Meta:
+        verbose_name = 'Item'
+        verbose_name_plural = 'Items'
 
 
 class Purchase(TimeStampedModel, CommentAble):

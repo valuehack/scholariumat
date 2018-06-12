@@ -1,27 +1,23 @@
 from django.db import models
-from django.urls import reverse
 from django.core.exceptions import ValidationError
 
 from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel
 
 from products.models import ProductBase
-from framework.behaviours import PublishAble, PermalinkAble
+from framework.behaviours import PublishAble
 from .utils import markdown_to_html
 
 
-class Article(ProductBase, PublishAble, PermalinkAble):
+class Article(ProductBase, PublishAble):
     text = models.TextField()
     text_hidden = models.TextField(blank=True)
     text_2 = models.TextField(blank=True)
     references = models.TextField(blank=True)
     priority = models.PositiveSmallIntegerField(default=0)
 
-    def get_absolute_url(self):
-        return reverse('blog', [self.slug])
-
     class Meta:
-        verbose_name_plural = "Artikel"
         verbose_name = "Artikel"
+        verbose_name_plural = "Artikel"
 
 
 class MarkdownArticle(TitleSlugDescriptionModel, TimeStampedModel):
@@ -59,5 +55,5 @@ class MarkdownArticle(TitleSlugDescriptionModel, TimeStampedModel):
         super().save(*args, **kwargs)
 
     class Meta:
-        verbose_name_plural = "Markdown Artikel"
         verbose_name = "Markdown Artikel"
+        verbose_name_plural = "Markdown Artikel"

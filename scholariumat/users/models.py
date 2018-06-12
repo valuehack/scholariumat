@@ -27,23 +27,27 @@ class Profile(TimeStampedModel):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     balance = models.SmallIntegerField(default=0)
 
-    def get_active(self):
+    @property
+    def donation(self):
         '''Returns HIGHEST active donation.'''
         donations = self.donation_set.all().order_by('-level__amount')
         active = [d for d in donations if d.get_expiration() >= datetime.date.today()]
         return active[0] if active else None
 
-    def get_level(self):
+    @property
+    def level(self):
         '''Returns level of HIGHEST active donation'''
         active = self.get_active()
         return active.stufe if active else None
 
-    def get_expiration(self):
+    @property
+    def expiration(self):
         '''Returns expiration date of the newest donation.'''
         d = self.donation_set.all().order_by('-expiration')
         return d[0] if d else None
 
-    def get_status(self):
+    @property
+    def status(self):
         states = [
             (0, "Kein Unterstützer"),
             (1, "Abgelaufen"),
@@ -61,7 +65,8 @@ class Profile(TimeStampedModel):
         else:
             return states[0]
 
-    def get_running_lendings(self):
+    @property
+    def lendings_active(self):
         return self.lending_set.filter(shipped_isnull=False, returned__isnull=True)
 
     def __str__(self):

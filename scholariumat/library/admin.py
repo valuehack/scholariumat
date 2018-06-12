@@ -3,7 +3,7 @@ from django.contrib import admin
 from .models import Book, Author, Collection
 
 
-@admin.register(Book)
+# @admin.register(Book)
 class BookAdmin(admin.ModelAdmin):
     raw_id_fields = ['authors']
     search_fields = ['description']
@@ -16,3 +16,4 @@ class BookAdmin(admin.ModelAdmin):
 
 admin.site.register(Author)
 admin.site.register(Collection)
+admin.site.register(Book, BookAdmin)

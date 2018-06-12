@@ -1,5 +1,5 @@
 from django.db import models
-from django.urls import reverse
+from django.core.exceptions import ObjectDoesNotExist
 
 from django_extensions.db.models import TimeStampedModel
 
@@ -31,16 +31,22 @@ class Author(models.Model):
         verbose_name_plural = 'Autoren'
 
 
-class Book(ProductBase, PermalinkAble):
+class Book(ProductBase):
+    slug = models.CharField(max_length=50, unique=True)
     authors = models.ManyToManyField(Author)
     year = models.DateField(blank=True, null=True)
     collection = models.ManyToManyField(Collection)
 
-    def get_lendings(self):
+    @property
+    def lendings_active(self):
         return self.lending_set.filter(returned__isnull=True)
 
-    def get_lendings_possible(self):
-        return self.product_set.get(name='Leihe').amount - len(self.get_lendings())
+    @property
+    def lendings_possible(self):
+        try:
+            return self.product.item_set.get(type__title='Leihe').amount - len(self.lendings_active)
+        except ObjectDoesNotExist:
+            return None
 
     def __str__(self):
         return '%s (%s)' % (self.title, ', '.join([author.__str__() for author in self.authors.all()]))
@@ -63,11 +69,8 @@ class Lending(TimeStampedModel, CommentAble):
         verbose_name_plural = 'Leihen'
 
 
-class Booklet(ProductBase, PermalinkAble):
+class Booklet(ProductBase):
     image = models.ImageField(null=True, blank=True)
-
-    def get_absolute_url(self):
-        return reverse('library:booklet', kwargs={'slug': self.slug})
 
     class Meta:
         verbose_name = "Büchlein"
