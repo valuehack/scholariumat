@@ -6,7 +6,7 @@ from users.models import Profile
 from framework.behaviours import CommentAble, PermalinkAble
 
 
-class Product(models.Model):
+class Product(models.Model):  # TODO: Direct link to all products instead?
     """Class to avoid MTI/generic relations: Explicit OneToOneField with all products."""
 
     @property
@@ -57,10 +57,28 @@ class Item(TimeStampedModel):
     """Purchaseable items."""
 
     type = models.ForeignKey(ItemType, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
     price = models.SmallIntegerField()
-    amount = models.IntegerField(null=True, blank=True)
-    products = models.ManyToManyField(Product, related_name='items')
+    amount = models.IntegerField(null=True, blank=True)  # TODO: Only when limited?
     file = models.FileField(blank=True)
+
+    def spend(self, amount):
+        """Given an amount, tries to lower local amount. Ignored if not limited."""
+        if self.type.limited:
+            new_amount = self.amount - amount
+            if new_amount >= 0:
+                self.amount = new_amount
+                self.save()
+                return True
+            else:
+                return False
+        else:
+            return True
+
+    def refill(self, amount):
+        """Refills amount."""
+        self.amount += amount
+        self.save()
 
     def __str__(self):
         return '%s für %d Punkte' % (self.type.__str__(), self.price)
@@ -76,11 +94,29 @@ class Purchase(TimeStampedModel, CommentAble):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     amount = models.SmallIntegerField(null=True, blank=True, default=1)
-    balance_before = models.SmallIntegerField(editable=False)
     shipped = models.DateField(blank=True, null=True)
+    applied = models.BooleanField(default=False)
+
+    @property
+    def total(self):  # TODO: Add shipment costs
+        return self.item.price * self.amount
+
+    def apply(self):
+        if self.profile.spend(self.total):
+            if self.item.spend(self.amount):
+                self.applied = True
+                self.save()
+                return True
+        else:
+            return False
+
+    def revert(self):
+        self.profile.refill(self.total)
+        self.item.refill(self.amount)
+        self.delete()
 
     def __str__(self):
-        return '%dx %s (%s)' % (self.amount, self.item.product.__str__(), self.user.__str__())
+        return '%dx %s (%s)' % (self.amount, self.item.product.__str__(), self.profile.__str__())
 
     class Meta():
         verbose_name = 'Kauf'
