@@ -6,7 +6,7 @@ from users.models import Profile
 from framework.behaviours import CommentAble, PermalinkAble
 
 
-class Product(models.Model):  # TODO: direkte Links von hier stattdessen? https://lukeplant.me.uk/blog/posts/avoid-django-genericforeignkey/
+class Product(models.Model):
     """Class to avoid MTI/generic relations: Explicit OneToOneField with all products."""
 
     @property
@@ -26,13 +26,15 @@ class Product(models.Model):  # TODO: direkte Links von hier stattdessen? https:
 class ProductBase(TitleSlugDescriptionModel, TimeStampedModel, PermalinkAble):
     """Abstract parent class for all product type classes."""
 
-    product = models.OneToOneField(Product, on_delete=models.CASCADE, editable=False)
+    product = models.OneToOneField(Product, on_delete=models.CASCADE, null=True, editable=False)
 
     def __str__(self):
         return self.title
 
     def save(self, *args, **kwargs):
-        self.product = Product.objects.create()
+        if not self.product:
+            self.product = Product.objects.create()
+            self.save()
         super(ProductBase, self).save(*args, **kwargs)
 
     class Meta:
