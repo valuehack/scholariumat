@@ -20,7 +20,7 @@ class Profile(TimeStampedModel):
     street = models.CharField(max_length=30, blank=True)
     postcode = models.CharField(max_length=10, blank=True)
     city = models.CharField(max_length=30, blank=True)
-    country = CountryField(blank_label='- Bitte Ihr Land auswählen -', null=True)
+    country = CountryField(blank_label='- Bitte Ihr Land auswählen -', null=True, blank=True)
     phone = models.CharField(max_length=20, blank=True)
 
     @property
@@ -110,7 +110,7 @@ class DonationLevel(TitleSlugDescriptionModel):
         verbose_name_plural = "Spendenstufen"
 
     def __str__(self):
-        return '%s: %s (%d)' % (self.id, self.name, self.amount)
+        return '%s: %s (%d)' % (self.id, self.title, self.amount)
 
 
 class Donation(CommentAble, TimeStampedModel):
@@ -131,7 +131,7 @@ class Donation(CommentAble, TimeStampedModel):
         super(Donation, self).save(*args, **kwargs)
 
     def __str__(self):
-        return '%s: %s (%s)' % (self.profile.user.get_full_name(), self.level.name, self.date)
+        return '%s: %s (%s)' % (self.profile.user.get_full_name(), self.level.title, self.date)
 
     class Meta:
         verbose_name = 'Unterstützung'

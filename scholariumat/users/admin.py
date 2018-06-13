@@ -2,7 +2,7 @@ from django.contrib import admin
 # from django.contrib.auth import get_user_model
 
 # from authtools.admin import NamedUserAdmin
-from .models import Profile, Donation
+from .models import Profile, Donation, DonationLevel
 
 
 # class UserAdmin(NamedUserAdmin):
@@ -23,3 +23,4 @@ class ProfileAdmin(admin.ModelAdmin):
 # admin.site.unregister(get_user_model())
 # admin.site.register(get_user_model(), UserAdmin)
 admin.site.register(Profile, ProfileAdmin)
+admin.site.register(DonationLevel)
