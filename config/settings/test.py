@@ -54,4 +54,4 @@ EMAIL_HOST = "localhost"
 EMAIL_PORT = 1025
 
 # Django-heroku to manage logging and tests.
-django_heroku.settings(locals(), staticfiles=False)
+django_heroku.settings(locals(), staticfiles=False, secret_key=False)
