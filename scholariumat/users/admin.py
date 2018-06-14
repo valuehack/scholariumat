@@ -1,39 +1,26 @@
-from django import forms
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin as AuthUserAdmin
-from django.contrib.auth.forms import UserChangeForm, UserCreationForm
-from .models import User
+# from django.contrib.auth import get_user_model
+
+# from authtools.admin import NamedUserAdmin
+from .models import Profile, Donation, DonationLevel
 
 
-class MyUserChangeForm(UserChangeForm):
-
-    class Meta(UserChangeForm.Meta):
-        model = User
-
-
-class MyUserCreationForm(UserCreationForm):
-
-    error_message = UserCreationForm.error_messages.update(
-        {"duplicate_username": "This username has already been taken."}
-    )
-
-    class Meta(UserCreationForm.Meta):
-        model = User
-
-    def clean_username(self):
-        username = self.cleaned_data["username"]
-        try:
-            User.objects.get(username=username)
-        except User.DoesNotExist:
-            return username
-
-        raise forms.ValidationError(self.error_messages["duplicate_username"])
+# class UserAdmin(NamedUserAdmin):
+#     list_display = ("username", "name", "is_superuser")
+#     search_fields = ["name"]
 
 
-@admin.register(User)
-class MyUserAdmin(AuthUserAdmin):
-    form = MyUserChangeForm
-    add_form = MyUserCreationForm
-    fieldsets = (("User Profile", {"fields": ("name",)}),) + AuthUserAdmin.fieldsets
-    list_display = ("username", "name", "is_superuser")
-    search_fields = ["name"]
+class DonationInline(admin.TabularInline):
+    model = Donation
+    min_num = 1
+
+
+class ProfileAdmin(admin.ModelAdmin):
+    raw_id_fields = ['user']
+    inlines = [DonationInline]
+
+
+# admin.site.unregister(get_user_model())
+# admin.site.register(get_user_model(), UserAdmin)
+admin.site.register(Profile, ProfileAdmin)
+admin.site.register(DonationLevel)
