@@ -1,6 +1,8 @@
 from .base import *  # noqa
 from .base import env
 
+import django_heroku
+
 # GENERAL
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
@@ -189,5 +191,4 @@ LOGGING = {
 
 
 # Django-heroku to manage logging and tests.
-import django_heroku
 django_heroku.settings(locals(), databases=False, staticfiles=False, allowed_hosts=False, secret_key=False)
