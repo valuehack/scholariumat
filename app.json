@@ -78,10 +78,10 @@
     }
   ],
   "environments": {
-    "env": {
-        "DJANGO_SETTINGS_MODULE": "config.settings.production"
-    },
     "test": {
+      "env": {
+          "DJANGO_SETTINGS_MODULE": "config.settings.production"
+      },
       "scripts": {
         "test": "python manage.py test"
       }
