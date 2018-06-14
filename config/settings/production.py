@@ -191,4 +191,4 @@ LOGGING = {
 
 
 # Django-heroku to manage logging and tests.
-django_heroku.settings(locals(databases=False, staticfiles=False, allowed_hosts=False, secret_key=False))
+django_heroku.settings(locals(), databases=False, staticfiles=False, allowed_hosts=False, secret_key=False)
