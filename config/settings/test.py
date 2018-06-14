@@ -5,6 +5,7 @@ With these settings, tests run faster.
 from .base import *  # noqa
 from .base import env
 
+import django_heroku
 
 # GENERAL
 # ------------------------------------------------------------------------------
@@ -53,5 +54,4 @@ EMAIL_HOST = "localhost"
 EMAIL_PORT = 1025
 
 # Django-heroku to manage logging and tests.
-import django_heroku
 django_heroku.settings(locals(), staticfiles=False, secret_key=False)
