@@ -79,6 +79,9 @@
   ],
   "environments": {
     "test": {
+      "addons": [
+        "heroku-postgresql"
+      ],
       "env": {
           "DJANGO_SETTINGS_MODULE": "config.settings.test"
       },
