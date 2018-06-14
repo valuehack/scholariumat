@@ -34,7 +34,6 @@ class ProductBase(TitleSlugDescriptionModel, TimeStampedModel, PermalinkAble):
     def save(self, *args, **kwargs):
         if not self.product:
             self.product = Product.objects.create()
-            self.save()
         super(ProductBase, self).save(*args, **kwargs)
 
     class Meta:

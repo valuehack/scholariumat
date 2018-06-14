@@ -6,6 +6,6 @@ class UserTest(TestCase):
     def setUp(self):
         get_user_model().objects.create(email='a.b@c.de', name='merlin')
 
-    def test_animals_can_speak(self):
+    def test_user(self):
         user = get_user_model().objects.get(email='a.b@c.de')
-        self.assertIsNotNone(getattr(user, 'profile'))
+        self.assertEqual(user.profile.balance, 0)

@@ -1,5 +1,7 @@
+import logging
+
 from django.db import models
-from django.core.exceptions import ValidationError
+# from django.core.exceptions import ValidationError
 
 from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel
 
@@ -26,6 +28,7 @@ class MarkdownArticle(TitleSlugDescriptionModel, TimeStampedModel):
     article = models.OneToOneField(Article, on_delete=models.SET_NULL, null=True, blank=True)
 
     def create_article(self):
+        logger = logging.getLogger(__name__)
         text, text_hidden, text_2, references = markdown_to_html(self.text)
 
         article_kwargs = {
@@ -42,13 +45,13 @@ class MarkdownArticle(TitleSlugDescriptionModel, TimeStampedModel):
 
         if self.article:
             self.article.update(**article_kwargs)
-        elif Article.objects.filter(slug=self.slug).exists():
-            raise ValidationError('Artikel-slug existiert bereits.')
+        # elif Article.objects.filter(slug=self.slug).exists():
+        #     raise ValidationError('Artikel-slug existiert bereits.')
         else:
             self.article = Article.objects.create(**article_kwargs)
             self.save()
 
-        print('%s erfolgreich gespeichert.' % self.name)
+        logger.debug('Article %s generated successfully.' % self.name)
 
     def save(self, *args, **kwargs):
         self.create_article()
