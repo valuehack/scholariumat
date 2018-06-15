@@ -10,4 +10,8 @@ Django Website for scholarium.at
 .. image:: https://travis-ci.org/valuehack/scholariumat.svg?branch=master
    :target: https://travis-ci.org/valuehack/scholariumat
 
+.. image:: https://coveralls.io/repos/github/valuehack/scholariumat/badge.svg?branch=master
+   :target: https://coveralls.io/github/valuehack/scholariumat?branch=master
+
+
 :License: MIT
