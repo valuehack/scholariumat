@@ -17,7 +17,6 @@ django-annoying==0.10.4  # https://github.com/skorokithakis/django-annoying
 django-authtools==1.6.0  # https://github.com/fusionbox/django-authtools
 django-extensions==2.0.7  # https://github.com/django-extensions/django-extensions
 django-countries==5.3  # https://github.com/SmileyChris/django-countries
-# django-heroku==0.3.1  # https://github.com/heroku/django-heroku # Fails on test database connection
 
 # Django REST Framework
 djangorestframework==3.8.2  # https://github.com/encode/django-rest-framework

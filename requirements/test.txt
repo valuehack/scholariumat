@@ -1,0 +1,12 @@
+-r ./base.txt
+
+# Testing
+# ------------------------------------------------------------------------------
+pytest==3.6.0  # https://github.com/pytest-dev/pytest
+pytest-sugar==0.9.1  # https://github.com/Frozenball/pytest-sugar
+
+# Code quality
+# ------------------------------------------------------------------------------
+flake8==3.5.0  # https://github.com/PyCQA/flake8
+coverage==4.5.1  # https://github.com/nedbat/coveragepy
+coveralls==1.3.0  # https://github.com/coveralls-clients/coveralls-python
