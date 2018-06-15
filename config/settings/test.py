@@ -16,10 +16,6 @@ SECRET_KEY = env("DJANGO_SECRET_KEY", default="mmNdusuIMqqevQvXzmkuZ1ldUSka5N2XM
 # https://docs.djangoproject.com/en/dev/ref/settings/#test-runner
 TEST_RUNNER = "django.test.runner.DiscoverRunner"
 
-# DATABASES
-# ------------------------------------------------------------------------------
-DATABASES['default'] = env.db('DATABASE_URL')  # noqa
-
 # CACHES
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#caches
@@ -58,4 +54,4 @@ EMAIL_HOST = "localhost"
 EMAIL_PORT = 1025
 
 # Django-heroku to manage logging and tests.
-django_heroku.settings(locals(), databases=False, staticfiles=False, secret_key=False)
+django_heroku.settings(locals(), staticfiles=False, secret_key=False)
