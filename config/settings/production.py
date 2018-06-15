@@ -1,8 +1,6 @@
 from .base import *  # noqa
 from .base import env
 
-import django_heroku
-
 # GENERAL
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
@@ -15,6 +13,7 @@ ALLOWED_HOSTS = env.list('DJANGO_ALLOWED_HOSTS', default=['scholarium.at'])
 DATABASES['default'] = env.db('DATABASE_URL')  # noqa F405
 DATABASES['default']['ATOMIC_REQUESTS'] = True  # noqa F405
 DATABASES['default']['CONN_MAX_AGE'] = env.int('CONN_MAX_AGE', default=60)  # noqa F405
+DATABASES['default']['ATOMIC_REQUESTS'] = True
 
 # CACHES
 # ------------------------------------------------------------------------------
@@ -188,7 +187,3 @@ LOGGING = {
         }
     }
 }
-
-
-# Django-heroku to manage logging and tests.
-django_heroku.settings(locals(), databases=False, staticfiles=False, allowed_hosts=False, secret_key=False)
