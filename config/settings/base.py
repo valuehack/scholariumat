@@ -218,3 +218,8 @@ ADMINS = [
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#managers
 MANAGERS = ADMINS
+
+# API keys
+ZOTERO_USER_ID = env('ZOTERO_USER_ID')
+ZOTERO_API_KEY = env('ZOTERO_API_KEY')
+ZOTERO_LIBRARY_TYPE = 'user'

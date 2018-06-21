@@ -13,3 +13,6 @@ script:
   - coverage run manage.py test
 after_success:
   - coveralls
+notifications:
+  email:
+    - mb@scholarium.at

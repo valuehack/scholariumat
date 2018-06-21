@@ -57,6 +57,12 @@
     },
     "WEB_CONCURRENCY": {
       "required": true
+    },
+    "ZOTERO_USER_ID": {
+      "required": true
+    },
+    "ZOTERO_API_KEY": {
+      "required": true
     }
   },
   "formation": {
