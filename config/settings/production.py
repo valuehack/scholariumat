@@ -186,3 +186,13 @@ LOGGING = {
         }
     }
 }
+
+# API keys
+# Zotero
+ZOTERO_USER_ID = env('ZOTERO_USER_ID')
+ZOTERO_API_KEY = env('ZOTERO_API_KEY')
+ZOTERO_LIBRARY_TYPE = 'user'
+
+# Buffer
+BUFFER_ACCESS_TOKEN = env('BUFFER_ACCESS_TOKEN')
+BUFFER_SITE_IDS = env.list('BUFFER_SITE_IDS')

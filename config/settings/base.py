@@ -66,12 +66,12 @@ THIRD_PARTY_APPS = [
     'authtools',
 ]
 LOCAL_APPS = [
-    'users',
-    'framework',
-    'products',
-    'library',
-    'events',
-    'blog',
+    'users.apps.UsersConfig',
+    'framework.apps.FrameworkConfig',
+    'products.apps.ProductsConfig',
+    'library.apps.LibraryConfig',
+    'events.apps.EventsConfig',
+    'blog.apps.BlogConfig',
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -219,7 +219,31 @@ ADMINS = [
 # https://docs.djangoproject.com/en/dev/ref/settings/#managers
 MANAGERS = ADMINS
 
-# API keys
-ZOTERO_USER_ID = env('ZOTERO_USER_ID')
-ZOTERO_API_KEY = env('ZOTERO_API_KEY')
-ZOTERO_LIBRARY_TYPE = 'user'
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'filters': {
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue'
+        }
+    },
+    'formatters': {
+        'console': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(message)s'
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+            'formatter': 'console',
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True
+        },
+    }

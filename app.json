@@ -63,6 +63,12 @@
     },
     "ZOTERO_API_KEY": {
       "required": true
+    },
+    "BUFFER_ACCESS_TOKEN": {
+      "required": true
+    },
+    "BUFFER_SITE_IDS": {
+      "required": true
     }
   },
   "formation": {
