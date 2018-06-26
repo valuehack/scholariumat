@@ -247,3 +247,4 @@ LOGGING = {
             'propagate': True
         },
     }
+}
