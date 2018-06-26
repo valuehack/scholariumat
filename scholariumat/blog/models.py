@@ -1,11 +1,9 @@
-from datetime import date
 import logging
 
 from django.db import models
 from django.conf import settings
 
 from pyzotero import zotero
-from dateutil import parser
 
 from products.models import ProductBase
 from framework.behaviours import PublishAble
@@ -37,7 +35,7 @@ class Article(ProductBase, PublishAble):
 
             obj, created = cls.objects.update_or_create(slug=key, defaults={'title': title, 'text': html_text})
             return obj
-    
+
         # Clean up deleted articles.
         for local_article in cls.objects.all():
             if local_article.slug not in [article['key'] for article in articles]:
