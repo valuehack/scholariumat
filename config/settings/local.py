@@ -55,5 +55,12 @@ DEBUG_TOOLBAR_CONFIG = {
 INTERNAL_IPS = ['127.0.0.1', '10.0.2.2']
 
 
-# Your stuff...
-# ------------------------------------------------------------------------------
+# API keys
+# Zotero
+ZOTERO_USER_ID = env('ZOTERO_USER_ID', default='')
+ZOTERO_API_KEY = env('ZOTERO_API_KEY', default='')
+ZOTERO_LIBRARY_TYPE = 'user'
+
+# Buffer
+BUFFER_ACCESS_TOKEN = env('BUFFER_ACCESS_TOKEN', default='')
+BUFFER_SITE_IDS = env.list('BUFFER_SITE_IDS', default=[])

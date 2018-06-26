@@ -57,6 +57,18 @@
     },
     "WEB_CONCURRENCY": {
       "required": true
+    },
+    "ZOTERO_USER_ID": {
+      "required": true
+    },
+    "ZOTERO_API_KEY": {
+      "required": true
+    },
+    "BUFFER_ACCESS_TOKEN": {
+      "required": true
+    },
+    "BUFFER_SITE_IDS": {
+      "required": true
     }
   },
   "formation": {
