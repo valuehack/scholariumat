@@ -229,7 +229,7 @@ LOGGING = {
     },
     'formatters': {
         'console': {
-            'format': '%(levelname)s %(asctime)s %(module)s %(message)s'
+            'format': '%(levelname)s %(asctime)s %(name)s %(message)s'
         },
     },
     'handlers': {
@@ -248,3 +248,24 @@ LOGGING = {
         },
     }
 }
+
+# Library
+DEFAULT_FILE_PRICE = 5
+ZOTERO_ITEM_TYPES = [
+    'book',
+    'bookSection',
+    'journalArticle',
+    'conferencePaper',
+    'magazineArticle',
+    'manuscript',
+    'newspaperArticle',
+    'thesis'
+]
+ZOTERO_OWNER_TAGS = [
+    'Hoppe',
+    'Baader',
+    'schuetz',
+    'schütz',
+    'Schütz',
+    'Taghizadegan'
+]

@@ -1,6 +1,6 @@
 from django.db import models
 
-from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel, TitleDescriptionModel
+from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel
 
 from users.models import Profile
 from framework.behaviours import CommentAble, PermalinkAble
@@ -36,11 +36,15 @@ class ProductBase(TitleSlugDescriptionModel, TimeStampedModel, PermalinkAble):
             self.product = Product.objects.create()
         super(ProductBase, self).save(*args, **kwargs)
 
+    def delete(self, *args, **kwargs):  # TODO: Gets ignored in bulk delete. pre_delete signal better?
+        self.product.delete()
+        super(ProductBase, self).delete(*args, **kwargs)
+
     class Meta:
         abstract = True
 
 
-class ItemType(TitleDescriptionModel, TimeStampedModel):
+class ItemType(TitleSlugDescriptionModel, TimeStampedModel):
     limited = models.BooleanField(default=True)
     shipping = models.BooleanField(default=False)
 
@@ -57,7 +61,7 @@ class Item(TimeStampedModel):
 
     type = models.ForeignKey(ItemType, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    price = models.SmallIntegerField()
+    price = models.SmallIntegerField(null=True, blank=True)
     amount = models.IntegerField(null=True, blank=True)  # TODO: Only when limited?
     file = models.FileField(blank=True)
 
@@ -80,7 +84,7 @@ class Item(TimeStampedModel):
         self.save()
 
     def __str__(self):
-        return '%s für %d Punkte' % (self.type.__str__(), self.price)
+        return '{} für {} Punkte'.format(self.type.__str__(), self.price)
 
     class Meta:
         verbose_name = 'Item'

@@ -27,7 +27,8 @@ class PurchaseAdmin(admin.ModelAdmin):
 
 
 class ItemAdmin(admin.ModelAdmin):
-    list_display = ['__str__', 'product']
+    raw_id_fields = ['product']
+    list_display = ['type', 'price', 'product']
 
 
 admin.site.register(Product, ProductAdmin)
