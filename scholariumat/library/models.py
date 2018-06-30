@@ -230,7 +230,7 @@ class Author(models.Model):
 
 
 class ZotItem(ProductBase):
-    title = models.CharField(max_length=500)  # Can be very long.
+    title = models.CharField(max_length=1000)  # Can be very long.
     slug = models.CharField(max_length=50, unique=True)
     authors = models.ManyToManyField(Author)
     published = models.DateField(blank=True, null=True)
