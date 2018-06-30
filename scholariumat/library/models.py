@@ -182,23 +182,23 @@ class Collection(TitleSlugDescriptionModel, PermalinkAble):
         zot = zotero.Zotero(settings.ZOTERO_USER_ID, settings.ZOTERO_LIBRARY_TYPE, settings.ZOTERO_API_KEY)
         collections = [collection for collection in zot.collections() if collection['data']['name'][0] != '_']
 
-        def save_collections(parent_key, items):
+        def save_collections(parent_key, collections):
             '''
             Saves parent and childcollections recursively as models.
             '''
-            children = [item for item in items if item['data']['parentCollection'] == parent_key]
-            for child in children:
+            for collection in [c for c in collections if c['data']['parentCollection'] == parent_key]:
+                key = collection['data']['key']
+                name = collection['data']['name']
+                parent = cls.objects.get(slug=parent_key) if parent_key else None
                 local_collection, created = cls.objects.update_or_create(
-                    slug=child['data']['key'],
-                    defaults={'title': child['data']['name']})
-                logger.debug('Collection {} saved.'.format(child['data']['name']))
+                    slug=key,
+                    defaults={'title': name, 'parent': parent})
+                logger.debug('Collection {} saved.'.format(name))
 
-                if parent_key:
-                    local_collection.parent = cls.objects.get(slug=child['data']['parentCollection'])
-                    local_collection.save()
-                    save_collections(child['data']['key'], items)
+                save_collections(key, collections)
 
         # Check for collections to delete
+        logger.debug('cleaning up...')
         collection_keys = [collection['data']['key'] for collection in collections]
         for local_collection in cls.objects.all():
             if local_collection.slug not in collection_keys:
