@@ -252,6 +252,7 @@ LOGGING = {
 
 # Users
 EXPIRATION_DAYS = 30  # Number of days to recieve warning before expiration
+DONATION_PERIOD = 365  # Days until new donations expire
 
 # Library
 DEFAULT_FILE_PRICE = 5

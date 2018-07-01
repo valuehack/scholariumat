@@ -35,14 +35,14 @@ class Profile(TimeStampedModel):
     @property
     def donation(self):
         '''Returns HIGHEST active donation.'''
-        donations = self.donation_set.filter(expiration__lte=datetime.date.today()).order_by('-level__amount')
+        donations = self.donation_set.filter(expiration__gte=datetime.date.today()).order_by('-level__amount')
         return donations[0] if donations else None
 
     @property
     def level(self):
         '''Returns level of HIGHEST active donation'''
         active = self.donation
-        return active.level.id if active else None
+        return active.level if active else None
 
     @property
     def expiration(self):
@@ -57,8 +57,8 @@ class Profile(TimeStampedModel):
     @property
     def expiring(self):
         '''Returns True if expirations date is closer than EXPIRATION_DAYS'''
-        remaining = (self.expiration - datetime.date.today()).days
-        return self.active & remaining < settings.EXPIRATION_DAYS
+        remaining = (self.expiration - datetime.date.today()).days if self.expiration else False
+        return self.active and remaining < settings.EXPIRATION_DAYS
 
     @property
     def lendings_active(self):
@@ -66,11 +66,11 @@ class Profile(TimeStampedModel):
         return self.lending_set.filter(shipped_isnull=False, returned__isnull=True)
 
     def donate(self, amount):
-        '''Creates donation and updates balance appropriately.'''
+        '''Creates donation for amount and updates balance.'''
         self.refill(amount)
-        level = DonationLevel.objects.filter(amount__mte=amount).order_by('-amount')
+        level = DonationLevel.objects.filter(amount__lte=amount).order_by('-amount')
         if level:
-            donation = self.donation_set.create()
+            self.donation_set.create(level=level[0])
         else:
             logger.warning('{}: Can not create donation. No level available for {}.'
                            .format(self, amount))
@@ -121,7 +121,7 @@ class DonationLevel(TitleSlugDescriptionModel):
 class Donation(CommentAble, TimeStampedModel):
     @staticmethod
     def _default_expiration():
-        return datetime.date.today() + datetime.timedelta(days=365)
+        return datetime.date.today() + datetime.timedelta(days=settings.DONATION_PERIOD)
 
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
     level = models.ForeignKey(DonationLevel, on_delete=models.PROTECT)
@@ -129,11 +129,6 @@ class Donation(CommentAble, TimeStampedModel):
     expiration = models.DateField(default=_default_expiration.__func__)
     payment_method = models.CharField(blank=True, max_length=100)
     review = models.BooleanField(default=False)
-
-    def save(self, *args, **kwargs):
-        if not self.pk:
-            self.profile.refill(self.level.amount)
-        super(Donation, self).save(*args, **kwargs)
 
     def __str__(self):
         return '%s: %s (%s)' % (self.profile.user.get_full_name(), self.level.title, self.date)

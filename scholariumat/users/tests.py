@@ -1,6 +1,7 @@
 from datetime import date, timedelta
 
 from django.test import TestCase
+from django.conf import settings
 from django.contrib.auth import get_user_model
 
 from users.models import DonationLevel
@@ -23,17 +24,16 @@ class UserTest(TestCase):  # TODO: Split up in smaller tests.
         self.assertEqual(profile.expiration, None)
         self.assertEqual(profile.active, False)
         self.assertEqual(profile.expiring, False)
-        self.assertEqual(profile.lendings_active, [])
         # Test refill
         self.assertEqual(profile.spend(10), False)
         amount = 10
-        user.refill(amount)
+        profile.refill(amount)
         self.assertEqual(profile.balance, amount)
         self.assertEqual(profile.spend(amount), True)
         # Test donation
         donation_amount = 200
         profile.donate(donation_amount)
-        self.assertEqual(profile.balance, donation_amount + amount)
+        self.assertEqual(profile.balance, donation_amount)
         self.assertEqual(profile.donation.level.id, 2)
         self.assertEqual(profile.level.id, 2)
-        self.assertEqual(profile.expiration, date.today + timedelta)
+        self.assertEqual(profile.expiration, date.today() + timedelta(days=settings.DONATION_PERIOD))
