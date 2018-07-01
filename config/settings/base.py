@@ -250,6 +250,9 @@ LOGGING = {
     }
 }
 
+# Users
+EXPIRATION_DAYS = 30  # Number of days to recieve warning before expiration
+
 # Library
 DEFAULT_FILE_PRICE = 5
 DOWNLOAD_FORMATS = [

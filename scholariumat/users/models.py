@@ -1,4 +1,5 @@
 import datetime
+import logging
 
 from django.db import models
 from django.conf import settings
@@ -10,6 +11,9 @@ from django_countries.fields import CountryField
 from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel
 
 from framework.behaviours import CommentAble
+
+
+logger = logging.getLogger(__name__)
 
 
 class Profile(TimeStampedModel):
@@ -31,46 +35,46 @@ class Profile(TimeStampedModel):
     @property
     def donation(self):
         '''Returns HIGHEST active donation.'''
-        donations = self.donation_set.all().order_by('-level__amount')
-        active = [d for d in donations if d.get_expiration() >= datetime.date.today()]
-        return active[0] if active else None
+        donations = self.donation_set.filter(expiration__lte=datetime.date.today()).order_by('-level__amount')
+        return donations[0] if donations else None
 
     @property
     def level(self):
         '''Returns level of HIGHEST active donation'''
-        active = self.get_active()
-        return active.stufe if active else None
+        active = self.donation
+        return active.level.id if active else None
 
     @property
     def expiration(self):
         '''Returns expiration date of the newest donation.'''
         d = self.donation_set.all().order_by('-expiration')
-        return d[0] if d else None
+        return d[0].expiration if d else None
 
     @property
-    def status(self):
-        """Returns donation status"""
-        states = [
-            (0, "Kein Unterstützer"),
-            (1, "Abgelaufen"),
-            (2, "30 Tage bis Ablauf"),
-            (3, "Aktiv")
-        ]
-        if self.get_expiration():
-            remaining = (self.get_expiration() - datetime.date.today()).days
-            if remaining < 0:
-                return states[1]
-            elif remaining < 30:
-                return states[2]
-            else:
-                return states[3]
-        else:
-            return states[0]
+    def active(self):
+        return bool(self.donation)
+
+    @property
+    def expiring(self):
+        '''Returns True if expirations date is closer than EXPIRATION_DAYS'''
+        remaining = (self.expiration - datetime.date.today()).days
+        return self.active & remaining < settings.EXPIRATION_DAYS
 
     @property
     def lendings_active(self):
         """Returns currently active lendings (not returned)."""
         return self.lending_set.filter(shipped_isnull=False, returned__isnull=True)
+
+    def donate(self, amount):
+        '''Creates donation and updates balance appropriately.'''
+        self.refill(amount)
+        level = DonationLevel.objects.filter(amount__mte=amount).order_by('-amount')
+        if level:
+            donation = self.donation_set.create()
+        else:
+            logger.warning('{}: Can not create donation. No level available for {}.'
+                           .format(self, amount))
+            return False
 
     def spend(self, amount):
         """Given an amount, tries to spend from current balance."""
@@ -92,6 +96,7 @@ class Profile(TimeStampedModel):
         """Automatically create a profile for every user."""
         if created:
             Profile.objects.create(user=instance)
+            logger.debug('Created profile for {}'.format(instance.name))
 
     def __str__(self):
         return '%s' % (self.user.__str__())

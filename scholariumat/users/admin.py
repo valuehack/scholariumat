@@ -12,7 +12,6 @@ from .models import Profile, Donation, DonationLevel
 
 class DonationInline(admin.TabularInline):
     model = Donation
-    min_num = 1
 
 
 class ProfileAdmin(admin.ModelAdmin):
