@@ -64,6 +64,7 @@ THIRD_PARTY_APPS = [
     'django_extensions',
     'django_countries',
     'authtools',
+    'django_cron'
 ]
 LOCAL_APPS = [
     'users.apps.UsersConfig',
@@ -229,7 +230,7 @@ LOGGING = {
     },
     'formatters': {
         'console': {
-            'format': '%(levelname)s %(asctime)s %(module)s %(message)s'
+            'format': '%(levelname)s %(asctime)s %(name)s %(message)s'
         },
     },
     'handlers': {
@@ -248,3 +249,36 @@ LOGGING = {
         },
     }
 }
+
+# Library
+DEFAULT_FILE_PRICE = 5
+DOWNLOAD_FORMATS = [
+    'pdf',
+    'azw',
+    'azw3',
+    'lit',
+    'doc',
+    'docx',
+    'djvu',
+    'txt',
+    'epub',
+    'mobi'
+]
+ZOTERO_ITEM_TYPES = [
+    'book',
+    'bookSection',
+    'journalArticle',
+    'conferencePaper',
+    'magazineArticle',
+    'manuscript',
+    'newspaperArticle',
+    'thesis'
+]
+ZOTERO_OWNER_TAGS = [
+    'Hoppe',
+    'Baader',
+    'schuetz',
+    'schütz',
+    'Schütz',
+    'Taghizadegan'
+]

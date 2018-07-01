@@ -7,5 +7,5 @@ app_name = 'library'
 urlpatterns = [
     path('', list),
     path('kollektion/<slug:slug>', collection, name='collection'),
-    path('buch/<slug:slug>', detail, name='book'),
+    path('objekt/<slug:slug>', detail, name='zot_item'),
 ]
