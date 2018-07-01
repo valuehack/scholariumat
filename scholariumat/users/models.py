@@ -109,7 +109,6 @@ class Profile(TimeStampedModel):
 
 
 class DonationLevel(TitleSlugDescriptionModel):
-    id = models.IntegerField(primary_key=True)
     amount = models.SmallIntegerField()
 
     class Meta:
@@ -117,7 +116,7 @@ class DonationLevel(TitleSlugDescriptionModel):
         verbose_name_plural = "Spendenstufen"
 
     def __str__(self):
-        return '%s: %s (%d)' % (self.id, self.title, self.amount)
+        return '%s: %s (%d)' % (self.title, self.amount)
 
 
 class Donation(CommentAble, TimeStampedModel):
