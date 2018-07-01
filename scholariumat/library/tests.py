@@ -1,4 +1,5 @@
 from unittest import mock
+from datetime import date
 
 from django.test import TestCase
 from django.conf import settings
@@ -52,6 +53,7 @@ class SyncTest(TestCase):
             {'data': {'key': 'testkey',
                       'itemType': settings.ZOTERO_ITEM_TYPES[0],
                       'title': 'test book',
+                      'date': '2018-01-01',
                       'tags': [{'tag': settings.ZOTERO_OWNER_TAGS[0]}],
                       'creators': [{
                         'firstName': 'John',
@@ -71,6 +73,8 @@ class SyncTest(TestCase):
         testitem = ZotItem.objects.get(slug=items[0]['data']['key'])
         # Test title
         self.assertEqual(testitem.title, items[0]['data']['title'])
+        # Test date
+        self.assertEqual(testitem.published, date(2018, 1, 1))
         # Test author creation
         self.assertTrue(testitem.authors.filter(name='John Smith'))
         # Test if purchase item and itemtype got created

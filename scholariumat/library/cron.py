@@ -1,4 +1,5 @@
 import logging
+import time
 
 from django_cron import CronJobBase, Schedule
 
@@ -16,7 +17,9 @@ class cron_zotero(CronJobBase):
 
     def do(self):
         logger.info('Running Zotero synchronisation job...')
+        start = time.time()
         Collection.retrieve()
         for collection in Collection.objects.all():
             collection.sync()
-        logger.info('Zotero synchronisation job finished.')
+        end = time.time()
+        logger.info('Zotero synchronisation job finished. Took {}'.format(end - start))

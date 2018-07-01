@@ -145,7 +145,10 @@ class Collection(TitleSlugDescriptionModel, PermalinkAble):
 
             if child['data']['itemType'] == 'attachment' and 'filename' in child['data']:
                 format = child['data']['filename'].split('.')[-1]  # Get file type
-                type_defaults['title'] = format.upper()
+                if format in settings.DOWNLOAD_FORMATS:
+                    type_defaults['title'] = format.upper()
+                else:
+                    continue
             elif child['data']['itemType'] == 'note':
                 format = 'note'
                 type_defaults['title'] = 'Exzerpt'

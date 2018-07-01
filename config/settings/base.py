@@ -252,6 +252,18 @@ LOGGING = {
 
 # Library
 DEFAULT_FILE_PRICE = 5
+DOWNLOAD_FORMATS = [
+    'pdf',
+    'azw',
+    'azw3',
+    'lit',
+    'doc',
+    'docx',
+    'djvu',
+    'txt',
+    'epub',
+    'mobi'
+]
 ZOTERO_ITEM_TYPES = [
     'book',
     'bookSection',
