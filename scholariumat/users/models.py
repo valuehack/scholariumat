@@ -71,8 +71,9 @@ class Profile(TimeStampedModel):
         level = DonationLevel.objects.filter(amount__lte=amount).order_by('-amount')
         if level:
             self.donation_set.create(level=level[0])
+            logger.debug('{} donated {} and is now {}.'.format(self, amount, self.level.title))
         else:
-            logger.warning('{}: Can not create donation. No level available for {}.'
+            logger.warning('{}: Could not create donation. No level available for {}.'
                            .format(self, amount))
             return False
 
@@ -84,6 +85,7 @@ class Profile(TimeStampedModel):
             self.save()
             return True
         else:
+            logger.debug('{} tried to spend {} but only owns {}'.format(self, amount, self.balance))
             return False
 
     def refill(self, amount):
@@ -96,7 +98,7 @@ class Profile(TimeStampedModel):
         """Automatically create a profile for every user."""
         if created:
             Profile.objects.create(user=instance)
-            logger.debug('Created profile for {}'.format(instance.name))
+            logger.debug('Created profile for {}'.format(instance))
 
     def __str__(self):
         return '%s' % (self.user.__str__())
