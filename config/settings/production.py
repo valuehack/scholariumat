@@ -201,3 +201,8 @@ ZOTERO_LIBRARY_TYPE = 'user'
 # Buffer
 BUFFER_ACCESS_TOKEN = env('BUFFER_ACCESS_TOKEN')
 BUFFER_SITE_IDS = env.list('BUFFER_SITE_IDS')
+
+# Cronjobs
+CRON_CLASSES = [
+    "library.cron.ZoteroSync",
+]

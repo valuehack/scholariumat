@@ -34,19 +34,19 @@ class Profile(TimeStampedModel):
 
     @property
     def donation(self):
-        '''Returns HIGHEST active donation.'''
+        """Returns HIGHEST active donation."""
         donations = self.donation_set.filter(expiration__gte=datetime.date.today()).order_by('-level__amount')
         return donations[0] if donations else None
 
     @property
     def level(self):
-        '''Returns level of HIGHEST active donation'''
+        """Returns level of HIGHEST active donation"""
         active = self.donation
         return active.level if active else None
 
     @property
     def expiration(self):
-        '''Returns expiration date of the newest donation.'''
+        """Returns expiration date of the newest donation."""
         d = self.donation_set.all().order_by('-expiration')
         return d[0].expiration if d else None
 
@@ -56,7 +56,7 @@ class Profile(TimeStampedModel):
 
     @property
     def expiring(self):
-        '''Returns True if expirations date is closer than EXPIRATION_DAYS'''
+        """Returns True if expirations date is closer than EXPIRATION_DAYS"""
         remaining = (self.expiration - datetime.date.today()).days if self.expiration else False
         return self.active and remaining < settings.EXPIRATION_DAYS
 
@@ -66,7 +66,7 @@ class Profile(TimeStampedModel):
         return self.lending_set.filter(shipped_isnull=False, returned__isnull=True)
 
     def donate(self, amount):
-        '''Creates donation for amount and updates balance.'''
+        """Creates donation for amount and updates balance."""
         self.refill(amount)
         level = DonationLevel.objects.filter(amount__lte=amount).order_by('-amount')
         if level:
@@ -93,7 +93,7 @@ class Profile(TimeStampedModel):
         self.balance += amount
         self.save()
 
-    @receiver(post_save, sender=get_user_model())  # TODO: Avoid signals. Proxy User instead? Check in views instead?
+    @receiver(post_save, sender=get_user_model())
     def create_user_profile(sender, instance, created, **kwargs):
         """Automatically create a profile for every user."""
         if created:
@@ -101,7 +101,7 @@ class Profile(TimeStampedModel):
             logger.debug('Created profile for {}'.format(instance))
 
     def __str__(self):
-        return '%s' % (self.user.__str__())
+        return self.user.__str__()
 
     class Meta():
         verbose_name = 'Nutzerprofil'
@@ -109,17 +109,27 @@ class Profile(TimeStampedModel):
 
 
 class DonationLevel(TitleSlugDescriptionModel):
-    amount = models.SmallIntegerField()
+    amount = models.SmallIntegerField(unique=True)
 
     class Meta:
-        verbose_name = "Spendenstufe"
-        verbose_name_plural = "Spendenstufen"
+        verbose_name = 'Spendenstufe'
+        verbose_name_plural = 'Spendenstufen'
 
     def __str__(self):
-        return '%s: %s (%d)' % (self.title, self.amount)
+        return '{}: {}'.format(self.amount, self.title)
+
+
+class PaymentMethod(TitleSlugDescriptionModel):
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        verbose_name = 'Zahlungsmethode'
+        verbose_name_plural = 'Zahlungsmethoden'
 
 
 class Donation(CommentAble, TimeStampedModel):
+    """Enables user to use services according to active donation level."""
     @staticmethod
     def _default_expiration():
         return datetime.date.today() + datetime.timedelta(days=settings.DONATION_PERIOD)
@@ -128,7 +138,7 @@ class Donation(CommentAble, TimeStampedModel):
     level = models.ForeignKey(DonationLevel, on_delete=models.PROTECT)
     date = models.DateField(auto_now_add=True)
     expiration = models.DateField(default=_default_expiration.__func__)
-    payment_method = models.CharField(blank=True, max_length=100)
+    payment_method = models.ForeignKey(PaymentMethod, null=True, blank=True, on_delete=models.SET_NULL)
     review = models.BooleanField(default=False)
 
     def __str__(self):
