@@ -22,9 +22,9 @@ class Attachment(models.Model):
 
 
 class File(Attachment):
-    '''
+    """
     Proxy model to handle downloadable files from Zotero.
-    '''
+    """
     def download(self):
         zot = zotero.Zotero(settings.ZOTERO_USER_ID, settings.ZOTERO_LIBRARY_TYPE, settings.ZOTERO_API_KEY)
         return zot.file(self.key)
@@ -34,9 +34,9 @@ class File(Attachment):
 
 
 class Note(Attachment):
-    '''
+    """
     Proxy model to handle excerpts/notes from Zotero.
-    '''
+    """
     def get_html(self):
         zot = zotero.Zotero(settings.ZOTERO_USER_ID, settings.ZOTERO_LIBRARY_TYPE, settings.ZOTERO_API_KEY)
         return zot.item(self.key)['data']['note']
@@ -49,9 +49,9 @@ class Collection(TitleSlugDescriptionModel, PermalinkAble):
     parent = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL)
 
     def sync(self):
-        '''
+        """
         Retrieves and saves metadata from all items, attachmets and notes inside the collection from zotero.
-        '''
+        """
         logger.info('Retrieving items in {}'.format(self.title))
 
         zot = zotero.Zotero(settings.ZOTERO_USER_ID, settings.ZOTERO_LIBRARY_TYPE, settings.ZOTERO_API_KEY)
@@ -178,17 +178,17 @@ class Collection(TitleSlugDescriptionModel, PermalinkAble):
 
     @classmethod
     def retrieve(cls):
-        '''
+        """
         Retrieve all non-hidden remote collections from Zotero.
-        '''
+        """
         logger.info('retrieving collections...')
         zot = zotero.Zotero(settings.ZOTERO_USER_ID, settings.ZOTERO_LIBRARY_TYPE, settings.ZOTERO_API_KEY)
         collections = [collection for collection in zot.collections() if collection['data']['name'][0] != '_']
 
         def save_collections(parent_key, collections):
-            '''
+            """
             Saves parent and childcollections recursively as models.
-            '''
+            """
             for collection in [c for c in collections if c['data']['parentCollection'] == parent_key]:
                 key = collection['data']['key']
                 name = collection['data']['name']
@@ -251,9 +251,9 @@ class ZotItem(ProductBase):
             return None
 
     def update_or_create_item(self, format, type_defaults={}, item_defaults={}, file_key=None):
-        '''
+        """
         Creates/Updates a purchaseable item from format/type string. Creates ItemType and Attachment as needed.
-        '''
+        """
         # Create item type if not present
         type, created = ItemType.objects.get_or_create(slug=format, defaults=type_defaults)
         if created:

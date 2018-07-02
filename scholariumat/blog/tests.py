@@ -15,9 +15,9 @@ class BufferTest(TestCase):
         }
 
     def test_buffer(self):
-        '''
+        """
         Test if Buffer publishing runs through.
-        '''
+        """
         response = Response()
         response.status_code = 200
         mocked_post = mock.MagicMock(return_value=response)

@@ -16,9 +16,9 @@ class Article(ProductBase, PublishAble):
 
     @classmethod
     def sync_articles(cls):
-        '''
+        """
         Updates local articles from Zotero.
-        '''
+        """
         zot = zotero.Zotero(settings.ZOTERO_USER_ID, settings.ZOTERO_LIBRARY_TYPE, settings.ZOTERO_API_KEY)
         articles = zot.everything(zot.items(tag='Scholie', sort='date', direction='desc'))
 

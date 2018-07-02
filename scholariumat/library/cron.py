@@ -9,7 +9,7 @@ from .models import Collection
 logger = logging.getLogger(__name__)
 
 
-class cron_zotero(CronJobBase):
+class ZoteroSync(CronJobBase):
     RUN_AT_TIMES = ['04:00']
 
     schedule = Schedule(run_at_times=RUN_AT_TIMES)
@@ -22,4 +22,4 @@ class cron_zotero(CronJobBase):
         for collection in Collection.objects.all():
             collection.sync()
         end = time.time()
-        logger.info('Zotero synchronisation job finished. Took {}'.format(end - start))
+        logger.info('Zotero synchronisation job finished. Took {} seconds.'.format(int(end - start)))
