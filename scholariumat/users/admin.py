@@ -1,5 +1,8 @@
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
+from django.contrib.auth import get_user_model
+
+from authtools.admin import UserAdmin
 
 from .models import Profile, Donation, DonationLevel, PaymentMethod
 
@@ -30,3 +33,4 @@ class ProfileAdmin(admin.ModelAdmin):
 admin.site.register(Profile, ProfileAdmin)
 admin.site.register(DonationLevel)
 admin.site.register(PaymentMethod)
+admin.site.register(get_user_model(), UserAdmin)

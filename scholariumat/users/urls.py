@@ -1,16 +1,12 @@
-# from django.urls import path
-# 
-# from . import views
-# 
-app_name = "users"
+from django.urls import path
+
+from .views import ProfileView, LevelView, donate_view, UpdateEmailView
+
+app_name = 'users'
 
 urlpatterns = [
-#     path("", view=views.UserListView.as_view(), name="list"),
-#     path("~redirect/", view=views.UserRedirectView.as_view(), name="redirect"),
-#     path("~update/", view=views.UserUpdateView.as_view(), name="update"),
-#     path(
-#         "<str:username>",
-#         view=views.UserDetailView.as_view(),
-#         name="detail",
-#     ),
+    path('profil/', ProfileView.as_view(), name='profile'),
+    path('stufen/', LevelView.as_view(), name='levels'),
+    path('spende/', donate_view, name='donate'),
+    path('email/', UpdateEmailView.as_view(), name='update_email'),
 ]

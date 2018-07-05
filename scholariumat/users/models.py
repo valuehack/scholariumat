@@ -7,6 +7,7 @@ from django.contrib.auth import get_user_model
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+from authtools.models import AbstractEmailUser
 from django_countries.fields import CountryField
 from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel
 
@@ -16,21 +17,39 @@ from framework.behaviours import CommentAble
 logger = logging.getLogger(__name__)
 
 
-class Profile(TimeStampedModel):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    balance = models.SmallIntegerField(default=0)
+class User(AbstractEmailUser):
+    '''Uses AbstractEmailUser, so everything but email is handled by the Profile Model.'''
 
-    organization = models.CharField(max_length=30, blank=True)
-    street = models.CharField(max_length=30, blank=True)
-    postcode = models.CharField(max_length=10, blank=True)
-    city = models.CharField(max_length=30, blank=True)
-    country = CountryField(blank_label='- Bitte Ihr Land auswählen -', null=True, blank=True)
-    phone = models.CharField(max_length=20, blank=True)
+    class Meta(AbstractEmailUser.Meta):
+        swappable = 'AUTH_USER_MODEL'
+        verbose_name = 'User'
+        verbose_name_plural = 'Users'
+
+
+class Profile(TimeStampedModel):
+    '''Model for all User related data that is not associated with authentification.'''
+    TITLE_MALE = 'm'
+    TITLE_FEMALE = 'f'
+    TITLE_CHOICES = [
+        (TITLE_MALE, 'Herr'),
+        (TITLE_FEMALE, 'Frau')
+    ]
+
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    balance = models.SmallIntegerField('Guthaben', default=0)
+    title = models.CharField('Anrede', max_length=1, choices=TITLE_CHOICES, null=True)
+    name = models.CharField(max_length=200, blank=True)
+    organization = models.CharField('Firma', max_length=30, blank=True)
+    street = models.CharField('Straße', max_length=30, blank=True)
+    postcode = models.CharField('PLZ', max_length=10, blank=True)
+    city = models.CharField('Ort', max_length=30, blank=True)
+    country = CountryField('Land', blank_label='- Bitte Ihr Land auswählen -', null=True, blank=True)
+    phone = models.CharField('Telefonnummer', max_length=20, blank=True)
 
     @property
     def address(self):
-        return '%s\n%s\n%s %s\n%s' % (self.user.get_full_name(), self.street, self.postcode, self.city,
-                                      self.country.name if self.country else '')
+        return '{}\n{}\n{} {}\n{}'.format(self.name, self.street, self.postcode,
+                                          self.city, self.country.get('name', ''))
 
     @property
     def donation(self):
@@ -142,7 +161,7 @@ class Donation(CommentAble, TimeStampedModel):
     review = models.BooleanField(default=False)
 
     def __str__(self):
-        return '%s: %s (%s)' % (self.profile.user.get_full_name(), self.level.title, self.date)
+        return '%s: %s (%s)' % (self.profile.name, self.level.title, self.date)
 
     class Meta:
         verbose_name = 'Unterstützung'
