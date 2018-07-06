@@ -1,7 +1,8 @@
-{% load static i18n %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    {% block head %}
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <title>{% block title %}scholarium.at{% endblock title %}</title>
@@ -9,17 +10,26 @@
     <meta name="description" content="">
     <meta name="author" content="">
     <link rel="icon" href="{% static 'images/favicons/favicon.ico' %}">
+    {% endblock head %}
     {% block css %}{% endblock %}
   </head>
   <body>
+    <header>
+    {% block topbar %}{% endblock topbar %}
+    {% block menubar %}{% endblock menubar %}
+    </header>
     {% if messages %}
     <ul class="messages">
-        {% for message in messages %}
-        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-        {% endfor %}
+      {% for message in messages %}
+        <li id="message_{{ forloop.counter }}"{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+          {{ message }}
+        </li>
+      {% endfor %}
     </ul>
     {% endif %}
     {% block content %}{% endblock content %}
     {% block modal %}{% endblock modal %}
+    <footer>
+    </footer>
   </body>
 </html>
