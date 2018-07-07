@@ -286,3 +286,7 @@ ZOTERO_OWNER_TAGS = [
     'Schütz',
     'Taghizadegan'
 ]
+
+# Error Messages
+MESSAGES_UNEXPECTED_ERROR = "Ein unerwarteter Fehler ist aufgetreten. "\
+                            "Bitte versuchen Sie es erneut oder wenden Sie sich an info@scholarium.at"

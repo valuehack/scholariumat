@@ -1,6 +1,7 @@
 import datetime
 import logging
 
+from django.urls import reverse
 from django.db import models
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -12,6 +13,7 @@ from django_countries.fields import CountryField
 from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel
 
 from framework.behaviours import CommentAble
+from .utils import get_paypal_payment, get_globee_payment
 
 
 logger = logging.getLogger(__name__)
@@ -87,9 +89,9 @@ class Profile(TimeStampedModel):
     def donate(self, amount):
         """Creates donation for amount and updates balance."""
         self.refill(amount)
-        level = DonationLevel.objects.filter(amount__lte=amount).order_by('-amount')
+        level = DonationLevel.get_level_by_amount(amount)
         if level:
-            self.donation_set.create(level=level[0])
+            self.donation_set.create(level=level)
             logger.debug('{} donated {} and is now {}.'.format(self, amount, self.level.title))
         else:
             logger.warning('{}: Could not create donation. No level available for {}.'
@@ -130,6 +132,11 @@ class Profile(TimeStampedModel):
 class DonationLevel(TitleSlugDescriptionModel):
     amount = models.SmallIntegerField(unique=True)
 
+    @classmethod
+    def get_level_by_amount(cls, amount):
+        level = cls.objects.filter(amount__lte=amount).order_by('-amount')
+        return level[0] if level else None
+
     class Meta:
         verbose_name = 'Spendenstufe'
         verbose_name_plural = 'Spendenstufen'
@@ -141,6 +148,17 @@ class DonationLevel(TitleSlugDescriptionModel):
 class PaymentMethod(TitleSlugDescriptionModel):
     def __str__(self):
         return self.title
+
+    def get_payment(self, amount):
+        if self.slug == 'paypal':
+            payment = get_paypal_payment(amount)
+            url = next((link.href for link in payment.links if link.rel == 'approval_url'))
+            return (payment.id, url)
+        elif self.slug == 'globee':
+            payment = get_globee_payment(amount)
+            return (payment['data']['id'], payment['data']['redirect_url'])
+        elif self.slug in ['bar', 'ueberweisung']:
+            url = (None, reverse('users:approve_payment'))
 
     class Meta:
         verbose_name = 'Zahlungsmethode'
