@@ -1,12 +1,13 @@
 from django.urls import reverse_lazy, reverse
 from django.shortcuts import render
 from django.contrib import messages
+from django.conf import settings
 
 from braces.views import LoginRequiredMixin, FormValidMessageMixin
-from vanilla import ListView, UpdateView
+from vanilla import ListView, UpdateView, FormView
 
-from .forms import UpdateEmailForm, ProfileForm, UserForm, PaymentForm
-from .models import DonationLevel
+from .forms import UpdateEmailForm, ProfileForm, UserForm, PaymentForm, ApprovalForm
+from .models import DonationLevel, Donation
 
 
 class UpdateProfileView(LoginRequiredMixin, FormValidMessageMixin, UpdateView):
@@ -56,17 +57,28 @@ def payment_view(request):
             profile.user = user
             profile.save()
             messages.info('Profil gespeichert')
-            method = payment_form.get()
-            payment = method.get_payment(amount)
-            if payment[1]:
-                return payment[1]
+            method = payment_form.cleaned_data['payment_method']
+            payment = method.get_payment(request.POST.get('amount', 75))
+            if payment.url:
+                request.session['payment_id'] = payment.id
+                return payment.url
             else:
                 messages.error(request, settings.MESSAGES_UNEXPECTED_ERROR)
                 return reverse('users:donate')
-            
+
     context = {
         'profile_form': profile_form,
         'user_form': user_form,
         'payment_form': payment_form
     }
     return render(request, 'users/payment_form.html', context)
+
+
+class ApprovalView(FormView):
+    form_class = ApprovalForm
+    success_url = reverse_lazy('framework:home')
+
+    def form_valid(self, form):
+        donation = Donation.objects.get(payment_id=self.request.session['payment_id'])
+        donation.pay()
+        messages.success(self.request, 'Vielen Dank für Ihre Unterstützung')

@@ -1,5 +1,7 @@
 import datetime
 import logging
+import uuid
+from collections import namedtuple
 
 from django.urls import reverse
 from django.db import models
@@ -73,7 +75,7 @@ class Profile(TimeStampedModel):
 
     @property
     def active(self):
-        return bool(self.donation)
+        return bool(self.donation)email_form
 
     @property
     def expiring(self):
@@ -151,14 +153,14 @@ class PaymentMethod(TitleSlugDescriptionModel):
 
     def get_payment(self, amount):
         if self.slug == 'paypal':
-            payment = get_paypal_payment(amount)
-            url = next((link.href for link in payment.links if link.rel == 'approval_url'))
-            return (payment.id, url)
+            payment = PaypalPayment(amount).create()
         elif self.slug == 'globee':
-            payment = get_globee_payment(amount)
-            return (payment['data']['id'], payment['data']['redirect_url'])
+            payment = GlobeePayment(amount).create()
         elif self.slug in ['bar', 'ueberweisung']:
-            url = (None, reverse('users:approve_payment'))
+            payment = Payment(amount)
+        else:
+            return None
+        return payment
 
     class Meta:
         verbose_name = 'Zahlungsmethode'
@@ -171,12 +173,23 @@ class Donation(CommentAble, TimeStampedModel):
     def _default_expiration():
         return datetime.date.today() + datetime.timedelta(days=settings.DONATION_PERIOD)
 
+    @staticmethod
+    def _default_payment_id():
+        return uuid.uuid4().hex.upper()
+
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
     level = models.ForeignKey(DonationLevel, on_delete=models.PROTECT)
     date = models.DateField(auto_now_add=True)
     expiration = models.DateField(default=_default_expiration.__func__)
     payment_method = models.ForeignKey(PaymentMethod, null=True, blank=True, on_delete=models.SET_NULL)
+    executed = models.BooleanField(default=False)
     review = models.BooleanField(default=False)
+    payment_id = models.CharField(max_length=50, default=_default_payment_id.__func__)
+
+    def pay(self):
+        self.payment_method.execute(self.payment_id)
+        self.executed = True
+        self.save()
 
     def __str__(self):
         return '%s: %s (%s)' % (self.profile.name, self.level.title, self.date)

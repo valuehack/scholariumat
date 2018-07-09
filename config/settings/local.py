@@ -64,3 +64,9 @@ ZOTERO_LIBRARY_TYPE = 'user'
 # Buffer
 BUFFER_ACCESS_TOKEN = env('BUFFER_ACCESS_TOKEN', default='')
 BUFFER_SITE_IDS = env.list('BUFFER_SITE_IDS', default=[])
+
+# Paypal
+PAYPAL_MODE = 'sandbox'
+PAYPAL_CLIENT_ID = env('PAYPAL_CLIENT_ID', default='')
+PAYPAL_CLIENT_SECRET = env('PAYPAL_CLIENT_SECRET', default='')
+PAYPAL_WEB_PROFILE = env('PAYPAL_WEB_PROFILE', default='')

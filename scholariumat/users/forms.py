@@ -27,4 +27,8 @@ class ProfileForm(forms.ModelForm):
 
 
 class PaymentForm(forms.Form):
-    payment_method = forms.ModelChoiceField(queryset=PaymentMethod.objects.all())
+    payment_method = forms.ModelChoiceField(queryset=PaymentMethod.objects.all(), empty_label=None)
+
+
+class ApprovalForm(forms.Form):
+    pass

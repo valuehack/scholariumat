@@ -106,7 +106,7 @@ TEMPLATES[0]['OPTIONS']['loaders'] = [  # noqa F405
 # https://docs.djangoproject.com/en/dev/ref/settings/#default-from-email
 DEFAULT_FROM_EMAIL = env(
     'DJANGO_DEFAULT_FROM_EMAIL',
-    default='scholarium.at <noreply@scholarium.at>'
+    default='scholarium.at <info@scholarium.at>'
 )
 # https://docs.djangoproject.com/en/dev/ref/settings/#server-email
 SERVER_EMAIL = env('DJANGO_SERVER_EMAIL', default=DEFAULT_FROM_EMAIL)
@@ -201,6 +201,12 @@ ZOTERO_LIBRARY_TYPE = 'user'
 # Buffer
 BUFFER_ACCESS_TOKEN = env('BUFFER_ACCESS_TOKEN')
 BUFFER_SITE_IDS = env.list('BUFFER_SITE_IDS')
+
+# Paypal
+PAYPAL_MODE = 'live'
+PAYPAL_CLIENT_ID = env('PAYPAL_CLIENT_ID')
+PAYPAL_CLIENT_SECRET = env('PAYPAL_CLIENT_SECRET')
+PAYPAL_WEB_PROFILE = env('PAYPAL_WEB_PROFILE')
 
 # Cronjobs
 CRON_CLASSES = [
