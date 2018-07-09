@@ -1,21 +1,23 @@
 import datetime
 import logging
 import uuid
-from collections import namedtuple
+import hashlib
 
 from django.urls import reverse
 from django.db import models
 from django.conf import settings
-from django.contrib.auth import get_user_model
-from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.db.models.signals import post_save
+from django.contrib.auth import get_user_model
+from django.contrib.sites.models import Site
+from django.contrib.staticfiles.templatetags.staticfiles import static
 
+import paypalrestsdk
 from authtools.models import AbstractEmailUser
 from django_countries.fields import CountryField
 from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel
 
 from framework.behaviours import CommentAble
-from .utils import get_paypal_payment, get_globee_payment
 
 
 logger = logging.getLogger(__name__)
@@ -75,7 +77,7 @@ class Profile(TimeStampedModel):
 
     @property
     def active(self):
-        return bool(self.donation)email_form
+        return bool(self.donation)
 
     @property
     def expiring(self):
@@ -148,19 +150,94 @@ class DonationLevel(TitleSlugDescriptionModel):
 
 
 class PaymentMethod(TitleSlugDescriptionModel):
-    def __str__(self):
-        return self.title
+    @staticmethod
+    def _get_paypal_web_profile(sdk, logo_url, return_url):
+        """Returns profile id. Creates web profile if necessary."""
+        profile_settings = {
+            "presentation": {
+                "brand_name": "scholarium",
+                "logo_image": logo_url,
+                "locale_code": "AT"
+            },
+            "input_fields": {
+                "allow_note": True,
+                "no_shipping": 1,
+                "address_override": 1
+            },
+            "flow_config": {
+                "landing_page_type": "login",
+                "bank_txn_pending_url": return_url,
+                "user_action": "commit"
+            }}
+        # Settings-Hash as name, so we don't create already existing profiles.
+        profile_id = hashlib.sha256(profile_settings).hexdigest()
+        profile_settings['name'] = profile_id
+        web_profile = sdk.WebProfile(profile_settings)
 
-    def get_payment(self, amount):
+        if web_profile.create():
+            logger.debug("Created Web Profile {}".format(web_profile.id))
+            return profile_id
+        else:
+            logger.exception("Paypal returned {}".format(web_profile.error))
+
+    @staticmethod
+    def _create_paypal_payment(sdk, amount, profile_id, return_url):
+        level = DonationLevel.get_level_by_amount(amount)
+        payment = sdk.Payment({
+            "intent": "sale",
+            "experience_profile_id": profile_id,
+            "payer": {
+                "payment_method": "paypal"},
+            "redirect_urls": {
+                "return_url": return_url + '?paypal=success',
+                "cancel_url": return_url + '?paypal=cancel'},
+            "transactions": [{
+                "payee": {
+                    "email": "info@scholarium.at",
+                    "payee_display_metadata": {
+                        "brand_name": "scholarium"}},
+                "item_list": {
+                    "items": [{
+                        "name": level.title,
+                        "sku": level.id,
+                        "price": level.amount,
+                        "currency": "EUR",
+                        "quantity": 1}]},
+                "amount": {
+                    "total": amount,
+                    "currency": "EUR"},
+                "description": level.title}]})
+        if payment.create():
+            logger.debug("Payment[{}] created successfully".format(payment.id))
+            return payment
+        else:
+            logger.exception("Paypal returned {}".format(payment.error))
+
+    def create_payment(self, amount):
+        """Takes amount and returns payment id and url for payment approval."""
+        domain = Site.objects.get(pk=settings.SITE_ID).domain
+        logo_url = 'https://{}{}'.format(domain, static('img/scholarium_et.jpg'))
+        return_url = 'https://{}{}'.format(domain, reverse('users:donate'))
+
         if self.slug == 'paypal':
-            payment = PaypalPayment(amount).create()
+            sdk = paypalrestsdk.configure({
+                "mode": settings.PAYPAL_MODE, "client_id": settings.PAYPAL_CLIENT_ID,
+                "client_secret": settings.PAYPAL_CLIENT_SECRET})
+            profile_id = self._get_paypal_web_profile(sdk, logo_url, return_url)
+            payment = self._create_paypal_payment(sdk, amount, profile_id, return_url)
+            id = payment.id
+            approval_url = next((link.href for link in payment.links if link.rel == 'approval_url'))
         elif self.slug == 'globee':
-            payment = GlobeePayment(amount).create()
+            pass
         elif self.slug in ['bar', 'ueberweisung']:
-            payment = Payment(amount)
+            id = uuid.uuid4().hex.upper()
+            approval_url = reverse('users:donate')
         else:
             return None
-        return payment
+        return id, approval_url
+
+    def __str__(self):
+        return self.title
 
     class Meta:
         verbose_name = 'Zahlungsmethode'

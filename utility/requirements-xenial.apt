@@ -21,3 +21,7 @@ libwebp-dev
 
 ##django-extensions
 graphviz-dev
+
+##paypal dependencies
+libssl-dev
+libffi-dev

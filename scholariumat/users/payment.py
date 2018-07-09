@@ -1,6 +1,7 @@
 import logging
 import uuid
 import requests
+import hashlib
 
 from django.urls import reverse
 from django.conf import settings
@@ -19,6 +20,7 @@ class Payment:
     def __init__(self, amount):
         self.amount = amount
         self.id = uuid.uuid4().hex.upper()
+        self.domain = Site.objects.get(pk=settings.SITE_ID).domain
         self.approval_url = reverse('users:donate')
         self.level = DonationLevel.get_level_by_amount(amount)
 
@@ -31,14 +33,12 @@ class PaypalPayment(Payment):
             "client_id": settings.PAYPAL_CLIENT_ID,
             "client_secret": settings.PAYPAL_CLIENT_SECRET})
 
-    def create_profile(self):  # TODO: Remove, user existing profile instead
+    def create_profile(self):
         """Creates Paypal Web Profile"""
-        wpn = uuid.uuid4().hex.upper()
-        web_profile = self.sdk.WebProfile({
-            "name": wpn,
+        profile_settings = {
             "presentation": {
                 "brand_name": "scholarium",
-                "logo_image": "https://" + Site.objects.get(pk=settings.SITE_ID).domain + static('img/scholarium_et.jpg'),
+                "logo_image": "https://{}{}".format(self.domain, static('img/scholarium_et.jpg')),
                 "locale_code": "AT"
             },
             "input_fields": {
@@ -48,12 +48,15 @@ class PaypalPayment(Payment):
             },
             "flow_config": {
                 "landing_page_type": "login",
-                "bank_txn_pending_url": 'https://' + Site.objects.get(pk=settings.SITE_ID).domain + reverse('users:donate'),
+                "bank_txn_pending_url": 'https://{}{}'.format(self.domain, reverse('users:donate')),
                 "user_action": "commit"
-            }})
+            }}
+        # Settings-Hash as name, so we don't create already existing profiles.
+        profile_name = hashlib.sha256(profile_settings).hexdigest()
+        profile_settings['name'] = profile_name
+        web_profile = self.sdk.WebProfile(profile_settings)
         if web_profile.create():
-            logger.debug("Web Profile[{}] created successfully".format(web_profile.id))
-            return web_profile
+            logger.debug("Created Web Profile {}".format(web_profile.id))
         else:
             logger.exception("Paypal returned {}".format(web_profile.error))
 
@@ -64,10 +67,8 @@ class PaypalPayment(Payment):
             "payer": {
                 "payment_method": "paypal"},
             "redirect_urls": {
-                "return_url": 'https://{}{}?paypal=success'.format(
-                    Site.objects.get(pk=settings.SITE_ID).domain, reverse('users:donate')),
-                "cancel_url": 'https://{}{}?paypal=cancel'.format(
-                    Site.objects.get(pk=settings.SITE_ID).domain, reverse('users:donate'))},
+                "return_url": 'https://{}{}?paypal=success'.format(self.domain, reverse('users:donate')),
+                "cancel_url": 'https://{}{}?paypal=cancel'.format(self.domain, reverse('users:donate'))},
             "transactions": [{
                 "payee": {
                     "email": "info@scholarium.at",
