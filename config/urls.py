@@ -9,7 +9,8 @@ urlpatterns = [
     path("account/", include("authtools.urls")),
     path("bibliothek/", include("library.urls")),
     path("scholien/", include("blog.urls")),
-    path('', include("users.urls")),
+    path('profil/', include("users.urls")),
+    path('spende/', include("donations.urls")),
 ] + static(
     settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
 )

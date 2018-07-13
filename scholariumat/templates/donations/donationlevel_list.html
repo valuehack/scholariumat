@@ -18,10 +18,10 @@
   </tr>
   <tr>
     <td colspan="2">
-      <form action="{% url 'users:donate' %}" method="post">
+      <form method="post">
         {% csrf_token %}
         <input type="hidden" name="amount" value="{{ level.amount }}">
-        <input type="submit" value="Werden Sie jetzt {{ level.title }}">
+        <input action="{% url 'donations:payment' %}" type="submit" value="Werden Sie jetzt {{ level.title }}">
       </form>
     </td>
   </tr>

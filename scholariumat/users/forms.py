@@ -1,7 +1,8 @@
 from django import forms
 from django.contrib.auth import get_user_model
+from django.forms import inlineformset_factory
 
-from .models import Profile, PaymentMethod
+from .models import Profile
 
 
 class UserForm(forms.ModelForm):
@@ -26,9 +27,4 @@ class ProfileForm(forms.ModelForm):
         fields = ['title', 'name', 'organization', 'street', 'postcode', 'country']
 
 
-class PaymentForm(forms.Form):
-    payment_method = forms.ModelChoiceField(queryset=PaymentMethod.objects.all(), empty_label=None)
-
-
-class ApprovalForm(forms.Form):
-    pass
+ProfileFormSet = inlineformset_factory(get_user_model(), Profile, form=ProfileForm, can_delete=False)

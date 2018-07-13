@@ -1,7 +1,7 @@
 from django.db import models
 from django.urls import reverse
 
-from users.models import Donation
+from donations.models import Donation
 
 
 class Menu(models.Model):

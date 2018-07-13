@@ -73,6 +73,7 @@ LOCAL_APPS = [
     'library.apps.LibraryConfig',
     'events.apps.EventsConfig',
     'blog.apps.BlogConfig',
+    'donations.apps.DonationsConfig',
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
