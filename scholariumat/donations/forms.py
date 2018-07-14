@@ -10,3 +10,7 @@ class PaymentForm(forms.Form):
 
 class ApprovalForm(forms.Form):
     pass
+
+
+class LevelForm(forms.Form):
+    level = forms.ModelChoiceField(queryset=DonationLevel.objects.all(), widget=forms.RadioSelect, empty_label=None)

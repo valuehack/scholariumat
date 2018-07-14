@@ -25,6 +25,3 @@ class ProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
         fields = ['title', 'name', 'organization', 'street', 'postcode', 'country']
-
-
-ProfileFormSet = inlineformset_factory(get_user_model(), Profile, form=ProfileForm, can_delete=False)

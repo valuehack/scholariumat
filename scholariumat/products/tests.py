@@ -17,7 +17,7 @@ class PurchaseTest(ProductTest):
     def setUp(self):
         self.amount_start = 10
         self.price_start = 10
-        super(PurchaseTest, self).setUp(price=self.price_start, amount=self.amount_start)
+        super().setUp(price=self.price_start, amount=self.amount_start)
 
     def test_balance(self):
         # Test if purchase fails if balance is not sufficient.
@@ -42,7 +42,7 @@ class ItemTest(ProductTest):
     def setUp(self):
         self.amount_start = 2
         self.price_start = 1
-        super(ItemTest, self).setUp(price=self.price_start, amount=self.amount_start)
+        super().setUp(price=self.price_start, amount=self.amount_start)
         self.user.profile.refill(10)
 
     def test_item(self):

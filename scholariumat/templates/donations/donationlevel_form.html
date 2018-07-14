@@ -21,10 +21,16 @@
       <form method="post">
         {% csrf_token %}
         <input type="hidden" name="amount" value="{{ level.amount }}">
-        <input action="{% url 'donations:payment' %}" type="submit" value="Werden Sie jetzt {{ level.title }}">
+        <input action="{% url 'donations:payment' %}" method="POST" type="submit" value="Werden Sie jetzt {{ level.title }}">
       </form>
     </td>
   </tr>
 </table>
 {% endfor %}
+
+<form method="post">
+    {% csrf_token %}
+    {{ form }}
+    <input type="submit" value="Auswählen" />
+</form>
 {% endblock content %}

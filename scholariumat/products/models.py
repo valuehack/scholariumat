@@ -34,11 +34,11 @@ class ProductBase(TitleSlugDescriptionModel, TimeStampedModel, PermalinkAble):
     def save(self, *args, **kwargs):
         if not self.product:
             self.product = Product.objects.create()
-        super(ProductBase, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):  # TODO: Gets ignored in bulk delete. pre_delete signal better?
         self.product.delete()
-        super(ProductBase, self).delete(*args, **kwargs)
+        super().delete(*args, **kwargs)
 
     class Meta:
         abstract = True

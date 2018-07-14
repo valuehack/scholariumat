@@ -7,7 +7,7 @@ from braces.views import LoginRequiredMixin, FormValidMessageMixin, AnonymousReq
 from vanilla import UpdateView, CreateView, GenericView, FormView, TemplateView, RedirectView
 from authtools.forms import UserCreationForm
 
-from .forms import UpdateEmailForm, ProfileForm, ProfileFormSet, UserForm
+from .forms import UpdateEmailForm, ProfileForm, UserForm
 
 
 class RedirectMixin:
@@ -36,7 +36,6 @@ class UpdateRequiredMixin:
         request.GET.update(get_params)
         request.POST = request.POST.copy()
         request.POST.update(post_params)
-        # request.session.pop('updated', None)  # TODO: remove
         return super().dispatch(request, *args, **kwargs)
 
 
@@ -46,7 +45,7 @@ class CreateUserView(AnonymousRequiredMixin, RedirectMixin, MessageMixin, Create
     success_url = reverse_lazy('users:profile')
 
     def get_context_data(self, **kwargs):
-        context = super(CreateUserView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         if self.request.POST:
             context['profile_form'] = ProfileForm(self.request.POST)
         else:
@@ -66,7 +65,7 @@ class CreateUserView(AnonymousRequiredMixin, RedirectMixin, MessageMixin, Create
             self.request.session['updated'] = True
             return HttpResponseRedirect(self.success_url)
         else:
-            return self.render_to_response(self.get_context_data(form=form))
+            return self.form_invalid(form)
 
 
 # class CreateUserView(FormValidMessageMixin, CreateView):
@@ -76,7 +75,7 @@ class CreateUserView(AnonymousRequiredMixin, RedirectMixin, MessageMixin, Create
 #     template_name = 'users/user_form.html'
 #
 #     def get_context_data(self, **kwargs):
-#         context = super(CreateUserView, self).get_context_data(**kwargs)
+#         context = super().get_context_data(**kwargs)
 #         if self.request.POST:
 #             context['profile_formset'] = ProfileFormSet(self.request.POST)
 #         else:
@@ -105,7 +104,7 @@ class ProfileView(LoginRequiredMixin, FormValidMessageMixin, UpdateView):
 
     def form_valid(self, form):
         self.request.session['updated'] = True
-        return super(ProfileView, self).form_valid(form)
+        return super().form_valid(form)
 
 
 class UpdateProfileView(RedirectMixin, ProfileView):
