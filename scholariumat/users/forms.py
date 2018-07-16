@@ -1,8 +1,10 @@
 import logging
 
 from django import forms
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import PasswordResetForm
+# from django.utils.crypto import get_random_string
 
 from .models import Profile
 
@@ -15,15 +17,27 @@ class UserForm(forms.ModelForm):
         model = get_user_model()
         fields = ['email']
 
-    def clean(self):
-        super().clean()
-        reset_form = PasswordResetForm({
-            'email': self.cleaned_data['email'],
-            'subject_template_name': 'registration/account_creation_subject.txt',
-            'email_template_name': 'registration/account_creation_email.html'})
-        if not reset_form.is_valid():
-            logger.error('Sending activation mail failed:' + reset_form.errors)
-        reset_form.save()
+    def save(self, commit=True):
+        if commit:
+            # PW reset mail won't be send when password is None
+            user = super().save(commit=False)
+            user.set_password(get_user_model().objects.make_random_password())
+            user.save()
+
+            # Send mail with password reset link
+            email = self.cleaned_data['email']
+            reset_form = PasswordResetForm({'email': email})
+            if not reset_form.is_valid():
+                errors = reset_form.errors
+                logger.error(f'Sending activation mail to {email} failed: {errors}')
+            reset_form.save(
+                subject_template_name='registration/user_creation_subject.txt',
+                email_template_name='registration/user_creation_email.html',
+                from_email=settings.DEFAULT_FROM_EMAIL)
+            logger.info(f'Activation email send to {email}')
+        else:
+            user = super().save(commit=False)
+        return user
 
 
 class UpdateEmailForm(UserForm):

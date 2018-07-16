@@ -1,0 +1,8 @@
+Vielen Dank für Ihre Registrierung bei {{ site_name }}.
+
+Bitte folgen Sie dem folgenden Link um ein Passwort festzulegen:
+{% block reset_link %}
+{{ protocol }}://{{ domain }}{% url 'password_reset_confirm' uidb64=uid token=token %}
+{% endblock %}
+
+Ihr scholarium
