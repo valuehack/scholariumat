@@ -18,6 +18,7 @@ class UserForm(forms.ModelForm):
         fields = ['email']
 
     def save(self, commit=True):
+        """Creates user with randomized password and sends out email with pw reset link."""
         if commit:
             # PW reset mail won't be send when password is None
             user = super().save(commit=False)

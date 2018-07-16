@@ -11,8 +11,9 @@ from .forms import UpdateEmailForm, ProfileForm, UserForm
 
 
 class RedirectMixin:
+    """Mixin for looking for next parameter in GET"""
     def get_success_url(self):
-        return self.request.GET.get('next') or self.success_url
+        return self.request.GET.get('next') or super().get_success_url()
 
 
 class UpdateRequiredMixin:
