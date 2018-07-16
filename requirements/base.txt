@@ -22,6 +22,7 @@ django-countries==5.3  # https://github.com/SmileyChris/django-countries
 django-cron==0.5.1  # https://github.com/Tivix/django-cron
 django-vanilla-views==1.0.5  # http://django-vanilla-views.org/
 django-braces==1.13.0  # https://github.com/brack3t/django-braces
+django-sendgrid-v5==0.6.893  # https://github.com/sklarsa/django-sendgrid-v5
 
 # Django REST Framework
 djangorestframework==3.8.2  # https://github.com/encode/django-rest-framework
