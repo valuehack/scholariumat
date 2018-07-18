@@ -15,7 +15,7 @@
     Ihr Unterstützer-Zugang ist am {{ profile.expiration }} abglaufen.
   {% endif %}
   <br><br>
-  <a href="{% url 'users:payment' %}">Unterstützung erneuern.</a>
+  <a href="{% url 'donations:payment' %}?amount={{ profile.last_amount }}">Unterstützung erneuern.</a>
 </p> 
 {% endif %}
 {% endwith %}

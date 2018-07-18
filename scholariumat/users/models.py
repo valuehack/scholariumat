@@ -69,6 +69,11 @@ class Profile(TimeStampedModel):
         return donations[0] if donations else None
 
     @property
+    def last_donation(self):
+        donations = self.donation_set.filter(executed=True).order_by('-expiration')
+        return donations[0] if donations else None
+
+    @property
     def level(self):
         """Returns level of HIGHEST active donation"""
         active = self.donation
@@ -77,8 +82,14 @@ class Profile(TimeStampedModel):
     @property
     def expiration(self):
         """Returns expiration date of the newest donation."""
-        d = self.donation_set.filter(executed=True).order_by('-expiration')
-        return d[0].expiration if d else None
+        donation = self.last_donation
+        return donation.expiration if donation else None
+
+    @property
+    def last_amount(self):
+        """Returns amount of the newest donation."""
+        donation = self.last_donation
+        return donation.amount if donation else None
 
     @property
     def active(self):

@@ -7,7 +7,7 @@ from django.conf import settings
 from vanilla import FormView
 from braces.views import MessageMixin
 
-from users.views import UpdateRequiredMixin
+from users.views import UpdateOrCreateRequiredMixin
 from .forms import PaymentForm, ApprovalForm, LevelForm
 from .models import DonationLevel, Donation
 
@@ -24,7 +24,7 @@ class DonationLevelView(FormView):
         return HttpResponseRedirect('{}?amount={}'.format(reverse('donations:payment'), level.amount))
 
 
-class PaymentView(UpdateRequiredMixin, MessageMixin, FormView):
+class PaymentView(UpdateOrCreateRequiredMixin, MessageMixin, FormView):
     """Form to select level and payment method. Can be passed any amount value to initialize the level selection."""
     form_class = PaymentForm
     template_name = 'donations/payment_form.html'
@@ -40,12 +40,11 @@ class PaymentView(UpdateRequiredMixin, MessageMixin, FormView):
     def form_valid(self, form):
         amount = form.cleaned_data['level'].amount
         method = form.cleaned_data['payment_method']
-        profile = self.get_profile()  # Clean up old payments
-        profile.clean_donations()
-        donation = profile.donation_set.create(amount=amount, method=method, profile=profile)
+        profile = self.get_profile()
+        profile.clean_donations()  # Clean up old initiated donations
+        donation = profile.donation_set.create(amount=amount, method=method)
         if donation.init():
             logger.debug(f'Created and initiated donation {donation}')
-            # self.request.session.pop('updated', None)  # TODO:delete
             return HttpResponseRedirect(donation.approval_url)
         else:
             self.messages.error(settings.MESSAGES_UNEXPECTED_ERROR)
@@ -66,7 +65,7 @@ class ApprovalView(MessageMixin, FormView):
         donation = Donation.objects.get(slug=self.kwargs.get('slug'))
         if donation.execute(self.request):
             self.messages.info('Vielen Dank für Ihre Unterstützung')
-            return super().form_valid(form)
+            return HttpResponseRedirect(self.get_success_url())
         else:
             self.messages.error(settings.MESSAGES_UNEXPECTED_ERROR)
-            return HttpResponseRedirect(reverse('donations:payment'))
+            return HttpResponseRedirect(reverse('donations:levels'))

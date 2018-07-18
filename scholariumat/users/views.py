@@ -14,13 +14,15 @@ class RedirectMixin:
         return self.request.GET.get('next') or super().get_success_url()
 
 
-class UpdateRequiredMixin:
+class UpdateOrCreateRequiredMixin:
     """
-    Saves request parameters to session and returns view to create/update profile.
-    If session contains 'updated' key, return current view with saved parameters.
+    Saves (and restores) GET parameters to session and returns view to create or update profile before continuing.
+    Resets after first retrieve of user.
     """
     def dispatch(self, request, *args, **kwargs):
-        if not request.session.get('updated'):
+        """Return update if session doesn't contain current user, marked as updated."""
+        profile_pk = request.session.get('updated')
+        if not profile_pk or (request.user.is_authenticated and request.user.profile.pk != profile_pk):
             # Save params to session
             request.session['get_params'] = request.GET.dict()
 
@@ -34,8 +36,10 @@ class UpdateRequiredMixin:
         return super().dispatch(request, *args, **kwargs)
 
     def get_profile(self):
-        """Returns updated user profile."""
-        profile_pk = self.request.session.get('updated')
+        """Returns updated user profile and removes session variable."""
+        profile_pk = self.request.session.pop('updated', None)
+        if self.request.user.is_authenticated and self.request:
+            return self.request.user.profile
         if profile_pk:
             return Profile.objects.get(pk=profile_pk)
 
