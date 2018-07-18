@@ -1,13 +1,15 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 
+from users.models import Profile
 from library.models import ZotItem
 from products.models import Item, ItemType, Purchase
 
 
 class ProductTest(TestCase):
     def setUp(self, price=10, amount=1):
-        self.user = get_user_model().objects.create(email='a.b@c.de', name='John Smith')
+        self.user = get_user_model().objects.create(email='a.b@c.de')
+        Profile.objects.create(user=self.user)
         self.book = ZotItem.objects.create(title='Testbook', slug='testslug')
         itemtype = ItemType.objects.create(title='Kauf')
         self.item = Item.objects.create(type=itemtype, price=price, amount=amount, product=self.book.product)

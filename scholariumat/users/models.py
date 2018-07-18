@@ -3,15 +3,10 @@ import logging
 
 from django.db import models
 from django.conf import settings
-from django.dispatch import receiver
-from django.db.models.signals import post_save
-from django.contrib.auth import get_user_model
 
 from authtools.models import AbstractEmailUser
 from django_countries.fields import CountryField
 from django_extensions.db.models import TimeStampedModel
-
-from donations.models import DonationLevel
 
 
 logger = logging.getLogger(__name__)
@@ -54,7 +49,7 @@ class Profile(TimeStampedModel):
     @property
     def donation(self):
         """Returns HIGHEST active donation."""
-        donations = self.donation_set.filter(expiration__gte=datetime.date.today()).order_by('-amount')
+        donations = self.donation_set.filter(executed=True, expiration__gte=datetime.date.today()).order_by('-amount')
         return donations[0] if donations else None
 
     @property
@@ -66,7 +61,7 @@ class Profile(TimeStampedModel):
     @property
     def expiration(self):
         """Returns expiration date of the newest donation."""
-        d = self.donation_set.all().order_by('-expiration')
+        d = self.donation_set.filter(executed=True).order_by('-expiration')
         return d[0].expiration if d else None
 
     @property
@@ -86,9 +81,12 @@ class Profile(TimeStampedModel):
 
     def donate(self, amount, donation_kwargs={}):
         """Creates donation for amount and refills balance."""
-        self.donation_set.create(amount=amount, **donation_kwargs)
-        self.refill(amount)
-        logger.info("{} donated {} and is now level {}".format(self, amount, self.level))
+        donation = self.donation_set.create(amount=amount, **donation_kwargs)
+        donation.execute()
+
+    def clean_donations(self):
+        for donation in self.donation_set.filter(executed=False):
+            donation.delete()
 
     def spend(self, amount):
         """Given an amount, tries to spend from current balance."""
@@ -105,14 +103,6 @@ class Profile(TimeStampedModel):
         """Refills balance."""
         self.balance += amount
         self.save()
-
-    # TODO: Remove? Profile creation gets handles manually.
-    # @receiver(post_save, sender=get_user_model())
-    # def create_user_profile(sender, instance, created, **kwargs):
-    #     """Automatically create a profile for every user."""
-    #     if created:
-    #         Profile.objects.create(user=instance)
-    #         logger.debug('Created profile for {}'.format(instance))
 
     def __str__(self):
         return self.user.__str__()

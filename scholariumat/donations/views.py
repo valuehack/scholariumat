@@ -1,16 +1,18 @@
+import logging
+
 from django.urls import reverse_lazy, reverse
-from django.shortcuts import render
-from django.contrib import messages
 from django.http import HttpResponseRedirect, HttpResponseNotFound
 from django.conf import settings
-from django.forms import formset_factory, inlineformset_factory
 
-from vanilla import ListView, FormView
+from vanilla import FormView
 from braces.views import MessageMixin
 
 from users.views import UpdateRequiredMixin
 from .forms import PaymentForm, ApprovalForm, LevelForm
-from .models import DonationLevel, PaymentMethod, Payment
+from .models import DonationLevel, Donation
+
+
+logger = logging.getLogger(__name__)
 
 
 class DonationLevelView(FormView):
@@ -27,23 +29,24 @@ class PaymentView(UpdateRequiredMixin, MessageMixin, FormView):
     form_class = PaymentForm
     template_name = 'donations/payment_form.html'
 
-    def get_form(self):
+    def get_form(self, data=None, files=None, **kwargs):
         amount = self.request.GET.get('amount', None)
         if amount:
             level = DonationLevel.get_level_by_amount(amount)
-            return self.get_form_class()(initial={'level': level})
+            return super().get_form(data, files, initial={'level': level}, **kwargs)
         else:
-            return super().get_form()
+            return super().get_form(data, files, **kwargs)
 
     def form_valid(self, form):
         amount = form.cleaned_data['level'].amount
         method = form.cleaned_data['payment_method']
-        payment = Payment.objects.create(amount=amount, method=method)
-        if payment.init():
-            # TODO: Delete old payments
-            # TODO: Create new user -> auto login?
-            self.request.session.pop('updated', None)  # TODO:delete
-            return HttpResponseRedirect(payment.approval_url)
+        profile = self.get_profile()  # Clean up old payments
+        profile.clean_donations()
+        donation = profile.donation_set.create(amount=amount, method=method, profile=profile)
+        if donation.init():
+            logger.debug(f'Created and initiated donation {donation}')
+            # self.request.session.pop('updated', None)  # TODO:delete
+            return HttpResponseRedirect(donation.approval_url)
         else:
             self.messages.error(settings.MESSAGES_UNEXPECTED_ERROR)
             return self.form_invalid(form)
@@ -52,28 +55,18 @@ class PaymentView(UpdateRequiredMixin, MessageMixin, FormView):
 class ApprovalView(MessageMixin, FormView):
     form_class = ApprovalForm
     template_name = 'donations/approval_form.html'
-    success_url = reverse_lazy('framework:home')
+    success_url = reverse_lazy('users:profile')
 
     def dispatch(self, *args, **kwargs):
-        if not Payment.objects.filter(slug=self.kwargs.get('slug')):
+        if not Donation.objects.filter(slug=self.kwargs.get('slug')):
             return HttpResponseNotFound()
         return super().dispatch(*args, **kwargs)
 
     def form_valid(self, form):
-        payment = Payment.objects.get(slug=self.kwargs.get('slug'))
-        if payment.execute(self.request):
+        donation = Donation.objects.get(slug=self.kwargs.get('slug'))
+        if donation.execute(self.request):
             self.messages.info('Vielen Dank für Ihre Unterstützung')
             return super().form_valid(form)
         else:
             self.messages.error(settings.MESSAGES_UNEXPECTED_ERROR)
             return HttpResponseRedirect(reverse('donations:payment'))
-            
-
-        # post_data = self.request.POST
-        # for key, value in post_data.items():
-        #     if value == 'success':
-        #         method = PaymentMethod.objects.get(slug=key)
-        #         if method.execute_payment(self.request):
-        #             messages.success(self.request, 'Vielen Dank für Ihre Unterstützung')
-        # messages.error(self.request, settings.MESSAGES_UNEXPECTED_ERROR)
-        # return super(ApprovalForm, self).form_valid(form)
