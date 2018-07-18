@@ -44,6 +44,7 @@ class CreateUserView(AnonymousRequiredMixin, RedirectMixin, MessageMixin, Create
     form_class = UserForm
     template_name = 'users/user_form.html'
     success_url = reverse_lazy('users:profile')
+    authenticated_redirect_url = reverse_lazy('users:profile')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -63,8 +64,8 @@ class CreateUserView(AnonymousRequiredMixin, RedirectMixin, MessageMixin, Create
             profile.user = self.object
             profile.save()
             self.messages.info('Profil gespeichert')
-            self.request.session['updated'] = self.object.pk
-            return HttpResponseRedirect(self.success_url)
+            self.request.session['updated'] = profile.pk
+            return HttpResponseRedirect(self.get_success_url())
         else:
             return self.form_invalid(form)
 

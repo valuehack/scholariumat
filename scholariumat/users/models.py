@@ -3,6 +3,7 @@ import logging
 
 from django.db import models
 from django.conf import settings
+from django.contrib import auth
 
 from authtools.models import AbstractEmailUser
 from django_countries.fields import CountryField
@@ -13,7 +14,22 @@ logger = logging.getLogger(__name__)
 
 
 class User(AbstractEmailUser):
-    '''Uses AbstractEmailUser, so everything but email is handled by the Profile Model.'''
+    '''Uses AbstractEmailUser, so everything but email and login is handled by the Profile Model.'''
+
+    def send_activation_mail(self):
+        # PW reset mail won't be send when password is None
+        if not self.password:
+            self.set_password(User.objects.make_random_password())
+            self.save()
+
+        reset_form = auth.forms.PasswordResetForm({'email': self.email})
+        if not reset_form.is_valid():
+            logger.error(f'Sending activation mail to {self.email} failed: {reset_form.errors}')
+        reset_form.save(
+            subject_template_name='registration/user_creation_subject.txt',
+            email_template_name='registration/user_creation_email.html',
+            from_email=settings.DEFAULT_FROM_EMAIL)
+        logger.info(f'Activation email send to {self.email}')
 
     class Meta(AbstractEmailUser.Meta):
         swappable = 'AUTH_USER_MODEL'
