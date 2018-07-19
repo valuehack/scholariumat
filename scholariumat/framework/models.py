@@ -1,17 +1,22 @@
 from django.db import models
 from django.urls import reverse
 
-from django_extensions.db.models import TitleDescriptionModel
+from django_extensions.db.models import TitleDescriptionModel, TitleSlugDescriptionModel
 
 from donations.models import DonationLevel
 
 
-class Menu(models.Model):
-    pass
+class Menu(TitleSlugDescriptionModel):
+
+    def get_items(self, level):
+        return self.MenuItem_set.filter(levels__id=level.id)
+
+    def __str__(self):
+        return self.title
 
 
 class MenuBase(TitleDescriptionModel):
-    id = models.IntegerField(primary_key=True)
+    ordering = models.SmallIntegerField()
     levels = models.ManyToManyField(DonationLevel)
     title = models.CharField(max_length=50)
     target = models.CharField(max_length=50)
