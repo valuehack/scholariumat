@@ -27,9 +27,9 @@ class Payment(CommentAble):
         """Creates donation and sets id and approval url."""
         if self.method:
             if self.method.slug == 'paypal':
-                return self._create_paypal(self.amount)
+                return self._create_paypal()
             elif self.method.slug == 'globee':
-                return self._create_globee(self.amount)
+                return self._create_globee()
 
         self.slug = uuid.uuid4().hex.upper()
         self.approval_url = reverse('donations:approve', kwargs={'slug': self.slug})
