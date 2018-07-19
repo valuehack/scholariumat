@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 class Payment(CommentAble):
+    """Mixin that handled all payment-related actions."""
     @staticmethod
     def _get_default_id():
         return uuid.uuid4().hex.upper()
@@ -24,8 +25,8 @@ class Payment(CommentAble):
     slug = models.SlugField(max_length=100, unique=True, default=_get_default_id.__func__)
     method = models.ForeignKey('donations.PaymentMethod', on_delete=models.SET_NULL, null=True, blank=True)
     executed = models.BooleanField(default=False)
-    review = models.BooleanField(default=False)
-    approval_url = models.CharField(max_length=200, blank=True)
+    review = models.BooleanField(default=False)  # Used for manual review of some methods
+    approval_url = models.CharField(max_length=200, blank=True)  # Url for customer approval of payment
     payment_id = models.SlugField(max_length=100, null=True, blank=True, unique=True)
 
     @property
@@ -37,7 +38,7 @@ class Payment(CommentAble):
         return 'https://scholarium.at{}'.format(reverse_lazy('users:profile'))
 
     def init(self):
-        """Creates donation and sets id and approval url."""
+        """Sets approval url. Creates payment if necessary."""
         if self.method:
             if self.method.slug == 'paypal':
                 return self._create_paypal()
@@ -101,7 +102,8 @@ class Payment(CommentAble):
             'notification_email': 'info@scholarium.at',
         }
         response = requests.post(
-            'https://{}globee.com/payment-api/v1/payment-request'.format('test.' if settings.DEBUG else ''), headers=headers, data=payload).json()
+            'https://{}globee.com/payment-api/v1/payment-request'.format(
+                'test.' if settings.DEBUG else ''), headers=headers, data=payload).json()
 
         if response.get('success') is True:
             self.payment_id = response['data']['id']
@@ -149,7 +151,8 @@ class Payment(CommentAble):
             'Accept': 'application/json',
             'X-AUTH-KEY': settings.GLOBEE_API_KEY}
         payment = requests.get(
-            'https://{}globee.com/payment-api/v1/payment-request/{}'.format('test.' if settings.DEBUG else '', self.payment_id), headers=headers).json()
+            'https://{}globee.com/payment-api/v1/payment-request/{}'.format(
+                'test.' if settings.DEBUG else '', self.payment_id), headers=headers).json()
         if payment.get('success') is True:
             status = payment['data'].get('status')
             if status == 'confirmed' or status == 'paid':

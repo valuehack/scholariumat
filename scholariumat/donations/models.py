@@ -17,6 +17,7 @@ class DonationLevel(TitleSlugDescriptionModel):
 
     @classmethod
     def get_level_by_amount(cls, amount):
+        """Return highest level available for amount"""
         level = cls.objects.filter(amount__lte=amount).order_by('-amount')
         if level:
             return level[0]
@@ -25,19 +26,20 @@ class DonationLevel(TitleSlugDescriptionModel):
 
     @classmethod
     def get_lowest_amount(cls):
+        """Returns amount of lowest available donation level"""
         level = cls.objects.all().order_by('-amount')
         return level[0].amount if level else None
+
+    def __str__(self):
+        return '{}: {}'.format(self.amount, self.title)
 
     class Meta:
         verbose_name = 'Spendenstufe'
         verbose_name_plural = 'Spendenstufen'
 
-    def __str__(self):
-        return '{}: {}'.format(self.amount, self.title)
-
 
 class PaymentMethod(TitleSlugDescriptionModel):
-    local_approval = models.BooleanField(default=False)
+    local_approval = models.BooleanField(default=False)  # Required additinal step by customer if True
 
     def __str__(self):
         return self.title

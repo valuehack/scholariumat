@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 class DonationLevelView(FormView):
+    """Overview of available donation levels"""
     form_class = LevelForm
     template_name = 'donations/donationlevel_form.html'
 
@@ -53,10 +54,11 @@ class PaymentView(UpdateOrCreateRequiredMixin, MessageMixin, FormView):
 
 
 class ApprovalView(MessageMixin, FormView):
+    """Executes the referenced payment. Approvement button is only shown if payment method required it."""
     form_class = ApprovalForm
     template_name = 'donations/approval_form.html'
     success_url = reverse_lazy('users:profile')
-    
+
     def get_context_data(self, **kwargs):
         """Insert the form into the context dict."""
         kwargs['method'] = self.donation.method.slug
@@ -66,9 +68,9 @@ class ApprovalView(MessageMixin, FormView):
         try:
             self.donation = Donation.objects.get(slug=self.kwargs.get('slug'))
         except ObjectDoesNotExist:
-            return HttpResponseNotFound()
+            return HttpResponseNotFound()  # Cancel if non-existent payment is  referenced
 
-        if self.donation.executed:
+        if self.donation.executed:  # Cancel if payment already executed
             self.messages.info('Zahlung bereits erfolgreich durchgeführt.')
             return HttpResponseRedirect(self.get_success_url())
 
@@ -84,5 +86,3 @@ class ApprovalView(MessageMixin, FormView):
         else:
             self.messages.error(settings.MESSAGES_UNEXPECTED_ERROR)
             return HttpResponseRedirect(reverse('donations:levels'))
-            
-            
