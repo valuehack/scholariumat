@@ -206,6 +206,9 @@ PAYPAL_SETTINGS = {
     'client_id': env('PAYPAL_CLIENT_ID'),
     'client_secret': env('PAYPAL_CLIENT_SECRET')}
 
+# Globee
+GLOBEE_API_KEY = env('GLOBEE_API_KEY')
+
 # Cronjobs
 CRON_CLASSES = [
     "library.cron.ZoteroSync",

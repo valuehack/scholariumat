@@ -3,6 +3,7 @@ import logging
 from django.urls import reverse_lazy, reverse
 from django.http import HttpResponseRedirect, HttpResponseNotFound
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 
 from vanilla import FormView
 from braces.views import MessageMixin
@@ -55,17 +56,33 @@ class ApprovalView(MessageMixin, FormView):
     form_class = ApprovalForm
     template_name = 'donations/approval_form.html'
     success_url = reverse_lazy('users:profile')
+    
+    def get_context_data(self, **kwargs):
+        """Insert the form into the context dict."""
+        kwargs['method'] = self.donation.method.slug
+        return super().get_context_data(**kwargs)
 
     def dispatch(self, *args, **kwargs):
-        if not Donation.objects.filter(slug=self.kwargs.get('slug')):
+        try:
+            self.donation = Donation.objects.get(slug=self.kwargs.get('slug'))
+        except ObjectDoesNotExist:
             return HttpResponseNotFound()
+
+        if self.donation.executed:
+            self.messages.info('Zahlung bereits erfolgreich durchgeführt.')
+            return HttpResponseRedirect(self.get_success_url())
+
+        if not self.donation.method.local_approval:
+            return self.form_valid(self.get_form())
         return super().dispatch(*args, **kwargs)
 
     def form_valid(self, form):
-        donation = Donation.objects.get(slug=self.kwargs.get('slug'))
-        if donation.execute(self.request):
+        self.donation.execute(self.request)
+        if self.donation.executed:
             self.messages.info('Vielen Dank für Ihre Unterstützung')
             return HttpResponseRedirect(self.get_success_url())
         else:
             self.messages.error(settings.MESSAGES_UNEXPECTED_ERROR)
             return HttpResponseRedirect(reverse('donations:levels'))
+            
+            

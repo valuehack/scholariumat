@@ -3,8 +3,6 @@ import logging
 
 from django.db import models
 from django.conf import settings
-from django.http import HttpRequest
-from django.urls import reverse
 
 from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel
 
@@ -39,11 +37,7 @@ class DonationLevel(TitleSlugDescriptionModel):
 
 
 class PaymentMethod(TitleSlugDescriptionModel):
-    return_url_name = models.CharField(max_length=50, default='donations:approve')  # TODO: Make static?
-
-    @property
-    def return_url(self):
-        return HttpRequest.build_absolute_uri(reverse(self.return_url_name))
+    local_approval = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title

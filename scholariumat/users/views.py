@@ -19,7 +19,7 @@ class UpdateOrCreateRequiredMixin:
     Saves (and restores) GET parameters to session and returns view to create or update profile before continuing.
     Resets after first retrieve of user.
     """
-    def dispatch(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         """Return update if session doesn't contain current user, marked as updated."""
         profile_pk = request.session.get('updated')
         if not profile_pk or (request.user.is_authenticated and request.user.profile.pk != profile_pk):
@@ -33,7 +33,7 @@ class UpdateOrCreateRequiredMixin:
         get_params = request.session.pop('get_params', {})
         request.GET = request.GET.copy()
         request.GET.update(get_params)
-        return super().dispatch(request, *args, **kwargs)
+        return super().get(request, *args, **kwargs)
 
     def get_profile(self):
         """Returns updated user profile and removes session variable."""

@@ -5,18 +5,16 @@
 {% block content %}
 <h1>Profil</h1>
 {% with request.user.profile as profile %}
-{% if profile.expiration %} 
-<p>
+{% if profile.expiration %}
+  <p>Guthaben: {{ profile.balance }}</p>
   {% if profile.active %}
-    Ihr Unterstützer-Zugang läuft noch bis zum {{ profile.expiration }}.
-    <br><br>
-    (Verlängerung um ein Jahr nach Spendeneingang.)
+    <h2>Unterstützung</h2>
+    <p>Unterstützungsstufe: {{ profile.level.title }}.</p>
+    <p>Ihr Unterstützer-Zugang läuft noch bis zum {{ profile.expiration }}.<p>
   {% else %}
-    Ihr Unterstützer-Zugang ist am {{ profile.expiration }} abglaufen.
+    <p>Ihr Unterstützer-Zugang ist am {{ profile.expiration }} abglaufen.</p>
   {% endif %}
-  <br><br>
   <a href="{% url 'donations:payment' %}?amount={{ profile.last_amount }}">Unterstützung erneuern.</a>
-</p> 
 {% endif %}
 {% endwith %}
 

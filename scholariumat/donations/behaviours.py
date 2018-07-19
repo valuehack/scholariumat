@@ -4,7 +4,7 @@ import requests
 
 from django.db import models
 from django.conf import settings
-from django.urls import reverse
+from django.urls import reverse_lazy
 
 import paypalrestsdk as paypal
 
@@ -16,12 +16,25 @@ logger = logging.getLogger(__name__)
 
 
 class Payment(CommentAble):
+    @staticmethod
+    def _get_default_id():
+        return uuid.uuid4().hex.upper()
+
     amount = models.SmallIntegerField()
-    slug = models.SlugField(max_length=100, null=True, blank=True, unique=True)
+    slug = models.SlugField(max_length=100, unique=True, default=_get_default_id.__func__)
     method = models.ForeignKey('donations.PaymentMethod', on_delete=models.SET_NULL, null=True, blank=True)
     executed = models.BooleanField(default=False)
     review = models.BooleanField(default=False)
     approval_url = models.CharField(max_length=200, blank=True)
+    payment_id = models.SlugField(max_length=100, null=True, blank=True, unique=True)
+
+    @property
+    def return_url(self):
+        return 'https://scholarium.at{}'.format(reverse_lazy('donations:approve', kwargs={'slug': self.slug}))
+
+    @property
+    def cancel_url(self):
+        return 'https://scholarium.at{}'.format(reverse_lazy('users:profile'))
 
     def init(self):
         """Creates donation and sets id and approval url."""
@@ -31,8 +44,7 @@ class Payment(CommentAble):
             elif self.method.slug == 'globee':
                 return self._create_globee()
 
-        self.slug = uuid.uuid4().hex.upper()
-        self.approval_url = reverse('donations:approve', kwargs={'slug': self.slug})
+        self.approval_url = self.return_url
         self.save()
         return True
 
@@ -43,8 +55,8 @@ class Payment(CommentAble):
             "payer": {
                 "payment_method": "paypal"},
             "redirect_urls": {
-                "return_url": '{}?paypal=success'.format(self.method.return_url),
-                "cancel_url": '{}?paypal=cancel'.format(self.method.return_url)},
+                "return_url": self.return_url,
+                "cancel_url": self.cancel_url},
             "transactions": [{
                 "payee": {
                     "email": "info@scholarium.at",
@@ -66,16 +78,15 @@ class Payment(CommentAble):
         payment = paypal.Payment(payment_settings)
 
         if payment.create():
-            self.slug = payment.id
+            self.payment_id = payment.id
             self.approval_url = next((link.href for link in payment.links if link.rel == 'approval_url'))
             self.save()
-            logger.debug("Paypal payment {} created successfully".format(self.slug))
+            logger.debug("Paypal payment {} created successfully".format(self.payment_id))
             return True
         else:
             logger.exception("Payment creation failed. Paypal returned {}".format(payment.error))
 
     def _create_globee(self):
-        level = donationmodels.DonationLevel.get_level_by_amount(self.amount)
         headers = {
             'Accept': 'application/json',
             'X-AUTH-KEY': settings.GLOBEE_API_KEY,
@@ -83,22 +94,23 @@ class Payment(CommentAble):
         payload = {
             'total': self.amount,
             'currency': 'EUR',
-            'custom_payment_id': level.id,
-            'success_url': '{}?globee=success'.format(self.method.return_url),
-            'cancel_url': '{}?globee=cancel'.format(self.method.return_url),
+            'custom_payment_id': self.slug,
+            'success_url': self.return_url,
+            'cancel_url': self.cancel_url,
+            'customer[email]': self.profile.user.email,
             'notification_email': 'info@scholarium.at',
         }
         response = requests.post(
-            'https://globee.com/payment-api/v1/payment-request', headers=headers, data=payload).json()
+            'https://{}globee.com/payment-api/v1/payment-request'.format('test.' if settings.DEBUG else ''), headers=headers, data=payload).json()
 
         if response.get('success') is True:
-            self.slug = response['data']['id']
+            self.payment_id = response['data']['id']
             self.approval_url = response['data']['redirect_url']
             self.save()
-            logger.debug("Globee payment {} created successfully".format(self.slug))
+            logger.debug("Globee payment {} created successfully".format(self.payment_id))
             return True
         else:
-            logger.error('Globee payment failed.')
+            logger.error(f'Globee payment failed: {response}')
 
     def execute(self, request=None):
         """
@@ -129,7 +141,7 @@ class Payment(CommentAble):
 
     def _execute_paypal(self, request):
         paypal.configure(settings.PAYPAL_SETTINGS)
-        payment = paypal.Payment.find(self.slug)
+        payment = paypal.Payment.find(self.payment_id)
         return payment.execute({"payer_id": request.GET['PayerID']})
 
     def _execute_globee(self):
@@ -137,7 +149,7 @@ class Payment(CommentAble):
             'Accept': 'application/json',
             'X-AUTH-KEY': settings.GLOBEE_API_KEY}
         payment = requests.get(
-            'https://globee.com/payment-api/v1/payment-request/{}'.format(self.slug), headers=headers).json()
+            'https://{}globee.com/payment-api/v1/payment-request/{}'.format('test.' if settings.DEBUG else '', self.payment_id), headers=headers).json()
         if payment.get('success') is True:
             status = payment['data'].get('status')
             if status == 'confirmed' or status == 'paid':

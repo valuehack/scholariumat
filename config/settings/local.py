@@ -72,3 +72,6 @@ PAYPAL_SETTINGS = {
     'mode': 'sandbox',
     'client_id': env('PAYPAL_CLIENT_ID', default=''),
     'client_secret': env('PAYPAL_CLIENT_SECRET', default='')}
+
+# Globee
+GLOBEE_API_KEY = env('GLOBEE_API_KEY', default='')
