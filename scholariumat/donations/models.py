@@ -27,7 +27,7 @@ class DonationLevel(TitleSlugDescriptionModel):
     @classmethod
     def get_lowest_amount(cls):
         """Returns amount of lowest available donation level"""
-        level = cls.objects.all().order_by('-amount')
+        level = cls.objects.all().order_by('amount')
         return level[0].amount if level else None
 
     def __str__(self):
