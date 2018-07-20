@@ -17,12 +17,7 @@
     <header>
     {% block topbar %}{% endblock topbar %}
     {% block menubar %}
-      {% for item in main_menu %}
-      <a href="{% url item.url_name %}">{{ item.title }}</a>
-        {% for subitem in item.menusubitem_set %}
-        <a href="{% url subitem.url_name %}">{{ subitem.title }}</a>
-        {% endfor %}
-      {% endfor %}
+      {% include 'menus/main.html' %}
     {% endblock menubar %}
     </header>
     {% if messages %}
