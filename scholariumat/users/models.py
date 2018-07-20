@@ -86,6 +86,12 @@ class Profile(TimeStampedModel):
         return donation.expiration if donation else None
 
     @property
+    def amount(self):
+        """Returns amount of active donation."""
+        donation = self.donation
+        return donation.amount if donation else 0
+
+    @property
     def last_amount(self):
         """Returns amount of the newest donation."""
         donation = self.last_donation
