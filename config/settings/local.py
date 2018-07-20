@@ -31,8 +31,10 @@ TEMPLATES[0]['OPTIONS']['debug'] = DEBUG  # noqa F405
 
 # EMAIL
 # ------------------------------------------------------------------------------
-# https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
-EMAIL_BACKEND = env('DJANGO_EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
+EMAIL_BACKEND = 'sendgrid_backend.SendgridBackend'
+SENDGRID_API_KEY = env('SENDGRID_API_KEY')
+SENDGRID_SANDBOX_MODE_IN_DEBUG = env.bool('SENDGRID_SANDBOX_MODE_IN_DEBUG', default=True)
+
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-host
 EMAIL_HOST = 'localhost'
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-port
@@ -64,3 +66,12 @@ ZOTERO_LIBRARY_TYPE = 'user'
 # Buffer
 BUFFER_ACCESS_TOKEN = env('BUFFER_ACCESS_TOKEN', default='')
 BUFFER_SITE_IDS = env.list('BUFFER_SITE_IDS', default=[])
+
+# Paypal
+PAYPAL_SETTINGS = {
+    'mode': 'sandbox',
+    'client_id': env('PAYPAL_CLIENT_ID', default=''),
+    'client_secret': env('PAYPAL_CLIENT_SECRET', default='')}
+
+# Globee
+GLOBEE_API_KEY = env('GLOBEE_API_KEY', default='')

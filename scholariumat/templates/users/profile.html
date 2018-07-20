@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Nutzerprofil Einstellungen{% endblock %}
+
+{% block content %}
+<h1>Profil</h1>
+{% with request.user.profile as profile %}
+{% if profile.expiration %}
+  <p>Guthaben: {{ profile.balance }}</p>
+  {% if profile.active %}
+    <h2>Unterstützung</h2>
+    <p>Unterstützungsstufe: {{ profile.level.title }}.</p>
+    <p>Ihr Unterstützer-Zugang läuft noch bis zum {{ profile.expiration }}.<p>
+  {% else %}
+    <p>Ihr Unterstützer-Zugang ist am {{ profile.expiration }} abglaufen.</p>
+  {% endif %}
+  <a href="{% url 'donations:payment' %}?amount={{ profile.last_amount }}">Unterstützung erneuern.</a>
+{% endif %}
+{% endwith %}
+
+
+<h2>Ihre Daten</h2>
+<p>
+  Email: {{ request.user.email }}<br>
+  <a href="{% url 'users:update_email' %}">Emailadresse ändern</a><br>
+  <a href="{% url 'password_change' %}">Passwort ändern</a>
+</p>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Speichern" />
+</form>
+{% endblock %}

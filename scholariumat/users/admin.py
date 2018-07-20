@@ -1,23 +1,10 @@
 from django.contrib import admin
-from django.contrib.admin import SimpleListFilter
+from django.contrib.auth import get_user_model
 
-from .models import Profile, Donation, DonationLevel, PaymentMethod
+from authtools.admin import UserAdmin
 
-
-class DonationInline(admin.TabularInline):
-    model = Donation
-
-
-class LevelFilter(SimpleListFilter):
-    """Enable filtering by donation level"""
-    title = DonationLevel._meta.verbose_name
-    parameter_name = 'level'
-
-    def lookups(self, request, model_admin):
-        return [(level.amount, level) for level in DonationLevel.objects.all()]
-
-    def queryset(self, request, queryset):
-        return queryset.filter(donation__level__amount=self.value()) if self.value() else queryset.all()
+from donations.admin import DonationInline, LevelFilter
+from .models import Profile
 
 
 class ProfileAdmin(admin.ModelAdmin):
@@ -28,5 +15,4 @@ class ProfileAdmin(admin.ModelAdmin):
     inlines = [DonationInline]
 
 admin.site.register(Profile, ProfileAdmin)
-admin.site.register(DonationLevel)
-admin.site.register(PaymentMethod)
+admin.site.register(get_user_model(), UserAdmin)

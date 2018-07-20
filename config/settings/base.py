@@ -19,7 +19,7 @@ DEBUG = env.bool('DJANGO_DEBUG', False)
 # In Windows, this must be set to your system time zone.
 TIME_ZONE = 'Europe/Vienna'
 # https://docs.djangoproject.com/en/dev/ref/settings/#language-code
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'de-DE'
 # https://docs.djangoproject.com/en/dev/ref/settings/#site-id
 SITE_ID = 1
 # https://docs.djangoproject.com/en/dev/ref/settings/#use-i18n
@@ -73,6 +73,7 @@ LOCAL_APPS = [
     'library.apps.LibraryConfig',
     'events.apps.EventsConfig',
     'blog.apps.BlogConfig',
+    'donations.apps.DonationsConfig',
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -91,11 +92,11 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#auth-user-model
-AUTH_USER_MODEL = 'authtools.User'
+AUTH_USER_MODEL = 'users.User'
 # https://docs.djangoproject.com/en/dev/ref/settings/#login-redirect-url
 LOGIN_REDIRECT_URL = 'users:redirect'
 # https://docs.djangoproject.com/en/dev/ref/settings/#login-url
-LOGIN_URL = 'account_login'
+LOGIN_URL = 'login'
 
 # PASSWORDS
 # ------------------------------------------------------------------------------
@@ -209,6 +210,9 @@ FIXTURE_DIRS = (
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
 EMAIL_BACKEND = env('DJANGO_EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
 
+# https://docs.djangoproject.com/en/dev/ref/settings/#default-from-email
+DEFAULT_FROM_EMAIL = 'scholarium.at <info@scholarium.at>'
+
 # ADMIN
 # ------------------------------------------------------------------------------
 # Django Admin URL.
@@ -286,3 +290,7 @@ ZOTERO_OWNER_TAGS = [
     'Schütz',
     'Taghizadegan'
 ]
+
+# Error Messages
+MESSAGES_UNEXPECTED_ERROR = "Ein unerwarteter Fehler ist aufgetreten. "\
+                            "Bitte versuchen Sie es erneut oder wenden Sie sich an info@scholarium.at"

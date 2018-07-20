@@ -103,11 +103,9 @@ TEMPLATES[0]['OPTIONS']['loaders'] = [  # noqa F405
 
 # EMAIL
 # ------------------------------------------------------------------------------
-# https://docs.djangoproject.com/en/dev/ref/settings/#default-from-email
-DEFAULT_FROM_EMAIL = env(
-    'DJANGO_DEFAULT_FROM_EMAIL',
-    default='scholarium.at <noreply@scholarium.at>'
-)
+EMAIL_BACKEND = 'sendgrid_backend.SendgridBackend'
+SENDGRID_API_KEY = env('SENDGRID_API_KEY')
+
 # https://docs.djangoproject.com/en/dev/ref/settings/#server-email
 SERVER_EMAIL = env('DJANGO_SERVER_EMAIL', default=DEFAULT_FROM_EMAIL)
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-subject-prefix
@@ -201,6 +199,15 @@ ZOTERO_LIBRARY_TYPE = 'user'
 # Buffer
 BUFFER_ACCESS_TOKEN = env('BUFFER_ACCESS_TOKEN')
 BUFFER_SITE_IDS = env.list('BUFFER_SITE_IDS')
+
+# Paypal
+PAYPAL_SETTINGS = {
+    'mode': 'live',
+    'client_id': env('PAYPAL_CLIENT_ID'),
+    'client_secret': env('PAYPAL_CLIENT_SECRET')}
+
+# Globee
+GLOBEE_API_KEY = env('GLOBEE_API_KEY')
 
 # Cronjobs
 CRON_CLASSES = [
