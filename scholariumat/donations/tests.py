@@ -7,24 +7,44 @@ from django.test import Client
 from django.urls import reverse
 
 from users.models import Profile
-from donations.models import DonationLevel
+from donations.models import DonationLevel, Donation, PaymentMethod
 
 
 class RequestDonationTest(TestCase):
     def setUp(self):
         self.client = Client()
-        user = get_user_model().objects.create(email='a.b@c.de')
-        self.profile = Profile.objects.create(user=user)
         DonationLevel.objects.create(amount=75, title='Level 1')
+        PaymentMethod.objects.create(title='Bar')
 
-    def test_urls(self):
-        response = self.client.get(reverse('donations:payment'), {'amount': '80'})
-        self.assertEqual(response.status_code, 302)
-        session = self.client.session
-        session['updated'] = self.profile.pk
-        session.save()
+    def test_donation(self):
         response = self.client.get(reverse('donations:payment'))
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 302)
+        post_data = {
+            'email': 'a.b@c.de',
+            'title': 'm',
+            'name': '',
+            'organization': '',
+            'street': '',
+            'postcode': '',
+            'country': ''}
+        response = self.client.post(response.url, post_data, follow=True)
+        self.assertRedirects(response, reverse('donations:payment'))
+        profile = Profile.objects.get(user__email='a.b@c.de')
+        self.assertTrue(profile)
+
+        post_data = {
+            'level': 7,
+            'payment_method': 1
+        }
+        response = self.client.post(reverse('donations:payment'), post_data)
+
+        self.assertEqual(response.status_code, 302)
+
+        donation = Donation.objects.get(profile=profile)
+        response = self.client.post(reverse('donations:approve', kwargs={'slug': donation.slug}), {})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(profile.level.amount, 75)
+        self.assertTrue(Donation.objects.get(profile=profile).executed)
 
 
 class DonationTest(TestCase):
