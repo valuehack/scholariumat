@@ -202,12 +202,13 @@ BUFFER_SITE_IDS = env.list('BUFFER_SITE_IDS')
 
 # Paypal
 PAYPAL_SETTINGS = {
-    'mode': 'live',
+    'mode': env('PAYPAL_MODE', default='live'),
     'client_id': env('PAYPAL_CLIENT_ID'),
     'client_secret': env('PAYPAL_CLIENT_SECRET')}
 
 # Globee
 GLOBEE_API_KEY = env('GLOBEE_API_KEY')
+GLOBEE_SANDBOX = env.bool('GLOBEE_SANDBOX', default=False)
 
 # Cronjobs
 CRON_CLASSES = [

@@ -103,7 +103,7 @@ class Payment(CommentAble):
         }
         response = requests.post(
             'https://{}globee.com/payment-api/v1/payment-request'.format(
-                'test.' if settings.DEBUG else ''), headers=headers, data=payload).json()
+                'test.' if settings.GLOBEE_SANDBOX else ''), headers=headers, data=payload).json()
 
         if response.get('success') is True:
             self.payment_id = response['data']['id']
@@ -152,7 +152,7 @@ class Payment(CommentAble):
             'X-AUTH-KEY': settings.GLOBEE_API_KEY}
         payment = requests.get(
             'https://{}globee.com/payment-api/v1/payment-request/{}'.format(
-                'test.' if settings.DEBUG else '', self.payment_id), headers=headers).json()
+                'test.' if settings.GLOBEE_SANDBOX else '', self.payment_id), headers=headers).json()
         if payment.get('success') is True:
             status = payment['data'].get('status')
             if status == 'confirmed' or status == 'paid':
