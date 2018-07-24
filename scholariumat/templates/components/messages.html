@@ -1,9 +1,17 @@
 {% if messages %}
-<ul class="messages">
   {% for message in messages %}
-    <li id="message_{{ forloop.counter }}"{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+    <div class="ui {% if message.tags %}{{ message.tags }}{% endif %} floating message transition">
       {{ message }}
-    </li>
+    </div>
   {% endfor %}
-</ul>
+  <script>
+    $('.message .close')
+      .on('click', function() {
+        $(this)
+          .closest('.message')
+          .transition('fade')
+        ;
+      })
+    ;
+  </script>
 {% endif %}

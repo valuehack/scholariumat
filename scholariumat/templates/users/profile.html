@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load semanticui %}
 
 {% block title %}Nutzerprofil{% endblock %}
 
@@ -25,9 +26,10 @@
   <a href="{% url 'users:update_email' %}">Emailadresse ändern</a><br>
   <a href="{% url 'password_change' %}">Passwort ändern</a>
 </p>
-<form method="post">
+
+<form class="ui form" method="post">
     {% csrf_token %}
-    {{ form.as_p }}
-    <input type="submit" value="Speichern" />
+    {% render_form form %}
+    <button class="ui button" type="submit">Speichern</button>
 </form>
 {% endblock %}
