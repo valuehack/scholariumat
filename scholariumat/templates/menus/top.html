@@ -1,0 +1,68 @@
+<div class="ui right aligned container">
+  {% if request.user.is_authenticated %}
+    <div class="ui compact menu">
+      <div class="ui floating dropdown item">
+        <span class="text">{{ request.user }}</span>
+        <i class="dropdown icon"></i>
+        <div class="menu">
+          {% if request.user.profile.name %}
+            <div class="ui header">
+              {{ request.user.profile.name }}
+            </div>
+          {% endif %}
+          <a class="item" href="{% url 'users:profile' %}">Profil</a>
+          <a class="item" href="{% url 'donations:levels' %}">Unterstützen</a>
+          {% if request.user.profile.level %}
+            <div class="item">
+              {{ request.user.profile.level }}
+            </div>
+          {% endif %}
+          <a class="item" href="{% url 'users:profile' %}">Bestellungen</a>
+          <div class="divider"></div>
+          <a class="item" href="{% url 'users:profile' %}">Ausloggen</a>
+        </div>
+      </div>
+    </div>
+    <div class="ui compact menu">
+      <div class="ui floating top left pointing dropdown icon item">
+        <i class="shop icon"></i>
+        <div class="menu items" style="min-width: 10em;">
+          <h2 class="header">Warenkorb</h2>
+          <div class="ui item">
+            <div class="content">
+              <div class="header">TestItem</div>
+              <div class="meta">
+                <span class="right floated">2</span>
+                <span>Description</span>
+              </div>
+              <div class="description">
+                <p>testest</p>
+              </div>
+            </div>
+          </div>
+          <div class="divider"></div>
+          <a class="item" href="{% url 'users:profile' %}">Kaufen</a>
+        </div>
+      </div>
+      <div class="item">
+        <span class="text">
+          {{ request.user.profile.balance }}
+          <i class="fitted bitcoin icon"></i>
+        </span>
+      </div>
+    </div>
+    <a href="{% url 'donations:levels' %}">
+      <div class="ui yellow left pointing label">
+        <i class="fitted plus link icon"></i>
+      </div>
+    </a>
+  {% else %}
+    <div class="ui small compact menu">
+      <div class="item">Anmelden</div>
+      <div class="item">Eintragen</div>
+    </div>
+  {% endif %}
+</div>
+<script>
+  $('.ui.dropdown').dropdown({action: 'nothing'});
+</script>

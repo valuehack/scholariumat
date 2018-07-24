@@ -9,27 +9,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
-    <link rel="stylesheet" type="text/css" href="{% static semantic.min.css %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'semantic.min.css' %}">
     <link rel="icon" href="{% static 'images/favicons/favicon.ico' %}">
+    <script
+      src="https://code.jquery.com/jquery-3.1.1.min.js"
+      integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+      crossorigin="anonymous"></script>
+    <script src="{% static 'semantic.min.js' %}"></script>
     {% endblock head %}
     {% block css %}{% endblock %}
   </head>
   <body>
     <header>
-    {% block topbar %}{% endblock topbar %}
-    {% block menubar %}
+      <div class="ui hidden divider"></div>
+      {% include 'menus/top.html' %}
+      {% block menubar %}
       {% include 'menus/main.html' %}
-    {% endblock menubar %}
+      {% endblock menubar %}
     </header>
     {% include 'components/messages.html' %}
-    {% block content %}{% endblock content %}
-    {% block modal %}{% endblock modal %}
+    <div class="ui text container">
+      {% block content %}{% endblock content %}
+      {% block modal %}{% endblock modal %}
+    </div>
     <footer>
     </footer>
-    <script
-      src="https://code.jquery.com/jquery-3.1.1.min.js"
-      integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
-      crossorigin="anonymous"></script>
-    <script src="{% static semantic.min.js %}"></script>
   </body>
 </html>

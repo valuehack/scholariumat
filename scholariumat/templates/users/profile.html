@@ -3,12 +3,12 @@
 {% block title %}Nutzerprofil{% endblock %}
 
 {% block content %}
-<h1>Profil</h1>
+<h1 class="ui header">Profil</h1>
 {% with request.user.profile as profile %}
 {% if profile.expiration %}
   <p>Guthaben: {{ profile.balance }}</p>
   {% if profile.active %}
-    <h2 class='ui header'>Unterstützung</h2>
+    <h2 class='ui horizontal divider header'>Unterstützung</h2>
     <p>Unterstützungsstufe: {{ profile.level.title }}.</p>
     <p>Ihr Unterstützer-Zugang läuft noch bis zum {{ profile.expiration }}.<p>
   {% else %}
@@ -19,7 +19,7 @@
 {% endwith %}
 
 
-<h2>Ihre Daten</h2>
+<h2 class='ui horizontal divider header'>Ihre Daten</h2>
 <p>
   Email: {{ request.user.email }}<br>
   <a href="{% url 'users:update_email' %}">Emailadresse ändern</a><br>
