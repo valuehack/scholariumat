@@ -1,0 +1,106 @@
+<div class="ui container">
+
+  {% if request.user.is_authenticated %}  
+    <div class="ui right floated compact menu">
+      <div class="ui floating top left pointing dropdown icon item">
+        <i class="shop icon"></i>
+        <div class="menu items" style="min-width: 10em;">
+          <h2 class="header">Warenkorb</h2>
+          <div class="ui item">
+            <div class="content">
+              <div class="header">TestItem</div>
+              <div class="meta">
+                <span class="right floated">2</span>
+                <span>Description</span>
+              </div>
+              <div class="description">
+                <p>testest</p>
+              </div>
+            </div>
+          </div>
+          <div class="divider"></div>
+          <a class="item" href="{% url 'users:profile' %}">Kaufen</a>
+        </div>
+      </div>
+      <div class="item">
+        <span class="text">
+          {{ request.user.profile.balance }}
+          <i class="fitted bitcoin icon"></i>
+        </span>
+        <a href="{% url 'donations:levels' %}">
+          <div class="ui tiny circular yellow floating label">
+            <i class="fitted plus link icon"></i>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <div class="ui right floated compact menu" id="profile">
+      <a class="item">
+        {{ request.user }}
+        <i class="dropdown icon"></i>
+      </a>
+    </div>
+    <div class="ui popup">
+      <div>
+      
+      {% if request.user.profile.level %}
+        <a class="ui yellow right ribbon label" href="{% url 'donations:detail' %}">
+          <i class="university icon"></i>
+          {{ request.user.profile.level.title }}
+        </a>
+      {% endif %}
+      
+      <!-- <span class="ui item"> -->
+        {% if request.user.profile.name %}
+          <span class="ui center aligned header">
+            <div class="content">
+              {{ request.user.profile.name }}
+              {% if request.user.profile.organization %}
+                <div class="sub header">
+                  {{ request.user.profile.organization }}
+                </div>
+              {% endif %}
+            </div>
+          </span>
+        {% endif %}
+      </div>
+      <!-- </span> -->
+      <div class="ui hidden divider"></div>
+  
+      <div class="ui vertical fluid menu">
+        <div class="item" href="{% url 'users:profile' %}">Profil bearbeiten</div>
+        <div class="item" href="{% url 'users:profile' %}">Email-Adresse ändern</div>
+        <div class="item" href="{% url 'users:profile' %}">Passwort ändern</div>
+        <div class="item" href="{% url 'users:profile' %}">Unterstützungen</div>
+        <div class="item" href="{% url 'users:profile' %}">Ausloggen</div>
+      </div>
+
+      <div class="ui menu">
+        <a class="item" href="{% url 'donations:levels' %}">Unterstützen</a>
+        <a class="item" href="{% url 'users:profile' %}">Bestellungen</a>
+        <div class="divider"></div>
+        <a class="item" href="{% url 'users:profile' %}">Ausloggen</a>
+      </div>
+    </div>
+
+    {% if request.user.is_staff %}
+      <div class="ui right floated compact menu">
+        <a href="{% url 'admin:index' %}" class="item">Admin</a>
+      </div>
+    {% endif %}
+
+  {% else %}
+    <div class="ui right floated  small compact menu">
+      <div class="item">Anmelden</div>
+      <div class="item">Eintragen</div>
+    </div>
+  {% endif %}
+</div>
+<script>
+  $('.ui.dropdown').dropdown({action: 'nothing'});
+  $('#profile')
+    .popup({
+      on: 'click'
+    });
+</script>

@@ -84,9 +84,9 @@ class ProfileView(LoginRequiredMixin, FormValidMessageMixin, UpdateView):
         return self.request.user.profile
 
     def form_valid(self, form):
-        self.object = form.save()
+        response = super().form_valid(form)
         self.request.session['updated'] = self.object.pk
-        return HttpResponseRedirect(self.get_success_url())
+        return response
 
 
 class UpdateProfileView(RedirectMixin, ProfileView):

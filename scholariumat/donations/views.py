@@ -4,8 +4,9 @@ from django.urls import reverse_lazy, reverse
 from django.http import HttpResponseRedirect, HttpResponseNotFound
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
+from django.http import Http404
 
-from vanilla import FormView
+from vanilla import FormView, DetailView
 from braces.views import MessageMixin
 
 from users.views import UpdateOrCreateRequiredMixin
@@ -14,6 +15,16 @@ from .models import DonationLevel, Donation
 
 
 logger = logging.getLogger(__name__)
+
+
+class DonationView(DetailView):
+    model = Donation
+
+    def get_object(self):
+        donation = self.request.user.profile.donation
+        if not donation:
+            raise Http404('Keine aktive Unterstützung')
+        return donation
 
 
 class DonationLevelView(FormView):

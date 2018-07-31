@@ -1,0 +1,18 @@
+{% if messages %}
+  {% for message in messages %}
+    <div class="ui {% if message.tags %}{{ message.tags }}{% endif %} floating message transition">
+      <i class="close icon"></i>
+      <p>{{ message }}</p>
+    </div>
+  {% endfor %}
+  <script>
+    $('.message .close')
+      .on('click', function() {
+        $(this)
+          .closest('.message')
+          .transition('fade')
+        ;
+      })
+    ;
+  </script>
+{% endif %}

@@ -1,0 +1,22 @@
+{
+  "name": "scholariumat",
+  "version": "1.0.0",
+  "description": "Realität erkennen, Werte schaffen, Sinn finden.",
+  "main": "manage.py",
+  "scripts": {
+    "test": "python manage.py test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/valuehack/scholariumat.git"
+  },
+  "author": "Merlin Buczek",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/valuehack/scholariumat/issues"
+  },
+  "homepage": "https://github.com/valuehack/scholariumat#readme",
+  "dependencies": {
+    "semantic-ui": "^2.3.3"
+  }
+}

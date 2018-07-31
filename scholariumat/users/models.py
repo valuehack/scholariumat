@@ -63,15 +63,23 @@ class Profile(TimeStampedModel):
                                           self.city, self.country.get('name', ''))
 
     @property
+    def donations(self):
+        return self.donation_set.filter(executed=True).order_by('-date')
+
+    @property
     def donation(self):
         """Returns HIGHEST active donation."""
-        donations = self.donation_set.filter(executed=True, expiration__gte=datetime.date.today()).order_by('-amount')
+        donations = self.donations.filter(expiration__gte=datetime.date.today()).order_by('-amount')
         return donations[0] if donations else None
 
     @property
     def last_donation(self):
-        donations = self.donation_set.filter(executed=True).order_by('-expiration')
+        donations = self.donation_set.filter(executed=True).order_by('-date')
         return donations[0] if donations else None
+
+    @property
+    def expired_donations(self):
+        return self.donation_set.filter(executed=True, expiration__lt=datetime.date.today()).order_by('-date')
 
     @property
     def level(self):
