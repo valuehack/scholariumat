@@ -65,7 +65,8 @@ THIRD_PARTY_APPS = [
     'django_countries',
     'authtools',
     'django_cron',
-    'semanticuiforms'
+    'semanticuiforms',
+    'django_markup'
 ]
 LOCAL_APPS = [
     'users.apps.UsersConfig',

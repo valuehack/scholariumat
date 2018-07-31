@@ -1,7 +1,8 @@
 {% if messages %}
   {% for message in messages %}
     <div class="ui {% if message.tags %}{{ message.tags }}{% endif %} floating message transition">
-      {{ message }}
+      <i class="close icon"></i>
+      <p>{{ message }}</p>
     </div>
   {% endfor %}
   <script>

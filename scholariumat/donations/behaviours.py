@@ -30,6 +30,10 @@ class Payment(CommentAble):
     payment_id = models.SlugField(max_length=100, null=True, blank=True, unique=True)
 
     @property
+    def reviewed(self):
+        return True if not self.method.local_approval else self.review
+
+    @property
     def return_url(self):
         return 'https://scholarium.at{}'.format(reverse_lazy('donations:approve', kwargs={'slug': self.slug}))
 

@@ -35,4 +35,19 @@ class UpdateEmailForm(UserForm):
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ['title', 'name', 'organization', 'street', 'postcode', 'country']
+        fields = ['title', 'name', 'organization', 'street', 'postcode', 'city', 'country']
+        
+        _field_class = {
+            'title': 'three wide'
+        }
+        
+        # Layout used by django-semanticui
+        layout = [
+            ("Two Fields",
+                ("Field", "title"),
+                ("Field", "name")),
+            ("Field", "organization"),
+            ("Two Fields",
+                ("Field", "street"),
+                ("Field", "postcode")),
+        ]

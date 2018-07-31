@@ -4,7 +4,7 @@ import logging
 from django.db import models
 from django.conf import settings
 
-from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel
+from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel, TitleDescriptionModel
 
 from .behaviours import Payment
 
@@ -38,7 +38,8 @@ class DonationLevel(TitleSlugDescriptionModel):
         verbose_name_plural = 'Spendenstufen'
 
 
-class PaymentMethod(TitleSlugDescriptionModel):
+class PaymentMethod(TitleDescriptionModel):
+    slug = models.SlugField()
     local_approval = models.BooleanField(default=False)  # Required additinal step by customer if True
 
     def __str__(self):

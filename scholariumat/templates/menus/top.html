@@ -45,7 +45,7 @@
       <div>
       
       {% if request.user.profile.level %}
-        <a class="ui yellow right ribbon label" href="{% url 'users:profile' %}">
+        <a class="ui yellow right ribbon label" href="{% url 'donations:detail' %}">
           <i class="university icon"></i>
           {{ request.user.profile.level.title }}
         </a>
@@ -66,11 +66,15 @@
         {% endif %}
       </div>
       <!-- </span> -->
-      
-      
-      
+      <div class="ui hidden divider"></div>
   
-      <a class="ui button" href="{% url 'users:profile' %}">Profil bearbeiten</a>
+      <div class="ui vertical fluid menu">
+        <div class="item" href="{% url 'users:profile' %}">Profil bearbeiten</div>
+        <div class="item" href="{% url 'users:profile' %}">Email-Adresse ändern</div>
+        <div class="item" href="{% url 'users:profile' %}">Passwort ändern</div>
+        <div class="item" href="{% url 'users:profile' %}">Unterstützungen</div>
+        <div class="item" href="{% url 'users:profile' %}">Ausloggen</div>
+      </div>
 
       <div class="ui menu">
         <a class="item" href="{% url 'donations:levels' %}">Unterstützen</a>

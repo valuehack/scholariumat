@@ -20,14 +20,23 @@
   </head>
   <body>
     <header>
-      <div class="ui hidden divider"></div>
-      {% include 'menus/top.html' %}
-      {% block menubar %}
-      {% include 'menus/main.html' %}
-      {% endblock menubar %}
+        <div class="ui hidden divider"></div>
+        <div class="ui grid">
+          <div class="row">
+            {% include 'menus/top.html' %}
+          </div>
+          <div class="row">
+            <img class="ui centered big image" src="{% static 'images/scholarium_text.png' %}"></img>
+          </div>
+          <div class="ui hidden divider"></div>
+          <div class="row">
+            {% include 'menus/main.html' %}
+          </div>
+        </div>
     </header>
-    {% include 'components/messages.html' %}
+    <div class="ui hidden divider"></div>
     <div class="ui text container">
+      {% include 'components/messages.html' %}
       {% block content %}{% endblock content %}
       {% block modal %}{% endblock modal %}
     </div>
