@@ -120,6 +120,18 @@ class Profile(TimeStampedModel):
         """Returns currently active lendings (not returned)."""
         return self.lending_set.filter(shipped_isnull=False, returned__isnull=True)
 
+    @property
+    def cart(self):
+        return self.purchase_set(executed=False)
+
+    def add_to_cart(self, item, amount):
+        self.purchase_set.create(item=item, amount=amount)
+
+    def clean_cart(self):
+        for purchase in self.purchase_set.filter(executed=False):
+            if not purchase.available:
+                purchase.delete()
+
     def donate(self, amount, donation_kwargs={}):
         """Creates donation for amount and refills balance."""
         donation = self.donation_set.create(amount=amount, **donation_kwargs)

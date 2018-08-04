@@ -24,13 +24,13 @@ class PurchaseTest(ProductTest):
     def test_balance(self):
         # Test if purchase fails if balance is not sufficient.
         purchase = Purchase.objects.create(profile=self.user.profile, item=self.item, amount=1)
-        purchase.apply()
-        self.assertEqual(purchase.applied, False)
+        purchase.execute()
+        self.assertEqual(purchase.executed, False)
 
         # Test if purchase works.
         self.user.profile.refill(10)
-        purchase.apply()
-        self.assertEqual(purchase.applied, True)
+        purchase.execute()
+        self.assertEqual(purchase.executed, True)
         self.assertEqual(self.user.profile.balance, 0)
 
     def test_purchase(self):
@@ -50,12 +50,12 @@ class ItemTest(ProductTest):
     def test_item(self):
         # Test if purchase fails if amount if not sufficient.
         purchase = Purchase.objects.create(profile=self.user.profile, item=self.item, amount=self.amount_start + 1)
-        purchase.apply()
-        self.assertEqual(purchase.applied, False)
+        purchase.execute()
+        self.assertEqual(purchase.executed, False)
         self.assertEqual(self.item.amount, self.amount_start)
 
         # Test if amount reduces.
         purchase = Purchase.objects.create(profile=self.user.profile, item=self.item, amount=1)
-        purchase.apply()
-        self.assertEqual(purchase.applied, True)
+        purchase.execute()
+        self.assertEqual(purchase.executed, True)
         self.assertEqual(self.item.amount, self.amount_start - 1)

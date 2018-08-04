@@ -1,9 +1,14 @@
+import logging
+
 from django.db import models
 
 from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel, TitleDescriptionModel
 
 from users.models import Profile
 from framework.behaviours import CommentAble, PermalinkAble
+
+
+logger = logging.getLogger('__name__')
 
 
 class Product(models.Model):  # TODO: Direct link to all products instead?
@@ -66,7 +71,7 @@ class Item(TimeStampedModel):
     amount = models.IntegerField(null=True, blank=True)  # TODO: Only when limited?
     file = models.FileField(blank=True)
 
-    def spend(self, amount):
+    def sell(self, amount):
         """Given an amount, tries to lower local amount. Ignored if not limited."""
         if self.type.limited:
             new_amount = self.amount - amount
@@ -75,6 +80,7 @@ class Item(TimeStampedModel):
                 self.save()
                 return True
             else:
+                logger.exception(f"Can't sell item: {self.amount} < {amount}")
                 return False
         else:
             return True
@@ -99,20 +105,26 @@ class Purchase(TimeStampedModel, CommentAble):
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     amount = models.SmallIntegerField(null=True, blank=True, default=1)
     shipped = models.DateField(blank=True, null=True)
-    applied = models.BooleanField(default=False)
+    executed = models.BooleanField(default=False)
 
     @property
     def total(self):  # TODO: Add shipment costs
         return self.item.price * self.amount
 
-    def apply(self):
+    @property
+    def available(self):
+        """Check if required amount is available"""
+        return self.item.amount >= self.amount
+
+    def execute(self):
         if self.profile.spend(self.total):
-            if self.item.spend(self.amount):
-                self.applied = True
+            if self.item.sell(self.amount):
+                self.executed = True
                 self.save()
                 return True
-        else:
-            return False
+            else:
+                self.profile.refill(self.total)
+        return False
 
     def revert(self):
         self.profile.refill(self.total)
