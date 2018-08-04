@@ -11,48 +11,47 @@
 
 <div class="ui center aligned container">
   <form class="ui form">
-    <div class="ui action input">
+    <div class="ui input">
       <input name="search" placeholder="Suche..." type="text">
-      <button class="ui icon button" type="submit">
-        <i class="search icon"></i>
-      </button>
     </div>
+    <button class="ui icon button" type="submit">
+      <i class="search icon"></i>
+    </button>
   </form>
 </div>
 
 
-{% if collection %}
-<div class="ui header">
-  <div class="ui huge breadcrumb">
-    {% for parent in parents %}
-    <a class="section" href="{% url 'library:collection' parent.slug %}">{{ parent }}</a>
-    <i class="right chevron icon divider"></i>
-    {% endfor %}
-    <div class="active section">{{ collection }}</div>
-  </div>
-</div>
-{% elif 'search' in request.GET %}
-  <h2>Suche: {{ request.GET.search }}</h2>
-{% endif %}
 
-{% if children %}
-  <h3 class="ui small header">Kollektionen</h3>
-  <div class="ui menu">
-    <div class="ui grid">
-      {% for child in children %}
-      <div class="four wide column">
-        <a class="teal item" href="{% url 'library:collection' child.slug %}">
-          {{ child }}
-          <div class="ui label">{{ child.zotitem_set.all|length }}</div>
-        </a>
-      </div>
+{% if request.GET.search %}
+  <h2>Suche: {{ request.GET.search }}</h2>
+{% else %}
+  {% if collection %}
+  <div class="ui header">
+    <div class="ui huge breadcrumb">
+      {% for parent in parents %}
+      <a class="section" href="{% url 'library:collection' parent.slug %}">{{ parent }}</a>
+      <i class="right chevron icon divider"></i>
       {% endfor %}
+      <div class="active section">{{ collection }}</div>
     </div>
   </div>
+  {% endif %}
+
+  {% if children %}
+    <h3 class="ui small header">Kollektionen</h3>
+      <div class="ui grid menu">
+        {% for child in children %}
+          <a class="four wide column item" href="{% url 'library:collection' child.slug %}">
+            {{ child }}
+            <div class="ui label">{{ child.zotitem_set.all|length }}</div>
+          </a>
+        {% endfor %}
+      </div>
+  {% endif %}
 {% endif %}
 
 {% if object_list %}
-  <h3 class="ui small header">Werke</h3>
+<h3 class="ui small header">Werke</h3>
 <table class="ui table">
   <thead>
     <tr>
