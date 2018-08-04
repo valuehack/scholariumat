@@ -1,33 +1,35 @@
-  {% firstof request.GET.seite "1" as current %}
-  
-  {% if current == "1" %}
-    <div class="disabled icon button">
-      <i class="left chevron icon"></i>
-    </div>
-    <span class="current">1</span>
-  {% else %}
-    <a href="?{% url_replace request 'seite' aktuell|add:'-1' %}">&laquo; zurück</a>
-    <a href="?{% url_replace request 'seite' 1 %}" class="current">1</a>
+{% load url_tags %}
+
+{% firstof page_obj.number '1' as current %}
+
+{% if current|add:0 >= 3 %}
+  <a href="?{% url_replace request 'page' 1 %}">
+    <div class="item">1</div>
+  </a>
+  {% if current|add:0 >= 4 %}
+    <div class="disabled item">...</div>
   {% endif %}
-  {% if aktuell|add:0 >= 7 %}
-    ...
+{% endif %}
+
+{% if current|add:0 >= 2 %}
+  <a href="?{% url_replace request 'page' current|add:'-1' %}">
+    <div class="item">{{ current|add:'-1' }}</div>
+  </a>
+{% endif %}
+
+<div class="active item">{{ current }}</div>
+
+{% if current|add:0 <= paginator.num_pages|add:'-1' %}
+  <a href="?{% url_replace request 'page' current|add:'1' %}">
+    <div class="item">{{ current|add:'1' }}</div>
+  </a>
+{% endif %}
+
+{% if current|add:2 <= paginator.num_pages %}
+  {% if current|add:3 <= paginator.num_pages %}
+    <div class="disabled item">...</div>
   {% endif %}
-  {% for nr in seiten %}
-    {% if aktuell|sub:nr|abs < 5 %}
-      {% if aktuell == nr|stringformat:"i" %}
-      <span class="current">{{ nr }}</span>
-      {% else %}
-      <a href="?{% url_replace request 'seite' nr %}" class="current">{{ nr }}</a>
-      {% endif %}
-    {% endif %}
-  {% endfor %}
-  {% if aktuell|sub:anzahl|abs >= 7 %}
-    ...
-  {% endif %}
-  {% if aktuell == anzahl|stringformat:"i" or 'last' == aktuell %}
-    <span class="current">{{ anzahl }}</span>
-    <span class="disabled">vor &raquo;</span>
-  {% else %}
-  <a href="?{% url_replace request 'seite' anzahl %}" class="current">{{ anzahl }}</a>
-    <a href="?{% url_replace request 'seite' aktuell|add:'1' %}">vor &raquo;</a>
-  {% endif %}
+  <a href="?{% url_replace request 'page' paginator.num_pages %}">
+    <div class="item">{{ paginator.num_pages }}</div>
+  </a>
+{% endif %}

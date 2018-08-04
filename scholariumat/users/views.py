@@ -2,10 +2,26 @@ from django.urls import reverse_lazy, reverse
 from django.http import HttpResponseRedirect
 
 from braces.views import LoginRequiredMixin, FormValidMessageMixin, AnonymousRequiredMixin, MessageMixin
+from braces.views._access import AccessMixin
 from vanilla import UpdateView, CreateView
 
 from .forms import UpdateEmailForm, ProfileForm, UserForm
 from .models import Profile
+
+
+class DonationRequiredMixin(AccessMixin, MessageMixin):
+    """Requires user to have donated a specific amount"""
+
+    donation_amount = None
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.profile.amount >= self.donation_amount:
+            self.messages.error(
+                f'Für Zugang ist eine Unterstützung in Höhe von mindestens {self.donation_amount}€ nötig')
+            return HttpResponseRedirect(reverse('donations:levels'))
+
+        return super().dispatch(
+            request, *args, **kwargs)
 
 
 class RedirectMixin:

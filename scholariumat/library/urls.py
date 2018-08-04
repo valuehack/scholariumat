@@ -1,11 +1,11 @@
 from django.urls import path
 
-from .views import list, detail
+from .views import detail, ZotItemListView
 
 app_name = 'library'
 
 urlpatterns = [
-    path('', list, name='list'),
-    path('kollektion/<slug:collection>', list, name='collection'),
+    path('', ZotItemListView.as_view(), name='list'),
+    path('kollektion/<slug:collection>', ZotItemListView.as_view(), name='collection'),
     path('objekt/<slug:slug>', detail, name='zot_item'),
 ]
