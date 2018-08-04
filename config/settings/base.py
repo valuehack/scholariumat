@@ -66,7 +66,8 @@ THIRD_PARTY_APPS = [
     'authtools',
     'django_cron',
     'semanticuiforms',
-    'django_markup'
+    'django_markup',
+    'webstack_django_sorting'
 ]
 LOCAL_APPS = [
     'users.apps.UsersConfig',

@@ -173,6 +173,14 @@ class Collection(TitleSlugDescriptionModel, PermalinkAble):
 
         logger.info('Sync finished.')
 
+    def get_parents(self):
+        parents = []
+        parent = self.parent
+        while(parent):
+            parents.append(parent)
+            parent = parent.parent
+        return parents
+
     def __str__(self):
         return self.title
 

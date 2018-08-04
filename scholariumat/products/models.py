@@ -1,6 +1,6 @@
 from django.db import models
 
-from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel
+from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel, TitleDescriptionModel
 
 from users.models import Profile
 from framework.behaviours import CommentAble, PermalinkAble
@@ -44,7 +44,8 @@ class ProductBase(TitleSlugDescriptionModel, TimeStampedModel, PermalinkAble):
         abstract = True
 
 
-class ItemType(TitleSlugDescriptionModel, TimeStampedModel):
+class ItemType(TitleDescriptionModel, TimeStampedModel):
+    slug = models.SlugField()
     limited = models.BooleanField(default=True)
     shipping = models.BooleanField(default=False)
 
