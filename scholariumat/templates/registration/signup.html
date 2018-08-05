@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% load semanticui %}
+
+{% block content %}
+<div class="ui text container">
+  <form class="ui form" method="POST">
+    {% csrf_token %}
+    {% render_form form %}
+    <button class="ui basic button" type="submit">Eintragen</button>
+  </form>
+</div>
+{% endblock %}

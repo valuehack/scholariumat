@@ -1,3 +1,6 @@
+from django.urls import reverse
+from django.http import HttpResponseRedirect
+
 from braces.views import OrderableListMixin
 
 
@@ -32,3 +35,7 @@ class CompatibleOrderableListMixin(OrderableListMixin):
         self.ordering = self.request.GET.get(self.direction_param, self.ordering)
 
         return queryset.order_by(order_by)
+
+
+def homeview(request):
+    return HttpResponseRedirect(reverse('users:profile'))

@@ -3,7 +3,7 @@ from django.http import HttpResponseRedirect
 
 from braces.views import LoginRequiredMixin, FormValidMessageMixin, AnonymousRequiredMixin, MessageMixin
 from braces.views._access import AccessMixin
-from vanilla import UpdateView, CreateView
+from vanilla import UpdateView, CreateView, TemplateView
 
 from .forms import UpdateEmailForm, ProfileForm, UserForm
 from .models import Profile
@@ -60,7 +60,18 @@ class UpdateOrCreateRequiredMixin:
             return Profile.objects.get(pk=profile_pk)
 
 
-class CreateUserView(AnonymousRequiredMixin, RedirectMixin, MessageMixin, CreateView):
+class CreateUserView(AnonymousRequiredMixin, CreateView):
+    form_class = UserForm
+    template_name = 'registration/signup.html'
+    success_url = reverse_lazy('users:signup_complete')
+    authenticated_redirect_url = reverse_lazy('users:profile')
+
+
+class CreatedUserView(TemplateView):
+    template_name = 'registration/signup_complete.html'
+
+
+class CreateProfileView(AnonymousRequiredMixin, RedirectMixin, MessageMixin, CreateView):
     form_class = UserForm
     template_name = 'users/user_form.html'
     success_url = reverse_lazy('users:profile')
