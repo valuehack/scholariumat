@@ -122,7 +122,17 @@ class Profile(TimeStampedModel):
 
     @property
     def cart(self):
-        return self.purchase_set(executed=False)
+        return self.purchase_set.filter(executed=False)
+
+    @property
+    def cart_shipping(self):
+        """Returns shipping costs of cart."""
+        return settings.SHIPPING if any([purchase.item.type.shipping for purchase in self.cart]) else 0
+
+    @property
+    def cart_total(self):
+        """Sums prices and adds shiping costs"""
+        return sum([purchase.total for purchase in self.cart]) + self.cart_shipping
 
     def add_to_cart(self, item, amount):
         self.purchase_set.create(item=item, amount=amount)

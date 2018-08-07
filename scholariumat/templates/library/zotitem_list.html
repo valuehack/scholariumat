@@ -78,11 +78,19 @@
         {% endif %}
       </td>
       <td>
-        <ul>
+        <div class="ui labels">
         {% for item in zotitem.product.item_set.all %}
-          <li>{{ item }}</li>
+          {% if item.available %}
+            <div class="ui label">
+              {{ item.type.title }}
+            </div>
+          {% else %}
+            <div class="ui disabled label">
+              {{ item.type.title }}
+            </div>
+          {% endif %}
         {% endfor %}
-        </ul>
+      </div>
       </td>
     </tr>
     {% endfor %}

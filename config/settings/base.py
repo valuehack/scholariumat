@@ -262,6 +262,7 @@ EXPIRATION_DAYS = 30  # Number of days before expiration to recieve warning
 DONATION_PERIOD = 365  # Days until new donations expire
 
 # Library
+LIBRARY_DONATION_AMOUNT = 150
 DEFAULT_FILE_PRICE = 5
 DOWNLOAD_FORMATS = [
     'pdf',
@@ -297,3 +298,6 @@ ZOTERO_OWNER_TAGS = [
 # Error Messages
 MESSAGES_UNEXPECTED_ERROR = "Ein unerwarteter Fehler ist aufgetreten. "\
                             "Bitte versuchen Sie es erneut oder wenden Sie sich an info@scholarium.at"
+
+# Products
+SHIPPING = 5

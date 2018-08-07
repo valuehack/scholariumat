@@ -1,6 +1,7 @@
 import logging
 
 from django.db import models
+from django.db.models import Q
 
 from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel, TitleDescriptionModel
 
@@ -11,18 +12,19 @@ from framework.behaviours import CommentAble, PermalinkAble
 logger = logging.getLogger('__name__')
 
 
-class Product(models.Model):  # TODO: Direct link to all products instead?
+class Product(models.Model):
     """Class to avoid MTI/generic relations: Explicit OneToOneField with all products."""
 
     @property
     def type(self):
         """Get product object"""
-        for product_rel in self._meta.related_objects:
+        for product_rel in self._meta.get_fields():
             if product_rel.one_to_one:
-                type = getattr(self, product_rel.name, None)
-                if type:
-                    return type
-        return None
+                return getattr(self, product_rel.name)
+
+    @property
+    def items_available(self):
+        return self.item_set.filter(Q(price__gt=0), Q(amount__gt=0) | Q(type__limited=False))
 
     def __str__(self):
         return self.type.__str__()
@@ -70,6 +72,15 @@ class Item(TimeStampedModel):
     price = models.SmallIntegerField(null=True, blank=True)
     amount = models.IntegerField(null=True, blank=True)  # TODO: Only when limited?
     file = models.FileField(blank=True)
+    requested = models.BooleanField(default=False)
+
+    @property
+    def available(self):
+        return self.price and (self.amount or not self.type.limited)
+
+    def request(self):
+        self.requested = True
+        self.save()
 
     def sell(self, amount):
         """Given an amount, tries to lower local amount. Ignored if not limited."""
@@ -108,7 +119,7 @@ class Purchase(TimeStampedModel, CommentAble):
     executed = models.BooleanField(default=False)
 
     @property
-    def total(self):  # TODO: Add shipment costs
+    def total(self):
         return self.item.price * self.amount
 
     @property
