@@ -11,6 +11,7 @@ env = environ.Env()
 
 # GENERAL
 # ------------------------------------------------------------------------------
+DEFAULT_DOMAIN = 'https://scholarium.at'
 # https://docs.djangoproject.com/en/dev/ref/settings/#debug
 DEBUG = env.bool('DJANGO_DEBUG', False)
 # Local time zone. Choices are
@@ -66,7 +67,8 @@ THIRD_PARTY_APPS = [
     'authtools',
     'django_cron',
     'semanticuiforms',
-    'django_markup'
+    'django_markup',
+    'webstack_django_sorting'
 ]
 LOCAL_APPS = [
     'users.apps.UsersConfig',
@@ -96,7 +98,7 @@ AUTHENTICATION_BACKENDS = [
 # https://docs.djangoproject.com/en/dev/ref/settings/#auth-user-model
 AUTH_USER_MODEL = 'users.User'
 # https://docs.djangoproject.com/en/dev/ref/settings/#login-redirect-url
-LOGIN_REDIRECT_URL = 'users:redirect'
+LOGIN_REDIRECT_URL = 'users:profile'
 # https://docs.djangoproject.com/en/dev/ref/settings/#login-url
 LOGIN_URL = 'login'
 
@@ -261,6 +263,7 @@ EXPIRATION_DAYS = 30  # Number of days before expiration to recieve warning
 DONATION_PERIOD = 365  # Days until new donations expire
 
 # Library
+LIBRARY_DONATION_AMOUNT = 150
 DEFAULT_FILE_PRICE = 5
 DOWNLOAD_FORMATS = [
     'pdf',
@@ -294,5 +297,13 @@ ZOTERO_OWNER_TAGS = [
 ]
 
 # Error Messages
-MESSAGES_UNEXPECTED_ERROR = "Ein unerwarteter Fehler ist aufgetreten. "\
+MESSAGE_UNEXPECTED_ERROR = "Ein unerwarteter Fehler ist aufgetreten. "\
                             "Bitte versuchen Sie es erneut oder wenden Sie sich an info@scholarium.at"
+
+# User Messages
+MESSAGE_REQUEST_SEND = "Vielen Dank für Ihr Interesse. Wir werden Sie benachrichtigen, \
+    wenn das Produkt verfügbar ist."
+MESSAGE_CART_ADDED = "Warenkorb aktualisiert."
+
+# Products
+SHIPPING = 5

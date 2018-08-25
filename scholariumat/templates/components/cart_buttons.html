@@ -1,0 +1,64 @@
+{% if items %}
+  <div class="ui centered card">
+    <div class="content">
+      <div class="column">
+        {% for item in items %}
+          {% if forloop.counter is not 1 %}
+            <div class="ui divider"></div>
+          {% endif %}
+          <div class="row">
+            <form id="{{ item.type.title }}_form" method="POST">
+              {% csrf_token %}
+              <input type="hidden" name="requested_item" value="{{ item.pk }}"/>
+            </form>
+            {% if item.available %}
+              <div class="ui labeled button">
+                <div onclick='document.forms["{{ item.type.title }}_form"].submit(); return false;' class="ui animated button">
+                  <div class="visible content">
+                    {{ item.type.title }}
+                  </div>
+                  <div class="hidden content">
+                    <i class="cart icon"></i>
+                  </div>
+                </div>
+                <div class="ui basic left pointing label">
+                  {{ item.price }}&nbsp;
+                  <i class="bitcoin fitted icon"></i>
+                </div>
+              </div>
+            {% else %}
+              <div class="ui labeled button">
+                <div class="ui disabled button">
+                  {{ item.type.title }}
+                </div>
+                <a onclick='document.forms["{{ item.type.title }}_form"].submit(); return false;' class="ui yellow left pointing label">
+                  Preis anfragen</a>
+              </div>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  <script>
+  var link = $(".price_request")
+  
+  link.click(function () {
+      $.ajax({
+        url: '{% url "users:profile" %}',
+        data: {
+          'item': link.id
+        },
+        dataType: 'json',
+        success: function (data) {
+          alert("A user with this username already exists.");
+          location.reload();
+        },
+        error: function (data) {
+        }
+      })
+    console.log(link.attr('id'));
+    alert('test');
+    });
+  </script>
+{% endif %}

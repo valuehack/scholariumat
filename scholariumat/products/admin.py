@@ -23,7 +23,7 @@ class ProductAdmin(admin.ModelAdmin):
 
 class PurchaseAdmin(admin.ModelAdmin):
     raw_id_fields = ['profile', 'item']
-    readonly_fields = ['applied']
+    readonly_fields = ['executed']
 
 
 class ItemAdmin(admin.ModelAdmin):

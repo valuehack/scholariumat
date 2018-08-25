@@ -1,23 +1,33 @@
-from django.db import models
+import logging
 
-from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel
+from django.db import models
+from django.db.models import Q
+from django.core.mail import mail_managers
+from django.urls import reverse_lazy
+from django.conf import settings
+
+from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel, TitleDescriptionModel
 
 from users.models import Profile
 from framework.behaviours import CommentAble, PermalinkAble
 
 
-class Product(models.Model):  # TODO: Direct link to all products instead?
+logger = logging.getLogger('__name__')
+
+
+class Product(models.Model):
     """Class to avoid MTI/generic relations: Explicit OneToOneField with all products."""
 
     @property
     def type(self):
         """Get product object"""
-        for product_rel in self._meta.related_objects:
+        for product_rel in self._meta.get_fields():
             if product_rel.one_to_one:
-                type = getattr(self, product_rel.name, None)
-                if type:
-                    return type
-        return None
+                return getattr(self, product_rel.name)
+
+    @property
+    def items_available(self):
+        return self.item_set.filter(Q(price__gt=0), Q(amount__gt=0) | Q(type__limited=False))
 
     def __str__(self):
         return self.type.__str__()
@@ -44,7 +54,8 @@ class ProductBase(TitleSlugDescriptionModel, TimeStampedModel, PermalinkAble):
         abstract = True
 
 
-class ItemType(TitleSlugDescriptionModel, TimeStampedModel):
+class ItemType(TitleDescriptionModel, TimeStampedModel):
+    slug = models.SlugField()
     limited = models.BooleanField(default=True)
     shipping = models.BooleanField(default=False)
 
@@ -62,10 +73,34 @@ class Item(TimeStampedModel):
     type = models.ForeignKey(ItemType, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     price = models.SmallIntegerField(null=True, blank=True)
-    amount = models.IntegerField(null=True, blank=True)  # TODO: Only when limited?
+    amount = models.IntegerField(null=True, blank=True)
     file = models.FileField(blank=True)
+    requests = models.ManyToManyField(Profile, related_name='item_requests')
 
-    def spend(self, amount):
+    @property
+    def available(self):
+        return self.price and (self.amount or not self.type.limited)
+
+    def request(self, profile):
+        self.requests.add(profile)
+        edit_url = reverse_lazy('admin:products_item_change', args=[self.pk])
+        mail_managers(
+            f'Anfrage: {self.product}',
+            f'Nutzer {profile} hat {self.product} im Format {self.type} angefragt. '
+            f'Das Item kann unter folgender URL editiert werden: {settings.DEFAULT_DOMAIN}{edit_url}'
+        )
+
+    def inform_users(self):
+        pass
+        # TODO: Send email to users in requests
+
+    def add_to_cart(self, profile):
+        purchase, created = Purchase.objects.get_or_create(profile=profile, item=self, executed=False)
+        if not created:
+            purchase.amount += 1
+            purchase.save()
+
+    def sell(self, amount):
         """Given an amount, tries to lower local amount. Ignored if not limited."""
         if self.type.limited:
             new_amount = self.amount - amount
@@ -74,6 +109,7 @@ class Item(TimeStampedModel):
                 self.save()
                 return True
             else:
+                logger.exception(f"Can't sell item: {self.amount} < {amount}")
                 return False
         else:
             return True
@@ -96,22 +132,28 @@ class Purchase(TimeStampedModel, CommentAble):
 
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
-    amount = models.SmallIntegerField(null=True, blank=True, default=1)
+    amount = models.SmallIntegerField(default=1)
     shipped = models.DateField(blank=True, null=True)
-    applied = models.BooleanField(default=False)
+    executed = models.BooleanField(default=False)
 
     @property
-    def total(self):  # TODO: Add shipment costs
+    def total(self):
         return self.item.price * self.amount
 
-    def apply(self):
+    @property
+    def available(self):
+        """Check if required amount is available"""
+        return self.item.amount >= self.amount
+
+    def execute(self):
         if self.profile.spend(self.total):
-            if self.item.spend(self.amount):
-                self.applied = True
+            if self.item.sell(self.amount):
+                self.executed = True
                 self.save()
                 return True
-        else:
-            return False
+            else:
+                self.profile.refill(self.total)
+        return False
 
     def revert(self):
         self.profile.refill(self.total)

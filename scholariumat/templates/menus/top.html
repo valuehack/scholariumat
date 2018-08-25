@@ -6,18 +6,28 @@
         <i class="shop icon"></i>
         <div class="menu items" style="min-width: 10em;">
           <h2 class="header">Warenkorb</h2>
+          {% for purchase in request.user.profile.cart %}
           <div class="ui item">
             <div class="content">
-              <div class="header">TestItem</div>
-              <div class="meta">
-                <span class="right floated">2</span>
-                <span>Description</span>
-              </div>
-              <div class="description">
-                <p>testest</p>
-              </div>
+              
+                <div class="header">{{ purchase.item.title }}</div>
+                <div class="meta">
+                  <span class="right floated">{{ purchase.amount }}</span>
+                  <span>{{ purchase.total }}</span>
+                </div>
+                <div class="description">
+                  <p>{{ purchase.item.description }}</p>
+                </div>
+              
             </div>
           </div>
+          {% endfor %}
+          {% if request.user.profile.cart_shipping %}
+            <div class="divider"></div>
+            Versand: {{ request.user.profile.cart_shipping }}
+          {% endif %}
+          <div class="divider"></div>
+            {{ request.user.profile.cart_total }}
           <div class="divider"></div>
           <a class="item" href="{% url 'users:profile' %}">Kaufen</a>
         </div>
@@ -53,7 +63,7 @@
       
       <!-- <span class="ui item"> -->
         {% if request.user.profile.name %}
-          <span class="ui center aligned header">
+          <h3 class="ui center aligned header">
             <div class="content">
               {{ request.user.profile.name }}
               {% if request.user.profile.organization %}
@@ -62,7 +72,7 @@
                 </div>
               {% endif %}
             </div>
-          </span>
+          </h3>
         {% endif %}
       </div>
       <!-- </span> -->
@@ -80,7 +90,7 @@
         <a class="item" href="{% url 'donations:levels' %}">Unterstützen</a>
         <a class="item" href="{% url 'users:profile' %}">Bestellungen</a>
         <div class="divider"></div>
-        <a class="item" href="{% url 'users:profile' %}">Ausloggen</a>
+        <a class="item" href="{% url 'logout' %}">Ausloggen</a>
       </div>
     </div>
 
@@ -91,10 +101,64 @@
     {% endif %}
 
   {% else %}
-    <div class="ui right floated  small compact menu">
-      <div class="item">Anmelden</div>
-      <div class="item">Eintragen</div>
+    <div class="ui right floated small compact menu">
+      <a class="login_open item">Anmelden</a>
+      <a class="register_open item">Eintragen</a>
     </div>
+
+    <div class="ui tiny login modal">
+      <div class="header">Anmelden</div>
+      <div class="content">
+        <form id="login_form" method="post" class="ui form" action="{% url 'login' %}">
+          {% csrf_token %}
+          <div class="field">
+            <div class="ui left icon input">
+              <input type="email" name="username" placeholder="Email">
+              <i class="user icon"></i>
+            </div>
+          </div>
+          <div class="field">
+            <div class="ui left icon input">
+              <input type="password" name="password" placeholder="Passwort">
+              <i class="lock icon"></i>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="actions">
+        <button class="ui left floated button" form="login_form" type="submit">Anmelden</button>
+        Sie haben noch keinen Zugang?
+        <button class="ui register_open button">Eintragen</button>
+      </div>
+    </div>
+
+    <div class="ui tiny register modal">
+      <div class="header">Eintragen</div>
+      <div class="content">
+        <form id="register_form" method="post" class="ui form" action="{% url 'users:signup' %}">
+          {% csrf_token %}
+          <div class="field">
+            <div class="ui left icon input">
+              <input type="email" name="email" placeholder="Email">
+              <i class="user icon"></i>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="actions">
+        <button class="ui left floated button" form="register_form" type="submit">Eintragen</button>
+        Sie sind bereits eingetragen?
+        <button class="ui login_open button">Anmelden</button>
+      </div>
+    </div>
+    <script>
+      $('.tiny.login.modal')
+        .modal('attach events', '.login_open', 'show')
+      ;
+      $('.tiny.register.modal')
+        .modal('attach events', '.register_open', 'show')
+      ;
+    </script>
   {% endif %}
 </div>
 <script>

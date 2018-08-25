@@ -6,8 +6,7 @@
   <form class="ui form" method="POST">
     {% csrf_token %}
     {% render_form form %}
-    <button class="ui basic button" type="submit">Einloggen</button>
-    <a class="ui basic button" href="{% url 'password_reset' %}">Passwort vergessen</a>
+    <button class="ui basic button" type="submit">Eintragen</button>
   </form>
 </div>
 {% endblock %}

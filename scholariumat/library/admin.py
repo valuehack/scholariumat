@@ -6,7 +6,7 @@ from products.admin import ProductBaseAdmin
 
 class ZotItemAdmin(ProductBaseAdmin):
     raw_id_fields = ['authors']
-    search_fields = ['description']
+    search_fields = ['description', 'title']
     list_display = ['title', 'get_authors', 'get_product']
     list_filter = ['published']
 

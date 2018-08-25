@@ -120,6 +120,28 @@ class Profile(TimeStampedModel):
         """Returns currently active lendings (not returned)."""
         return self.lending_set.filter(shipped_isnull=False, returned__isnull=True)
 
+    @property
+    def cart(self):
+        return self.purchase_set.filter(executed=False)
+
+    @property
+    def cart_shipping(self):
+        """Returns shipping costs of cart."""
+        return settings.SHIPPING if any([purchase.item.type.shipping for purchase in self.cart]) else 0
+
+    @property
+    def cart_total(self):
+        """Sums prices and adds shiping costs"""
+        return sum([purchase.total for purchase in self.cart]) + self.cart_shipping
+
+    def add_to_cart(self, item, amount):
+        self.purchase_set.create(item=item, amount=amount)
+
+    def clean_cart(self):
+        for purchase in self.purchase_set.filter(executed=False):
+            if not purchase.available:
+                purchase.delete()
+
     def donate(self, amount, donation_kwargs={}):
         """Creates donation for amount and refills balance."""
         donation = self.donation_set.create(amount=amount, **donation_kwargs)
