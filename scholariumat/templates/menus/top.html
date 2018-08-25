@@ -4,6 +4,11 @@
     <div class="ui right floated compact menu">
       <div class="ui floating top left pointing dropdown icon item">
         <i class="shop icon"></i>
+        {% if request.user.profile.cart|length %}
+          <div class="ui red small floating circular label">
+            {{ request.user.profile.cart|length }}
+          </div>
+        {% endif %}
         <div class="menu items" style="min-width: 10em;">
           <h2 class="header">Warenkorb</h2>
           {% for purchase in request.user.profile.cart %}
@@ -29,7 +34,11 @@
           <div class="divider"></div>
             {{ request.user.profile.cart_total }}
           <div class="divider"></div>
-          <a class="item" href="{% url 'users:profile' %}">Kaufen</a>
+          <form id="buy_form" action="{% url 'products:basket' %}" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="buy">
+          </form>
+          <a onclick='document.forms["buy_form"].submit(); return false;' class="item">Kaufen</a>
         </div>
       </div>
       <div class="item">
@@ -38,7 +47,7 @@
           <i class="fitted bitcoin icon"></i>
         </span>
         <a href="{% url 'donations:levels' %}">
-          <div class="ui tiny circular yellow floating label">
+          <div class="ui small circular yellow floating label">
             <i class="fitted plus link icon"></i>
           </div>
         </a>

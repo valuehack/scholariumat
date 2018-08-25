@@ -11,6 +11,7 @@ urlpatterns = [
     path("scholien/", include("blog.urls")),
     path('profil/', include("users.urls")),
     path('spende/', include("donations.urls")),
+    path('', include("products.urls")),
     path('', include("framework.urls")),
 ] + static(
     settings.MEDIA_URL, document_root=settings.MEDIA_ROOT

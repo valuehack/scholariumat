@@ -1,7 +1,12 @@
 from django.contrib import messages
 from django.conf import settings
+from django.urls import reverse
+from django.http import HttpResponseRedirect
 
-from .models import Item
+from vanilla import ListView
+from braces.views import LoginRequiredMixin, MessageMixin
+
+from .models import Item, Purchase
 
 
 class PurchaseMixin():
@@ -21,3 +26,22 @@ class PurchaseMixin():
         else:
             # Might be used for Classview without post function
             return self.get(request, *args, **kwargs)
+
+
+class BasketView(LoginRequiredMixin, PurchaseMixin, MessageMixin, ListView):
+    template_name = 'products/basket.html'
+
+    def get_queryset(self):
+        return Purchase.objects.filter(profile=self.request.user.profile, executed=False)
+
+    def post(self, request, *args, **kwargs):
+        if 'buy' in request.POST:
+            if request.user.profile.execute_cart():
+                self.messages.success('Vielen Dank für Ihre Bestellung.')
+                return HttpResponseRedirect(reverse('framework:home'))
+            else:
+                # TODO: Link to donations
+                self.messages.error("Ihr Guthaben reicht nicht aus. <a href='#'>Erneuern</a> Sie Ihre Unterstützung, um Ihr Guthaben aufzufüllen.")
+                return self.get(request, *args, **kwargs)
+        else:
+            return super().post(request, *args, **kwargs)

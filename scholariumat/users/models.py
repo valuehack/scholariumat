@@ -142,6 +142,12 @@ class Profile(TimeStampedModel):
             if not purchase.available:
                 purchase.delete()
 
+    def execute_cart(self):
+        if self.balance >= self.cart_total:
+            for purchase in self.cart:
+                purchase.execute()
+            return True
+
     def donate(self, amount, donation_kwargs={}):
         """Creates donation for amount and refills balance."""
         donation = self.donation_set.create(amount=amount, **donation_kwargs)

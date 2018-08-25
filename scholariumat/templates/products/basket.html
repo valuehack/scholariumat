@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block title %}Warenkorb{% endblock %}
+
+{% block content %}
+<div class="ui text container">
+  <h1 class="ui header">Warenkorb</h1>
+  <div class="ui list">
+    {% for purchase in object_list %}
+      <form id="{{ purchase.item.type.title }}_form" method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="requested_item" value="{{ item.pk }}"/>
+      </form>
+      <div class="item">
+        {{ purchase.amount }} x {{ purchase.item.product }}, {{ purchase.item }}
+        {% if not purchase.available %}
+          Nicht mehr verfügbar
+          <div onclick='document.forms["{{ item.type.title }}_form"].submit(); return false;' class="ui button">
+            Anfragen
+          </div>
+          <div class="ui button">
+            Entfernen
+          </div>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+  <form method="POST">
+    {% csrf_token %}
+    <input type="hidden" name="buy">
+    <input type="submit" class="ui button" value="Kaufen">
+  </form>
+</div>
+{% endblock content %}

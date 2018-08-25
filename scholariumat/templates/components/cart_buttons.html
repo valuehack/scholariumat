@@ -40,25 +40,4 @@
       </div>
     </div>
   </div>
-  <script>
-  var link = $(".price_request")
-  
-  link.click(function () {
-      $.ajax({
-        url: '{% url "users:profile" %}',
-        data: {
-          'item': link.id
-        },
-        dataType: 'json',
-        success: function (data) {
-          alert("A user with this username already exists.");
-          location.reload();
-        },
-        error: function (data) {
-        }
-      })
-    console.log(link.attr('id'));
-    alert('test');
-    });
-  </script>
 {% endif %}
