@@ -7,9 +7,13 @@
             <div class="ui divider"></div>
           {% endif %}
           <div class="row">
+            <form id="{{ item.type.title }}_form" method="POST">
+              {% csrf_token %}
+              <input type="hidden" name="requested_item" value="{{ item.pk }}"/>
+            </form>
             {% if item.available %}
               <div class="ui labeled button">
-                <div class="ui animated button">
+                <div onclick='document.forms["{{ item.type.title }}_form"].submit(); return false;' class="ui animated button">
                   <div class="visible content">
                     {{ item.type.title }}
                   </div>
@@ -23,10 +27,6 @@
                 </div>
               </div>
             {% else %}
-              <form id="{{ item.type.title }}_form" method="POST">
-                {% csrf_token %}
-                <input type="hidden" name="requested_item" value="{{ item.pk }}"/>
-              </form>
               <div class="ui labeled button">
                 <div class="ui disabled button">
                   {{ item.type.title }}

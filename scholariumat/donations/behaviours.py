@@ -35,11 +35,11 @@ class Payment(CommentAble):
 
     @property
     def return_url(self):
-        return 'https://scholarium.at{}'.format(reverse_lazy('donations:approve', kwargs={'slug': self.slug}))
+        return '{}{}'.format(settings.DEFAULT_DOMAIN, reverse_lazy('donations:approve', kwargs={'slug': self.slug}))
 
     @property
     def cancel_url(self):
-        return 'https://scholarium.at{}'.format(reverse_lazy('users:profile'))
+        return '{}{}'.format(settings.DEFAULT_DOMAIN, reverse_lazy('users:profile'))
 
     def init(self):
         """Sets approval url. Creates payment if necessary."""

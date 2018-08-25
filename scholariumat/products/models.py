@@ -2,6 +2,9 @@ import logging
 
 from django.db import models
 from django.db.models import Q
+from django.core.mail import mail_managers
+from django.urls import reverse_lazy
+from django.conf import settings
 
 from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel, TitleDescriptionModel
 
@@ -70,17 +73,32 @@ class Item(TimeStampedModel):
     type = models.ForeignKey(ItemType, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     price = models.SmallIntegerField(null=True, blank=True)
-    amount = models.IntegerField(null=True, blank=True)  # TODO: Only when limited?
+    amount = models.IntegerField(null=True, blank=True)
     file = models.FileField(blank=True)
-    requested = models.BooleanField(default=False)
+    requests = models.ManyToManyField(Profile, related_name='item_requests')
 
     @property
     def available(self):
         return self.price and (self.amount or not self.type.limited)
 
-    def request(self):
-        self.requested = True
-        self.save()
+    def request(self, profile):
+        self.requests.add(profile)
+        edit_url = reverse_lazy('admin:products_item_change', args=[self.pk])
+        mail_managers(
+            f'Anfrage: {self.product}',
+            f'Nutzer {profile} hat {self.product} im Format {self.type} angefragt. '
+            f'Das Item kann unter folgender URL editiert werden: {settings.DEFAULT_DOMAIN}{edit_url}'
+        )
+
+    def inform_users(self):
+        pass
+        # TODO: Send email to users in requests
+
+    def add_to_cart(self, profile):
+        purchase, created = Purchase.objects.get_or_create(profile=profile, item=self, executed=False)
+        if not created:
+            purchase.amount += 1
+            purchase.save()
 
     def sell(self, amount):
         """Given an amount, tries to lower local amount. Ignored if not limited."""
@@ -114,7 +132,7 @@ class Purchase(TimeStampedModel, CommentAble):
 
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
-    amount = models.SmallIntegerField(null=True, blank=True, default=1)
+    amount = models.SmallIntegerField(default=1)
     shipped = models.DateField(blank=True, null=True)
     executed = models.BooleanField(default=False)
 

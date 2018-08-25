@@ -60,7 +60,7 @@ class PaymentView(UpdateOrCreateRequiredMixin, MessageMixin, FormView):
             logger.debug(f'Created and initiated donation {donation}')
             return HttpResponseRedirect(donation.approval_url)
         else:
-            self.messages.error(settings.MESSAGES_UNEXPECTED_ERROR)
+            self.messages.error(settings.MESSAGE_UNEXPECTED_ERROR)
             return self.form_invalid(form)
 
 
@@ -95,5 +95,5 @@ class ApprovalView(MessageMixin, FormView):
             self.messages.info('Vielen Dank für Ihre Unterstützung')
             return HttpResponseRedirect(self.get_success_url())
         else:
-            self.messages.error(settings.MESSAGES_UNEXPECTED_ERROR)
+            self.messages.error(settings.MESSAGE_UNEXPECTED_ERROR)
             return HttpResponseRedirect(reverse('donations:levels'))

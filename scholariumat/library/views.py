@@ -8,7 +8,7 @@ from pyzotero import zotero
 from .models import ZotItem, Collection
 from users.views import DonationRequiredMixin
 from framework.views import CompatibleOrderableListMixin
-from products.views import ItemRequestMixin
+from products.views import PurchaseMixin
 
 
 class ZotItemListView(LoginRequiredMixin, DonationRequiredMixin, CompatibleOrderableListMixin, ListView):
@@ -46,8 +46,7 @@ class ZotItemListView(LoginRequiredMixin, DonationRequiredMixin, CompatibleOrder
         return self.get_ordered_queryset(queryset=items)
 
 
-class ZotItemDetailView(LoginRequiredMixin, DonationRequiredMixin, ItemRequestMixin, DetailView):
-    # TODO: ItemRequestMixin broken
+class ZotItemDetailView(LoginRequiredMixin, DonationRequiredMixin, PurchaseMixin, DetailView):
     model = ZotItem
     lookup_field = 'slug'
     donation_amount = settings.LIBRARY_DONATION_AMOUNT

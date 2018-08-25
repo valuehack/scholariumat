@@ -11,6 +11,7 @@ env = environ.Env()
 
 # GENERAL
 # ------------------------------------------------------------------------------
+DEFAULT_DOMAIN = 'https://scholarium.at'
 # https://docs.djangoproject.com/en/dev/ref/settings/#debug
 DEBUG = env.bool('DJANGO_DEBUG', False)
 # Local time zone. Choices are
@@ -296,8 +297,13 @@ ZOTERO_OWNER_TAGS = [
 ]
 
 # Error Messages
-MESSAGES_UNEXPECTED_ERROR = "Ein unerwarteter Fehler ist aufgetreten. "\
+MESSAGE_UNEXPECTED_ERROR = "Ein unerwarteter Fehler ist aufgetreten. "\
                             "Bitte versuchen Sie es erneut oder wenden Sie sich an info@scholarium.at"
+
+# User Messages
+MESSAGE_REQUEST_SEND = "Vielen Dank für Ihr Interesse. Wir werden Sie benachrichtigen, \
+    wenn das Produkt verfügbar ist."
+MESSAGE_CART_ADDED = "Warenkorb aktualisiert."
 
 # Products
 SHIPPING = 5
