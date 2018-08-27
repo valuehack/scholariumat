@@ -1,3 +1,70 @@
 /*******************************
          Site Overrides
 *******************************/
+
+@font-face {
+	font-family: 'Garamond';
+	src: url('assets/fonts/garamond_regular.otf') format('opentype');
+	}
+
+@font-face {
+	font-family: 'Garamond';
+	src: url('assets/fonts/garamond_italic.otf') format('opentype');
+	font-style: italic;
+}
+
+@font-face {
+	font-family: 'Garamond';
+	src: url('assets/fonts/garamond_bold.otf') format('opentype');
+	font-weight: bold;
+}
+
+@font-face {
+	font-family: 'Garamond';
+	src: url('assets/fonts/garamond_semibold.otf') format('opentype');
+	font-weight: 500;
+}
+
+@font-face {
+	font-family: 'Garamond';
+	src: url('assets/fonts/garamond_italic.otf') format('opentype');
+	font-style: italic;
+}
+
+@font-face {
+	font-family: 'Garamond';
+	src: url('assets/fonts/garamond_bold-italic.otf') format('opentype');
+	font-weight: bold;
+	font-style: italic;
+}
+
+@font-face {
+	font-family: 'Garamond';
+	src: url('assets/fonts/garamond_semibold-italic.otf') format('opentype');
+	font-weight: 500;
+	font-style: italic;
+}
+
+@font-face {
+	font-family: 'Futura Book';
+	src: url('assets/fonts/futura_regular.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'Futura Book';
+	src: url('assets/fonts/futura_italic.ttf') format('truetype');
+	font-style: italic;
+}
+
+@font-face {
+	font-family: 'Futura Book';
+	src: url('assets/fonts/futura_bold.ttf') format('truetype');
+	font-weight: bold;
+}
+
+@font-face {
+	font-family: 'Futura Book';
+	src: url('assets/fonts/futura_bold-italic.ttf') format('truetype');
+	font-style: italic;
+	font-weight: bold;
+}

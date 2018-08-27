@@ -1,3 +1,7 @@
 /*******************************
      User Global Variables
 *******************************/
+
+@fontName : 'Garamond';
+@fontSize : 16px;
+@headerFont : "Futura Book", Helvetica, Arial, serif;;

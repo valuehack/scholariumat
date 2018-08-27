@@ -18,9 +18,8 @@ class CommentAble(models.Model):
 
 
 class PublishAble(models.Model):
-    """
-    Makes a model publishable by manipulating publish_date.
-    """
+    """Makes a model publishable by manipulating publish_date."""
+
     publish_date = models.DateField(null=True, blank=True)
     priority = models.PositiveSmallIntegerField(default=0)
 
@@ -30,9 +29,8 @@ class PublishAble(models.Model):
         logger.info('{} published.'.format(self.title))
 
     def buffer_publish(self):
-        """
-        Publishes the object to socail media via Buffer.
-        """
+        """Publishes the object to socail media via Buffer."""
+
         link = 'https://%s%s' % (Site.objects.get(pk=settings.SITE_ID).domain, self.get_absolute_url())
         data = [
             ('access_token', settings.BUFFER_ACCESS_TOKEN),
@@ -46,9 +44,7 @@ class PublishAble(models.Model):
 
     @classmethod
     def cron_publish(cls):
-        """
-        Publishes an instance after RELEASE_PERIOD, sorted by priority.
-        """
+        """Publishes an instance after RELEASE_PERIOD, sorted by priority."""
 
         published = cls.objects.filter(publish_date__isnull=False)
         time_passed = (date.today() - published[0].publish_date).days if published else None

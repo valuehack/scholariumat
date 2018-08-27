@@ -65,7 +65,7 @@
     {% for zotitem in object_list %}
     <tr>
       <td>
-        <a href={% url 'library:zot_item' zotitem.slug %}>{{ zotitem.title }}</a>
+        <a href={% url 'library:zotitem' zotitem.slug %}>{{ zotitem.title }}</a>
       </td>
       <td>
         {% for author in zotitem.authors.all %}

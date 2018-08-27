@@ -75,7 +75,7 @@ class Item(TimeStampedModel):
     price = models.SmallIntegerField(null=True, blank=True)
     amount = models.IntegerField(null=True, blank=True)
     file = models.FileField(blank=True)
-    requests = models.ManyToManyField(Profile, related_name='item_requests')
+    requests = models.ManyToManyField(Profile, related_name='item_requests', blank=True)
 
     @property
     def available(self):
@@ -143,7 +143,7 @@ class Purchase(TimeStampedModel, CommentAble):
     @property
     def available(self):
         """Check if required amount is available"""
-        return self.item.amount >= self.amount
+        return self.item.available and (not self.item.type.limited or self.item.amount >= self.amount)
 
     def execute(self):
         if self.profile.spend(self.total):

@@ -41,7 +41,9 @@ class BasketView(LoginRequiredMixin, PurchaseMixin, MessageMixin, ListView):
                 return HttpResponseRedirect(reverse('framework:home'))
             else:
                 # TODO: Link to donations
-                self.messages.error("Ihr Guthaben reicht nicht aus. <a href='#'>Erneuern</a> Sie Ihre Unterstützung, um Ihr Guthaben aufzufüllen.")
+                self.messages.error(
+                    f"Ihr Guthaben reicht nicht aus. <a href='{reverse('donations:levels')}'>Erneuern</a> "
+                    f"Sie Ihre Unterstützung, um Ihr Guthaben aufzufüllen.")
                 return self.get(request, *args, **kwargs)
         else:
             return super().post(request, *args, **kwargs)

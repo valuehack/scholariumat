@@ -2,45 +2,14 @@
 
   {% if request.user.is_authenticated %}  
     <div class="ui right floated compact menu">
-      <div class="ui floating top left pointing dropdown icon item">
+      <a class="ui icon item" id="basket">
         <i class="shop icon"></i>
         {% if request.user.profile.cart|length %}
           <div class="ui red small floating circular label">
             {{ request.user.profile.cart|length }}
           </div>
         {% endif %}
-        <div class="menu items" style="min-width: 10em;">
-          <h2 class="header">Warenkorb</h2>
-          {% for purchase in request.user.profile.cart %}
-          <div class="ui item">
-            <div class="content">
-              
-                <div class="header">{{ purchase.item.title }}</div>
-                <div class="meta">
-                  <span class="right floated">{{ purchase.amount }}</span>
-                  <span>{{ purchase.total }}</span>
-                </div>
-                <div class="description">
-                  <p>{{ purchase.item.description }}</p>
-                </div>
-              
-            </div>
-          </div>
-          {% endfor %}
-          {% if request.user.profile.cart_shipping %}
-            <div class="divider"></div>
-            Versand: {{ request.user.profile.cart_shipping }}
-          {% endif %}
-          <div class="divider"></div>
-            {{ request.user.profile.cart_total }}
-          <div class="divider"></div>
-          <form id="buy_form" action="{% url 'products:basket' %}" method="POST">
-            {% csrf_token %}
-            <input type="hidden" name="buy">
-          </form>
-          <a onclick='document.forms["buy_form"].submit(); return false;' class="item">Kaufen</a>
-        </div>
-      </div>
+      </a>
       <div class="item">
         <span class="text">
           {{ request.user.profile.balance }}
@@ -51,6 +20,76 @@
             <i class="fitted plus link icon"></i>
           </div>
         </a>
+      </div>
+    </div>
+    
+    <div class="ui popup" id="basket_popup">
+      <h1 class="header"><a href="{% url 'products:basket' %}">Warenkorb</a></h1>
+      
+
+      
+          <div class="content">
+            <table class="ui very basic collapsing single line table">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Anzahl</th>
+                  <th>Produkt</th>
+                  <th class="right aligned">Preis</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for purchase in request.user.profile.cart %}
+                  <tr>
+                    <td></td>
+                    <td>{{ purchase.amount }}</td>
+                    <td>
+                      {% if not purchase.available %}
+                        <i id="{{ purchase.pk }}_popup" class="ui red link exclamation icon" data-content="Das Produkt ist in der gewünschten Menge nicht verfügbar"></i>
+                        <script>
+                          $('#{{ purchase.pk }}_popup')
+                            .popup({
+                              on: 'click'
+                            })
+                          ;
+                        </script>
+                      {% endif %}
+                      <a href="{{ purchase.item.product.type.get_absolute_url }}">{{ purchase.item.product|truncatechars:45 }}</a></td>
+                    <td class="right aligned">
+                      {{ purchase.total }}
+                    </td>
+                    <td></td>
+                  </tr>
+                {% endfor %}
+                {% if request.user.profile.cart_shipping %}
+                <tr>
+                  <td></td>
+                  <td></td>
+                  <td>Versand</td>
+                  <td class="right aligned">{{ request.user.profile.cart_shipping }}</td>
+                    <td></td>
+                </tr>
+                {% endif %}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <th></th>
+                  <th></th>
+                  <th></th>
+                  <th class="right aligned"><b>{{ request.user.profile.cart_total }}</b></th>
+                  <th></th>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+      <div class="actions">
+        <form id="buy_form" action="{% url 'products:basket' %}" method="POST">
+          {% csrf_token %}
+          <input type="hidden" name="buy">
+        </form>
+        <button onclick='document.forms["buy_form"].submit(); return false;' class="ui {% if not request.user.profile.cart_available %}disabled {% endif %}button">Kaufen</button>
       </div>
     </div>
 
@@ -171,9 +210,14 @@
   {% endif %}
 </div>
 <script>
-  $('.ui.dropdown').dropdown({action: 'nothing'});
+  // $('.ui.dropdown').dropdown({action: 'nothing'});
   $('#profile')
     .popup({
+      on: 'click'
+    });
+  $('#basket')
+    .popup({
+      popup: '#basket_popup',
       on: 'click'
     });
 </script>
