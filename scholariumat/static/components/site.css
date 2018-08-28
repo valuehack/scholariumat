@@ -13,7 +13,7 @@
              Page
 *******************************/
 
-@import url('https://fonts.googleapis.com/css?family=Garamond:400,700,400italic,700italic&subset=latin');
+@import url('https://fonts.googleapis.com/css?family=EB+Garamond:500|Raleway:300,400:400,700,400italic,700italic&subset=latin');
 html,
 body {
   height: 100%;
@@ -27,8 +27,8 @@ body {
   overflow-x: hidden;
   min-width: 320px;
   background: #FFFFFF;
-  font-family: 'Garamond', 'Helvetica Neue', Arial, Helvetica, sans-serif;
-  font-size: 16px;
+  font-family: 'EB Garamond', serif;
+  font-size: 14px;
   line-height: 1.4285em;
   color: rgba(0, 0, 0, 0.87);
   font-smoothing: antialiased;
@@ -44,27 +44,27 @@ h2,
 h3,
 h4,
 h5 {
-  font-family: "Futura Book", Helvetica, Arial, serif;
+  font-family: 'Raleway', sans-serif;
   line-height: 1.28571429em;
   margin: calc(2rem -  0.14285714em ) 0em 1rem;
-  font-weight: bold;
+  font-weight: 300;
   padding: 0em;
 }
 h1 {
   min-height: 1rem;
-  font-size: 2rem;
+  font-size: 3.21428571rem;
 }
 h2 {
-  font-size: 1.71428571rem;
+  font-size: 2rem;
 }
 h3 {
-  font-size: 1.28571429rem;
+  font-size: 1.57142857rem;
 }
 h4 {
-  font-size: 1.07142857rem;
+  font-size: 1.35714286rem;
 }
 h5 {
-  font-size: 1rem;
+  font-size: 1.28571429rem;
 }
 h1:first-child,
 h2:first-child,

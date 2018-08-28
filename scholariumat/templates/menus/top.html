@@ -5,7 +5,7 @@
       <a class="ui icon item" id="basket">
         <i class="shop icon"></i>
         {% if request.user.profile.cart|length %}
-          <div class="ui red small floating circular label">
+          <div class="ui blue small floating circular label">
             {{ request.user.profile.cart|length }}
           </div>
         {% endif %}
@@ -24,34 +24,32 @@
     </div>
     
     <div class="ui popup" id="basket_popup">
-      <h1 class="header"><a href="{% url 'products:basket' %}">Warenkorb</a></h1>
       
 
       
           <div class="content">
-            <table class="ui very basic collapsing single line table">
-              <thead>
+            <table class="ui very basic collapsing single line table" style="font-size: 17px;">
+              <!--thead>
                 <tr>
-                  <th></th>
-                  <th>Anzahl</th>
-                  <th>Produkt</th>
-                  <th class="right aligned">Preis</th>
+                  <th class="center aligned"><i class="ui hashtag icon"></i></th>
+                  <th><i class="ui tag icon"></i></th>
+                  <th class="right aligned"><i class="ui bitcoin icon"></i></th>
                   <th></th>
                 </tr>
-              </thead>
+              </thead-->
               <tbody>
                 {% for purchase in request.user.profile.cart %}
                   <tr>
                     <td></td>
-                    <td>{{ purchase.amount }}</td>
+                    <td class="center aligned">
+                        {{ purchase.amount }}
+                    </td>
                     <td>
                       {% if not purchase.available %}
                         <i id="{{ purchase.pk }}_popup" class="ui red link exclamation icon" data-content="Das Produkt ist in der gewünschten Menge nicht verfügbar"></i>
                         <script>
                           $('#{{ purchase.pk }}_popup')
-                            .popup({
-                              on: 'click'
-                            })
+                            .popup()
                           ;
                         </script>
                       {% endif %}
@@ -59,6 +57,7 @@
                     <td class="right aligned">
                       {{ purchase.total }}
                     </td>
+                    <td><i class="ui link trash icon"></i></td>
                     <td></td>
                   </tr>
                 {% endfor %}
@@ -68,7 +67,8 @@
                   <td></td>
                   <td>Versand</td>
                   <td class="right aligned">{{ request.user.profile.cart_shipping }}</td>
-                    <td></td>
+                  <td></td>
+                  <td></td>
                 </tr>
                 {% endif %}
               </tbody>
@@ -79,18 +79,19 @@
                   <th></th>
                   <th class="right aligned"><b>{{ request.user.profile.cart_total }}</b></th>
                   <th></th>
+                  <th></th>
                 </tr>
               </tfoot>
             </table>
           </div>
 
-      <div class="actions">
-        <form id="buy_form" action="{% url 'products:basket' %}" method="POST">
-          {% csrf_token %}
-          <input type="hidden" name="buy">
-        </form>
-        <button onclick='document.forms["buy_form"].submit(); return false;' class="ui {% if not request.user.profile.cart_available %}disabled {% endif %}button">Kaufen</button>
-      </div>
+      <div class="ui divider"></div>
+      <form id="buy_form" action="{% url 'products:basket' %}" method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="buy">
+      </form>
+      <a href="{% url 'products:basket' %}" class="ui button">Details</a>
+      <button onclick='document.forms["buy_form"].submit(); return false;' class="ui {% if not request.user.profile.cart_available %}disabled {% endif %} blue right floated button">Kaufen</button>
     </div>
 
     <div class="ui right floated compact menu" id="profile">
@@ -103,7 +104,7 @@
       <div>
       
       {% if request.user.profile.level %}
-        <a class="ui yellow right ribbon label" href="{% url 'donations:detail' %}">
+        <a class="ui yellow large right ribbon label" href="{% url 'donations:detail' %}">
           <i class="university icon"></i>
           {{ request.user.profile.level.title }}
         </a>

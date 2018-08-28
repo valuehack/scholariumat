@@ -1,12 +1,13 @@
 {% if messages %}
+  <div class="ui text container">
   {% for message in messages %}
-    <div class="ui {% if message.tags %}{{ message.tags }}{% endif %} floating message transition">
-      <div class="header">{{ message|safe }}</div>
-      <i class="close icon"></i>
+    <div class="ui floating medium message transition">
+      {{ message|safe }}
     </div>
   {% endfor %}
+</div>
   <script>
-    $('.message .close')
+    $('.message')
       .on('click', function() {
         $(this)
           .closest('.message')
