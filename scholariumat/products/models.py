@@ -96,7 +96,7 @@ class Item(TimeStampedModel):
 
     def add_to_cart(self, profile):
         purchase, created = Purchase.objects.get_or_create(profile=profile, item=self, executed=False)
-        if not created:
+        if not created and self.type.limited:
             purchase.amount += 1
             purchase.save()
 
@@ -116,8 +116,9 @@ class Item(TimeStampedModel):
 
     def refill(self, amount):
         """Refills amount."""
-        self.amount += amount
-        self.save()
+        if self.type.limited:
+            self.amount += amount
+            self.save()
 
     def __str__(self):
         return '{} für {} Punkte'.format(self.type.__str__(), self.price)
@@ -138,7 +139,7 @@ class Purchase(TimeStampedModel, CommentAble):
 
     @property
     def total(self):
-        return self.item.price * self.amount
+        return self.item.price * self.amount if self.item.type.limited else self.item.price
 
     @property
     def available(self):

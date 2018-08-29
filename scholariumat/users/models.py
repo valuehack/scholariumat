@@ -8,7 +8,10 @@ from authtools.models import AbstractEmailUser
 from django_countries.fields import CountryField
 from django_extensions.db.models import TimeStampedModel
 
-from .behaviours import CartMixin, DonationMixin, LendingMixin, BalanceMixin
+from library.behaviours import LendingMixin
+from products.behaviours import CartMixin, BalanceMixin
+from donations.behaviours import DonationMixin
+
 
 logger = logging.getLogger(__name__)
 

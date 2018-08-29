@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.conf import settings
 from django.urls import reverse
 from django.http import HttpResponseRedirect
+from django.core.exceptions import ObjectDoesNotExist
 
 from vanilla import ListView
 from braces.views import LoginRequiredMixin, MessageMixin
@@ -40,10 +41,17 @@ class BasketView(LoginRequiredMixin, PurchaseMixin, MessageMixin, ListView):
                 self.messages.success('Vielen Dank für Ihre Bestellung.')
                 return HttpResponseRedirect(reverse('framework:home'))
             else:
-                # TODO: Link to donations
                 self.messages.error(
                     f"Ihr Guthaben reicht nicht aus. <a href='{reverse('donations:levels')}'>Erneuern</a> "
                     f"Sie Ihre Unterstützung, um Ihr Guthaben aufzufüllen.")
                 return self.get(request, *args, **kwargs)
-        else:
-            return super().post(request, *args, **kwargs)
+
+        if 'remove' in request.POST:
+            try:
+                purchase = request.user.profile.cart.get(pk=request.POST['remove'])
+                purchase.delete()
+            except ObjectDoesNotExist:
+                pass
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', reverse('products:basket')))
+
+        return super().post(request, *args, **kwargs)
