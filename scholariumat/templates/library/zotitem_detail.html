@@ -4,10 +4,12 @@
 
 {% block content %}
   <div class="ui text container">
-    <h1 class="ui header">{{ api_object.data.title }}</h1>
-    {% for creator in api_object.data.creators %}
-      <div class="ui sub header">{{ creator.firstName }} {{ creator.lastName }}</div>
-    {% endfor %}
+    <h2 class="ui header">{{ api_object.data.title }}</h2>
+      <div class="ui sub header">
+        {% for creator in api_object.data.creators %}
+          {{ creator.firstName }} {{ creator.lastName }}<br>
+        {% endfor %}
+      </div>
     <div class="ui list">
       {% if api_object.data.ISBN %}
         <div class="item"><i class="book icon"></i><div class="content">ISBN: {{ api_object.data.ISBN }}</div></div>
@@ -22,7 +24,7 @@
         <div class="item"><i class="hashtag icon"></i><div class="content"> Seitenzahl: {{ api_object.data.numPages }}</div></div>
       {% endif %}
       {% if api_object.data.url %}
-        <div class="item"><i class="linkify icon"></i><div class="content"><a href="{{ api_object.data.url }}">link</a></div></div>
+        <div class="item"><i class="linkify icon"></i><div class="content"><a href="{{ api_object.data.url }}">Weblink</a></div></div>
       {% endif %}
     </div>
     {% if api_object.data.abstractNote %}<p>{{ api_object.data.abstractNote }}</p>{% endif %}

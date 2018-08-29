@@ -11,8 +11,8 @@
       <input class="action input" value="{{ request.user.email }}" readonly="" type="text"></div><br>
   </div>
   <div class="ui fluid basic buttons">
-    <a class="ui basic red button" href="{% url 'users:update_email' %}">Emailadresse ändern</a><br>
-    <a class="ui basic red button" href="{% url 'password_change' %}">Passwort ändern</a>
+    <a class="ui basic blue button" href="{% url 'users:update_email' %}">Emailadresse ändern</a><br>
+    <a class="ui basic blue button" href="{% url 'password_change' %}">Passwort ändern</a>
   </div>
 
   <div class="ui hidden section divider"></div>
@@ -34,7 +34,7 @@
       </div>
       <div class="ui hidden divider"></div>
       <div class="ui hidden divider"></div>
-      <button class="ui basic red eight wide field button" type="submit">Speichern</button>
+      <button class="ui basic blue eight wide field button" type="submit">Speichern</button>
   </form>
 </div>
 
