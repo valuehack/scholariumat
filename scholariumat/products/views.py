@@ -55,3 +55,10 @@ class BasketView(LoginRequiredMixin, PurchaseMixin, MessageMixin, ListView):
             return HttpResponseRedirect(request.META.get('HTTP_REFERER', reverse('products:basket')))
 
         return super().post(request, *args, **kwargs)
+
+
+class OrderView(LoginRequiredMixin, ListView):
+    template_name = 'products/orders.html'
+
+    def get_queryset(self):
+        return self.request.user.profile.orders

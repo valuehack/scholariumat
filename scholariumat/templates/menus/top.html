@@ -126,16 +126,14 @@
       <div class="ui hidden divider"></div>
   
       <div class="ui vertical fluid menu">
-        <div class="item" href="{% url 'users:profile' %}">Profil bearbeiten</div>
-        <div class="item" href="{% url 'users:profile' %}">Email-Adresse ändern</div>
-        <div class="item" href="{% url 'users:profile' %}">Passwort ändern</div>
-        <div class="item" href="{% url 'users:profile' %}">Unterstützungen</div>
-        <div class="item" href="{% url 'users:profile' %}">Ausloggen</div>
+        <a class="item" href="{% url 'users:profile' %}">Profil bearbeiten</a>
+        <a class="item" href="{% url 'users:update_email' %}">Email-Adresse ändern</a>
+        <a class="item" href="{% url 'password_change' %}">Passwort ändern</a>
       </div>
 
       <div class="ui menu">
-        <a class="item" href="{% url 'donations:levels' %}">Unterstützen</a>
-        <a class="item" href="{% url 'users:profile' %}">Bestellungen</a>
+        <a class="item" href="{% url 'donations:detail' %}">Unterstützungen</a>
+        <a class="item" href="{% url 'products:orders' %}">Bestellungen</a>
         <div class="divider"></div>
         <a class="item" href="{% url 'logout' %}">Ausloggen</a>
       </div>

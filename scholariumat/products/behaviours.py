@@ -67,5 +67,9 @@ class CartMixin(models.Model):
                 purchase.execute()
             return True
 
+    @property
+    def orders(self):
+        return self.purchase_set.filter(executed=True, item__type__limited=True)
+
     class Meta:
         abstract = True
