@@ -102,7 +102,7 @@
       <div>
       
       {% if request.user.profile.level %}
-        <a class="ui yellow large right ribbon label" href="{% url 'donations:detail' %}">
+        <a class="ui blue large right ribbon label" href="{% url 'donations:detail' %}">
           <i class="university icon"></i>
           {{ request.user.profile.level.title }}
         </a>
@@ -122,7 +122,6 @@
           </h3>
         {% endif %}
       </div>
-      <!-- </span> -->
       <div class="ui hidden divider"></div>
   
       <div class="ui vertical fluid menu">
@@ -133,8 +132,7 @@
 
       <div class="ui menu">
         <a class="item" href="{% url 'donations:detail' %}">Unterstützungen</a>
-        <a class="item" href="{% url 'products:orders' %}">Bestellungen</a>
-        <div class="divider"></div>
+        <a class="item" href="{% url 'products:purchases' %}">Käufe</a>
         <a class="item" href="{% url 'logout' %}">Ausloggen</a>
       </div>
     </div>

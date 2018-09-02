@@ -22,7 +22,7 @@ class Product(models.Model):
     def type(self):
         """Get product object"""
         for product_rel in self._meta.get_fields():
-            if product_rel.one_to_one:
+            if product_rel.one_to_one and getattr(self, product_rel.name, False):
                 return getattr(self, product_rel.name)
 
     @property
@@ -58,6 +58,8 @@ class ItemType(TitleDescriptionModel, TimeStampedModel):
     slug = models.SlugField()
     limited = models.BooleanField(default=True)
     shipping = models.BooleanField(default=False)
+    requestable = models.BooleanField(default=False)
+    unavailability_notice = models.CharField(max_length=20, default="Nicht verfügbar")
 
     def __str__(self):
         return self.title
@@ -82,13 +84,13 @@ class Item(TimeStampedModel):
         return self.price and (self.amount or not self.type.limited)
 
     def request(self, profile):
-        self.requests.add(profile)
-        edit_url = reverse_lazy('admin:products_item_change', args=[self.pk])
-        mail_managers(
-            f'Anfrage: {self.product}',
-            f'Nutzer {profile} hat {self.product} im Format {self.type} angefragt. '
-            f'Das Item kann unter folgender URL editiert werden: {settings.DEFAULT_DOMAIN}{edit_url}'
-        )
+        if self.type.requestable:
+            self.requests.add(profile)
+            edit_url = reverse_lazy('admin:products_item_change', args=[self.pk])
+            mail_managers(
+                f'Anfrage: {self.product}',
+                f'Nutzer {profile} hat {self.product} im Format {self.type} angefragt. '
+                f'Das Item kann unter folgender URL editiert werden: {settings.DEFAULT_DOMAIN}{edit_url}')
 
     def inform_users(self):
         pass

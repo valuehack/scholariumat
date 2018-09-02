@@ -31,8 +31,11 @@
                 <div class="ui disabled button">
                   {{ item.type.title }}
                 </div>
-                <a onclick='document.forms["{{ item.type.title }}_form"].submit(); return false;' class="ui yellow left pointing label">
-                  Preis anfragen</a>
+                {% if item.type.requestable %}
+                  <a onclick='document.forms["{{ item.type.title }}_form"].submit(); return false;' class="ui yellow left pointing label">Anfragen</a>
+                {% else %}
+                  <div class="ui grey left pointing label">{{ item.type.unavailability_notice }}</div>
+                {% endif %}
               </div>
             {% endif %}
           </div>

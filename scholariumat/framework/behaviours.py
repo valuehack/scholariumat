@@ -29,7 +29,7 @@ class PublishAble(models.Model):
         logger.info('{} published.'.format(self.title))
 
     def buffer_publish(self):
-        """Publishes the object to socail media via Buffer."""
+        """Publishes the object to social media via Buffer."""
 
         link = 'https://%s%s' % (Site.objects.get(pk=settings.SITE_ID).domain, self.get_absolute_url())
         data = [

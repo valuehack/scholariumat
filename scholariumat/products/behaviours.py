@@ -37,7 +37,7 @@ class CartMixin(models.Model):
 
     @property
     def cart(self):
-        return self.purchase_set.filter(executed=False)
+        return self.purchase_set.filter(executed=False).order_by('-created')
 
     @property
     def cart_shipping(self):
@@ -68,8 +68,16 @@ class CartMixin(models.Model):
             return True
 
     @property
+    def purchases(self):
+        return self.purchase_set.filter(executed=True).order_by('-modified')
+
+    @property
     def orders(self):
-        return self.purchase_set.filter(executed=True, item__type__limited=True)
+        return self.purchases.filter(item__type__limited=True)
+
+    @property
+    def events_booked(self):
+        return self.purchases.filter(item__type__slug__in=['livestream', 'teilnahme'])
 
     class Meta:
         abstract = True
