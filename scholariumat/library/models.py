@@ -9,40 +9,30 @@ from django.conf import settings
 
 from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel
 
-from products.models import ProductBase, Purchase, ItemType, Item
+from products.models import ProductBase, Purchase, ItemType
 from framework.behaviours import CommentAble, PermalinkAble
+from products.behaviours import AttachmentBase
 
 
 logger = logging.getLogger(__name__)
 
 
-class Attachment(models.Model):
-    item = models.OneToOneField(Item, on_delete=models.CASCADE)
+class ZotAttachment(AttachmentBase):
+
+    TYPE_CHOICES = [
+        ('file', 'Datei'),
+        ('note', 'Notiz')
+    ]
+
     key = models.CharField(max_length=100, blank=True)
+    type = models.CharField(max_length=5, choices=TYPE_CHOICES)
 
-
-class File(Attachment):
-    """
-    Proxy model to handle downloadable files from Zotero.
-    """
-    def download(self):
+    def get(self):
         zot = zotero.Zotero(settings.ZOTERO_USER_ID, settings.ZOTERO_LIBRARY_TYPE, settings.ZOTERO_API_KEY)
-        return zot.file(self.key)
-
-    class Meta:
-        proxy = True
-
-
-class Note(Attachment):
-    """
-    Proxy model to handle excerpts/notes from Zotero.
-    """
-    def get_html(self):
-        zot = zotero.Zotero(settings.ZOTERO_USER_ID, settings.ZOTERO_LIBRARY_TYPE, settings.ZOTERO_API_KEY)
-        return zot.item(self.key)['data']['note']
-
-    class Meta:
-        proxy = True
+        if self.type == 'note':
+            return zot.item(self.key)['data']['note']
+        elif self.type == 'file':
+            return zot.file(self.key)
 
 
 class Collection(TitleSlugDescriptionModel, PermalinkAble):
@@ -167,8 +157,9 @@ class Collection(TitleSlugDescriptionModel, PermalinkAble):
         child_keys = [child['data']['key'] for child in children]
         for zot_item in ZotItem.objects.filter(collection=self):
             # Only delete items with zotero attachment
-            for item in zot_item.product.item_set.filter(attachment__isnull=False):
-                if item.attachment.key not in child_keys:
+            # TODO: Avoid queryset -> list
+            for item in zot_item.product.item_set.filter(zotattachment__isnull=False):
+                if item.zotattachment.key not in child_keys:
                     item.delete()
 
         logger.info('Sync finished.')
@@ -270,7 +261,12 @@ class ZotItem(ProductBase):
         item = self.product.item_set.update_or_create(type=type, defaults=item_defaults)[0]
 
         if file_key:  # Create/Update attachment if necessary
-            Attachment.objects.update_or_create(item=item, defaults={'key': file_key})
+            defaults = {'key': file_key}
+            if format == 'note':
+                defaults['type'] = format
+            else:
+                defaults['type'] = 'file'
+            ZotAttachment.objects.update_or_create(item=item, defaults=defaults)
         return item
 
     def get_or_create_author(self, name):

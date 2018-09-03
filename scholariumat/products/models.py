@@ -10,6 +10,7 @@ from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionMo
 
 from users.models import Profile
 from framework.behaviours import CommentAble, PermalinkAble
+from .behaviours import AttachmentBase
 
 
 logger = logging.getLogger('__name__')
@@ -76,12 +77,22 @@ class Item(TimeStampedModel):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     price = models.SmallIntegerField(null=True, blank=True)
     amount = models.IntegerField(null=True, blank=True)
-    file = models.FileField(blank=True)
     requests = models.ManyToManyField(Profile, related_name='item_requests', blank=True)
 
     @property
     def available(self):
         return self.price and (self.amount or not self.type.limited)
+
+    @property
+    def attachment(self):
+        """Fetches related attachment"""
+        for item_rel in self._meta.get_fields():
+            if item_rel.one_to_one and issubclass(item_rel.related_model, AttachmentBase) and \
+               getattr(self, item_rel.name, False):
+                return getattr(self, item_rel.name)
+
+    def download(self):
+        return self.attachment.get() if self.attachment else None
 
     def request(self, profile):
         if self.type.requestable:

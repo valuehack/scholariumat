@@ -7,6 +7,18 @@ from django.conf import settings
 logger = logging.getLogger(__name__)
 
 
+class AttachmentBase(models.Model):
+    """Base class to create item attachment classes."""
+
+    item = models.OneToOneField('products.Item', on_delete=models.CASCADE)
+
+    def get(self):
+        pass
+
+    class Meta:
+        abstract = True
+
+
 class BalanceMixin(models.Model):
     """Profile mixin for storing and managing user balance"""
 

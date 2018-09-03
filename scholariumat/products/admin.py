@@ -37,6 +37,10 @@ class ItemAdmin(admin.ModelAdmin):
     list_display = ['type', 'price', 'product']
 
 
+class AttachmentAdmin(admin.ModelAdmin):
+    raw_id_fields = ['item']
+
+
 admin.site.register(Product, ProductAdmin)
 admin.site.register(ItemType)
 admin.site.register(Purchase, PurchaseAdmin)
