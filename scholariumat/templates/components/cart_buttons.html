@@ -31,7 +31,9 @@
                 <div class="ui disabled button">
                   {{ item.type.title }}
                 </div>
-                {% if item.type.requestable %}
+                {% if item in request.user.profile.items_bought %}
+                  <div class="ui grey left pointing label">Bereits erworben</div>
+                {% elif item.type.requestable %}
                   <a onclick='document.forms["{{ item.type.title }}_form"].submit(); return false;' class="ui yellow left pointing label">Anfragen</a>
                 {% else %}
                   <div class="ui grey left pointing label">{{ item.type.unavailability_notice }}</div>

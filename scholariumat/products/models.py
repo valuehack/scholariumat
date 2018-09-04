@@ -6,10 +6,9 @@ from django.core.mail import mail_managers
 from django.urls import reverse_lazy
 from django.conf import settings
 
-from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel, TitleDescriptionModel
+from django_extensions.db.models import TimeStampedModel, TitleDescriptionModel
 
-from users.models import Profile
-from framework.behaviours import CommentAble, PermalinkAble
+from framework.behaviours import CommentAble
 from .behaviours import AttachmentBase
 
 
@@ -33,26 +32,9 @@ class Product(models.Model):
     def __str__(self):
         return self.type.__str__()
 
-
-class ProductBase(TitleSlugDescriptionModel, TimeStampedModel, PermalinkAble):
-    """Abstract parent class for all product type classes."""
-
-    product = models.OneToOneField(Product, on_delete=models.CASCADE, null=True, editable=False)
-
-    def __str__(self):
-        return self.title
-
-    def save(self, *args, **kwargs):
-        if not self.product:
-            self.product = Product.objects.create()
-        super().save(*args, **kwargs)
-
-    def delete(self, *args, **kwargs):  # TODO: Gets ignored in bulk delete. pre_delete signal better?
-        self.product.delete()
-        super().delete(*args, **kwargs)
-
     class Meta:
-        abstract = True
+        verbose_name = 'Produkt'
+        verbose_name_plural = 'Produkte'
 
 
 class ItemType(TitleDescriptionModel, TimeStampedModel):
@@ -77,7 +59,7 @@ class Item(TimeStampedModel):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     price = models.SmallIntegerField(null=True, blank=True)
     amount = models.IntegerField(null=True, blank=True)
-    requests = models.ManyToManyField(Profile, related_name='item_requests', blank=True)
+    requests = models.ManyToManyField('users.Profile', related_name='item_requests', blank=True)
 
     @property
     def available(self):
@@ -108,10 +90,17 @@ class Item(TimeStampedModel):
         # TODO: Send email to users in requests
 
     def add_to_cart(self, profile):
-        purchase, created = Purchase.objects.get_or_create(profile=profile, item=self, executed=False)
-        if not created and self.type.limited:
-            purchase.amount += 1
-            purchase.save()
+        """Only add a limited product if no purchase of it exists."""
+        if not self.type.limited:
+            purchase, created = Purchase.objects.get_or_create(profile=profile, item=self, defaults={'executed': False})
+            if not created:
+                return False
+        else:
+            purchase, created = Purchase.objects.get_or_create(profile=profile, item=self, executed=False)
+            if not created:
+                purchase.amount += 1
+                purchase.save()
+        return True
 
     def sell(self, amount):
         """Given an amount, tries to lower local amount. Ignored if not limited."""
@@ -144,7 +133,7 @@ class Item(TimeStampedModel):
 class Purchase(TimeStampedModel, CommentAble):
     """Logs purchases."""
 
-    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    profile = models.ForeignKey('users.Profile', on_delete=models.CASCADE)
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     amount = models.SmallIntegerField(default=1)
     shipped = models.DateField(blank=True, null=True)

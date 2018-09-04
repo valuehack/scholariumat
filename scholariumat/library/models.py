@@ -9,9 +9,9 @@ from django.conf import settings
 
 from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel
 
-from products.models import ProductBase, Purchase, ItemType
+from products.models import Purchase, ItemType
+from products.behaviours import AttachmentBase, ProductBase
 from framework.behaviours import CommentAble, PermalinkAble
-from products.behaviours import AttachmentBase
 
 
 logger = logging.getLogger(__name__)

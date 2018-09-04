@@ -3,7 +3,7 @@ from datetime import date
 from django.contrib import messages
 from django.conf import settings
 from django.urls import reverse
-from django.http import HttpResponseRedirect, FileResponse
+from django.http import HttpResponseRedirect, FileResponse, HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 
 from vanilla import ListView, TemplateView
@@ -19,16 +19,16 @@ class PurchaseMixin():
         if 'requested_item' in request.POST:
             item = Item.objects.get(pk=request.POST['requested_item'])
             if item.available:
-                item.add_to_cart(request.user.profile)
-                messages.info(request, settings.MESSAGE_CART_ADDED)
+                if item.add_to_cart(request.user.profile):
+                    messages.info(request, settings.MESSAGE_CART_ADDED)
             else:
                 item.request(request.user.profile)
                 messages.info(request, settings.MESSAGE_REQUEST_SEND)
-                if hasattr(super(), 'post'):
-                    return super().post(request, *args, **kwargs)
-                else:
-                    # Might be used for Classview without post function
-                    return self.get(request, *args, **kwargs)
+            if hasattr(super(), 'post'):
+                return super().post(request, *args, **kwargs)
+            else:
+                # Might be used for Classview without post function
+                return self.get(request, *args, **kwargs)
                     
 
 class DownloadMixin():
@@ -45,7 +45,7 @@ class DownloadMixin():
             if item.attachment:
                 download = item.attachment.get()
                 if download:
-                    return FileResponse(download)
+                    return HttpResponse(download, content_type=f'application/{item.type.slug.lower()}')
                 else:
                     messages.error(request, settings.MESSAGE_UNEXPECTED_ERROR)
                     return response

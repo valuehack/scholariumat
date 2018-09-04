@@ -5,7 +5,8 @@ from django.urls import reverse
 
 from django_extensions.db.models import TimeStampedModel, TitleDescriptionModel
 
-from products.models import Item, ProductBase
+from products.models import Item
+from products.behaviours import ProductBase
 from framework.behaviours import PublishAble
 
 

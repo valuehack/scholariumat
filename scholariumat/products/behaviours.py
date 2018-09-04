@@ -2,9 +2,34 @@ import logging
 
 from django.db import models
 from django.conf import settings
+from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel
+
+from framework.behaviours import PermalinkAble
 
 
 logger = logging.getLogger(__name__)
+
+
+class ProductBase(TitleSlugDescriptionModel, TimeStampedModel, PermalinkAble):
+    """Abstract parent class for all product type classes."""
+
+    @staticmethod
+    def _default_profile():
+        from .models import Product
+        return Product.objects.create().pk
+
+    product = models.OneToOneField(
+        'products.Product', on_delete=models.CASCADE, default=_default_profile.__func__, editable=False)
+
+    def __str__(self):
+        return self.title
+
+    def delete(self, *args, **kwargs):  # TODO: Gets ignored in bulk delete. pre_delete signal better?
+        self.product.delete()
+        super().delete(*args, **kwargs)
+
+    class Meta:
+        abstract = True
 
 
 class AttachmentBase(models.Model):
@@ -82,6 +107,11 @@ class CartMixin(models.Model):
     @property
     def purchases(self):
         return self.purchase_set.filter(executed=True).order_by('-modified')
+
+    @property
+    def items_bought(self):
+        from .models import Item
+        return Item.objects.filter(purchase_set__in=self.purchases)
 
     @property
     def orders(self):
