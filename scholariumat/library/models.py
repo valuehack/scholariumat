@@ -1,6 +1,6 @@
 import logging
 
-from pyzotero import zotero
+from pyzotero import zotero, zotero_errors
 from dateutil.parser import parse
 
 from django.db import models
@@ -32,7 +32,11 @@ class ZotAttachment(AttachmentBase):
         if self.type == 'note':
             return zot.item(self.key)['data']['note']
         elif self.type == 'file':
-            return zot.file(self.key)
+            try:
+                return zot.file(self.key)
+            except zotero_errors.ResourceNotFound:
+                # TODO: Inform scholarium that file is missing
+                logger.exception(f'Zotero: File at {self.key} is missing!')
 
 
 class Collection(TitleSlugDescriptionModel, PermalinkAble):

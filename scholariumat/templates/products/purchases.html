@@ -78,7 +78,15 @@
               <td>
                 {{ purchase.item.product }}
               </td>
-              <td class="right aligned"><a class="ui small blue button">Download</a></td>
+              <td class="right aligned">
+                {% if purchase.item.attachment %}
+                  <form id="{{ purchase.pk }}_dlform" action="{% url 'products:purchases' %}" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="download" value="{{ purchase.item.pk }}">
+                  </form>
+                  <a onclick='document.forms["{{ purchase.pk }}_dlform"].submit(); return false;' class="ui small blue button">Download</a>
+                {% endif %}
+              </td>
             </tr>
           {% endfor %}
       </tbody>

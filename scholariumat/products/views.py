@@ -3,7 +3,7 @@ from datetime import date
 from django.contrib import messages
 from django.conf import settings
 from django.urls import reverse
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, FileResponse
 from django.core.exceptions import ObjectDoesNotExist
 
 from vanilla import ListView, TemplateView
@@ -14,7 +14,7 @@ from .models import Item, Purchase, ItemType
 
 class PurchaseMixin():
     """Adds functionality to requerst or add to basket"""
-
+    
     def post(self, request, *args, **kwargs):
         if 'requested_item' in request.POST:
             item = Item.objects.get(pk=request.POST['requested_item'])
@@ -24,11 +24,33 @@ class PurchaseMixin():
             else:
                 item.request(request.user.profile)
                 messages.info(request, settings.MESSAGE_REQUEST_SEND)
+                if hasattr(super(), 'post'):
+                    return super().post(request, *args, **kwargs)
+                else:
+                    # Might be used for Classview without post function
+                    return self.get(request, *args, **kwargs)
+                    
+
+class DownloadMixin():
+    """Adds functionality to requerst or add to basket"""
+
+    def post(self, request, *args, **kwargs):
         if hasattr(super(), 'post'):
-            return super().post(request, *args, **kwargs)
+            response = super().post(request, *args, **kwargs)
         else:
-            # Might be used for Classview without post function
-            return self.get(request, *args, **kwargs)
+            response = self.get(request, *args, **kwargs)
+
+        if 'download' in request.POST:
+            item = Item.objects.get(pk=request.POST['download'])
+            if item.attachment:
+                download = item.attachment.get()
+                if download:
+                    return FileResponse(download)
+                else:
+                    messages.error(request, settings.MESSAGE_UNEXPECTED_ERROR)
+                    return response
+
+        return response
 
 
 class BasketView(LoginRequiredMixin, PurchaseMixin, MessageMixin, ListView):
@@ -59,7 +81,7 @@ class BasketView(LoginRequiredMixin, PurchaseMixin, MessageMixin, ListView):
         return super().post(request, *args, **kwargs)
 
 
-class PurchaseView(LoginRequiredMixin, TemplateView):
+class PurchaseView(LoginRequiredMixin, DownloadMixin, TemplateView):
     template_name = 'products/purchases.html'
 
     def get_context_data(self, **kwargs):
