@@ -80,7 +80,7 @@
               </td>
               <td class="right aligned">
                 {% if purchase.item.attachment %}
-                  <form id="{{ purchase.pk }}_dlform" action="{% url 'products:purchases' %}" method="POST">
+                  <form target="_blank" id="{{ purchase.pk }}_dlform" action="{% url 'products:purchases' %}" method="POST">
                     {% csrf_token %}
                     <input type="hidden" name="download" value="{{ purchase.item.pk }}">
                   </form>

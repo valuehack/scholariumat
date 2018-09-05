@@ -1,20 +1,21 @@
 from datetime import date
+from slugify import slugify
 
 from django.contrib import messages
 from django.conf import settings
 from django.urls import reverse
-from django.http import HttpResponseRedirect, FileResponse, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 
 from vanilla import ListView, TemplateView
 from braces.views import LoginRequiredMixin, MessageMixin
 
-from .models import Item, Purchase, ItemType
+from .models import Item, Purchase
 
 
 class PurchaseMixin():
-    """Adds functionality to requerst or add to basket"""
-    
+    """Adds functionality to request or add to basket"""
+
     def post(self, request, *args, **kwargs):
         if 'requested_item' in request.POST:
             item = Item.objects.get(pk=request.POST['requested_item'])
@@ -24,15 +25,15 @@ class PurchaseMixin():
             else:
                 item.request(request.user.profile)
                 messages.info(request, settings.MESSAGE_REQUEST_SEND)
-            if hasattr(super(), 'post'):
-                return super().post(request, *args, **kwargs)
-            else:
-                # Might be used for Classview without post function
-                return self.get(request, *args, **kwargs)
-                    
+        if hasattr(super(), 'post'):
+            return super().post(request, *args, **kwargs)
+        else:
+            # Might be used for Classview without post function
+            return self.get(request, *args, **kwargs)
+
 
 class DownloadMixin():
-    """Adds functionality to requerst or add to basket"""
+    """Adds functionality to download an attachment"""
 
     def post(self, request, *args, **kwargs):
         if hasattr(super(), 'post'):
@@ -42,13 +43,17 @@ class DownloadMixin():
 
         if 'download' in request.POST:
             item = Item.objects.get(pk=request.POST['download'])
-            if item.attachment:
+            if item.is_accessible(request.user.profile):
                 download = item.attachment.get()
                 if download:
-                    return HttpResponse(download, content_type=f'application/{item.type.slug.lower()}')
+                    response = HttpResponse(download, content_type=f'application/{item.attachment.filetype}')
+                    response['Content-Disposition'] = f'attachment; \
+                        filename={slugify(item.product.type.title)}.{item.attachment.filetype}'
                 else:
                     messages.error(request, settings.MESSAGE_UNEXPECTED_ERROR)
-                    return response
+                return response
+            else:
+                return HttpResponse(status=405)
 
         return response
 

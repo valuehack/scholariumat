@@ -21,7 +21,7 @@ class EventType(TitleDescriptionModel):
 
 
 class Event(ProductBase, PublishAble):
-    """Events are not directly purchaseable products."""
+    """Events are not directly purchasable products."""
 
     date = models.DateField()
     end_date = models.DateField(null=True, blank=True)
@@ -39,7 +39,7 @@ class Event(ProductBase, PublishAble):
 
 
 class Livestream(TimeStampedModel):
-    """Every livestream is an purchaseable item."""
+    """Every livestream is an purchasable item."""
 
     item = models.OneToOneField(Item, on_delete=models.CASCADE)
     link = models.CharField(max_length=100)

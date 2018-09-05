@@ -42,6 +42,8 @@ class ItemType(TitleDescriptionModel, TimeStampedModel):
     limited = models.BooleanField(default=True)
     shipping = models.BooleanField(default=False)
     requestable = models.BooleanField(default=False)
+    purchasable = models.SmallIntegerField(default=0)
+    accessible = models.SmallIntegerField(null=True, blank=True)
     unavailability_notice = models.CharField(max_length=20, default="Nicht verfügbar")
 
     def __str__(self):
@@ -53,7 +55,7 @@ class ItemType(TitleDescriptionModel, TimeStampedModel):
 
 
 class Item(TimeStampedModel):
-    """Purchaseable items."""
+    """Purchasable items."""
 
     type = models.ForeignKey(ItemType, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
@@ -73,6 +75,13 @@ class Item(TimeStampedModel):
                getattr(self, item_rel.name, False):
                 return getattr(self, item_rel.name)
 
+    def is_purchasable(self, profile):
+        return profile.amount >= self.type.purchasable
+
+    def is_accessible(self, profile):
+        access = self.type.accessible
+        return self in profile.items_bought or (access is not None and profile.amount > access)
+
     def download(self):
         return self.attachment.get() if self.attachment else None
 
@@ -91,6 +100,8 @@ class Item(TimeStampedModel):
 
     def add_to_cart(self, profile):
         """Only add a limited product if no purchase of it exists."""
+        if not self.is_purchasable(profile):
+            return False
         if not self.type.limited:
             purchase, created = Purchase.objects.get_or_create(profile=profile, item=self, defaults={'executed': False})
             if not created:

@@ -36,6 +36,7 @@ class AttachmentBase(models.Model):
     """Base class to create item attachment classes."""
 
     item = models.OneToOneField('products.Item', on_delete=models.CASCADE)
+    filetype = models.CharField(max_length=10)
 
     def get(self):
         pass
@@ -90,9 +91,6 @@ class CartMixin(models.Model):
     def cart_available(self):
         return all([purchase.available for purchase in self.cart])
 
-    def add_to_cart(self, item, amount):
-        self.purchase_set.create(item=item, amount=amount)
-
     def clean_cart(self):
         for purchase in self.purchase_set.filter(executed=False):
             if not purchase.available:
@@ -111,7 +109,7 @@ class CartMixin(models.Model):
     @property
     def items_bought(self):
         from .models import Item
-        return Item.objects.filter(purchase_set__in=self.purchases)
+        return Item.objects.filter(purchase__in=self.purchases)
 
     @property
     def orders(self):

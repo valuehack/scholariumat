@@ -255,7 +255,7 @@ class ZotItem(ProductBase):
 
     def update_or_create_item(self, format, type_defaults={}, item_defaults={}, file_key=None):
         """
-        Creates/Updates a purchaseable item from format/type string. Creates ItemType and Attachment as needed.
+        Creates/Updates a purchasable item from format/type string. Creates ItemType and Attachment as needed.
         """
         # Create item type if not present
         type, created = ItemType.objects.get_or_create(slug=format, defaults=type_defaults)
