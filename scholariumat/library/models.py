@@ -30,6 +30,7 @@ class ZotAttachment(AttachmentBase):
     def get(self):
         zot = zotero.Zotero(settings.ZOTERO_USER_ID, settings.ZOTERO_LIBRARY_TYPE, settings.ZOTERO_API_KEY)
         if self.type == 'note':
+            # TODO: Generate pdf
             return zot.item(self.key)['data']['note']
         elif self.type == 'file':
             try:
@@ -94,7 +95,7 @@ class Collection(TitleSlugDescriptionModel, PermalinkAble):
 
             # Create (Product)Item if ZotItem is physically present
             if any([tag in tags for tag in settings.ZOTERO_OWNER_TAGS]):
-                zot_item.update_or_create_item(format='purchase', type_defaults=type_defaults,
+                zot_item.update_or_create_item(type='purchase', type_defaults=type_defaults,
                                                item_defaults=item_defaults)
             else:  # Delete item if tag has been removed
                 item_exists = zot_item.product.item_set.filter(type__slug='purchase')
@@ -138,20 +139,20 @@ class Collection(TitleSlugDescriptionModel, PermalinkAble):
                 continue
 
             if child['data']['itemType'] == 'attachment' and 'filename' in child['data']:
-                format = child['data']['filename'].split('.')[-1]  # Get file type
-                if format in settings.DOWNLOAD_FORMATS:
-                    type_defaults['title'] = format.upper()
+                type = child['data']['filename'].split('.')[-1]  # Get file type
+                if type in settings.DOWNLOAD_FORMATS:
+                    type_defaults['title'] = type.upper()
                 else:
                     continue
             elif child['data']['itemType'] == 'note':
-                format = 'note'
+                type = 'note'
                 type_defaults['title'] = 'Exzerpt'
             else:
                 continue
 
             # Create purchasable Item
             zot_item.update_or_create_item(
-                format=format,
+                type=type,
                 type_defaults=type_defaults,
                 item_defaults=item_defaults,
                 file_key=child['data']['key'])
@@ -253,21 +254,24 @@ class ZotItem(ProductBase):
         except ObjectDoesNotExist:
             return None
 
-    def update_or_create_item(self, format, type_defaults={}, item_defaults={}, file_key=None):
+    def update_or_create_item(self, type, type_defaults={}, item_defaults={}, file_key=None):
         """
         Creates/Updates a purchasable item from format/type string. Creates ItemType and Attachment as needed.
         """
         # Create item type if not present
-        type, created = ItemType.objects.get_or_create(slug=format, defaults=type_defaults)
+        itemtype, created = ItemType.objects.get_or_create(slug=type, defaults=type_defaults)
         if created:
-            logger.debug('Created item type {}'.format(type))
+            logger.debug('Created item type {}'.format(itemtype))
 
-        item = self.product.item_set.update_or_create(type=type, defaults=item_defaults)[0]
+        item = self.product.item_set.update_or_create(type=itemtype, defaults=item_defaults)[0]
 
         if file_key:  # Create/Update attachment if necessary
-            defaults = {'key': file_key}
-            if format == 'note':
-                defaults['type'] = format
+            defaults = {
+                'key': file_key,
+                'format': 'pdf'
+            }
+            if type == 'note':
+                defaults['type'] = type
             else:
                 defaults['type'] = 'file'
             ZotAttachment.objects.update_or_create(item=item, defaults=defaults)

@@ -36,7 +36,7 @@ class AttachmentBase(models.Model):
     """Base class to create item attachment classes."""
 
     item = models.OneToOneField('products.Item', on_delete=models.CASCADE)
-    filetype = models.CharField(max_length=10)
+    format = models.CharField(max_length=10)
 
     def get(self):
         pass
