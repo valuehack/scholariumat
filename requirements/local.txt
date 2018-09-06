@@ -7,4 +7,4 @@ Sphinx==1.7.6  # https://github.com/sphinx-doc/sphinx
 
 # Django
 # ------------------------------------------------------------------------------
-django-debug-toolbar==1.9.1  # https://github.com/jazzband/django-debug-toolbar
+django-debug-toolbar==1.10  # https://github.com/jazzband/django-debug-toolbar
