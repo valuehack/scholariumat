@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}Unterstützen{% endblock %}
+
+{% block content %}
+<h2 class="ui centered header">Für Bürger</h2>
+
+<p>Großartig, dass Sie zu uns gefunden haben! Es gibt heute nur noch wenige, die bereit sind, Institutionen zivilgesellschaftlich zu tragen – die meisten verlassen sich auf Staat und Lobbies und „engagieren“ sich allenfalls als Zuwendungsempfänger.</p>
+<p>Das scholarium wird ausschließlich privat von Bürgern wie Ihnen finanziert. Wir lehnen jede Subvention aus Prinzip ab, weil wir niemals mehr Werte aufbrauchen als schöpfen wollen, Zwang verabscheuen und Unabhängigkeit für einen hohen Wert halten. Wir sind ein gemeinnütziges Unternehmen, das heißt, alle Erträge fließen direkt in die Förderung unserer Zwecke, ohne Abzug von Dividenden, Zinsen oder Steuern.</p>
+<p>Wir sind aber auch stolz darauf, ein Unternehmen zu sein, und eben keine Behörde, kein Komitee, keine Partei, kein Hobbyverein, keine ideologische Bewegung. Professionalität, Effizienz, reale Wertschöpfung und ökonomische Nüchternheit sind zentral für uns. Wir bieten Ihnen daher realen Gegenwert und nicht bloß allgemeine Versprechen.</p>
+<p>Auch wenn Ihre finanziellen Mittel beschränkt sind, können Sie schon mit einem kleinen Beitrag an unseren Erkenntnissen und Werten teilhaben, Teil eines außergewöhnlichen Netzwerkes werden und eine gewichtige Lücke füllen.</p>
+
+<div class="ui text container">
+  {% for level in object_list %}
+  <div class="ui hidden divider"></div>
+  <div class="ui floating segment">
+    <h2 class="ui header">
+      {{ level.title }}
+      <div class="sub header">{{ level.amount }} &euro;</div>
+    </h2>
+    <p>{{ level.description }}</p>
+    <a href="{% url 'donations:payment' %}?amount={{ level.amount }}" class="ui fluid blue button">Werden Sie jetzt {{ level.title }}</a>
+  </div>
+  {% endfor %}
+</div>
+
+{% endblock content %}

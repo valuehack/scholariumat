@@ -6,7 +6,7 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
 
-from vanilla import FormView, DetailView
+from vanilla import FormView, DetailView, ListView
 from braces.views import MessageMixin
 
 from users.views import UpdateOrCreateRequiredMixin
@@ -27,14 +27,10 @@ class DonationView(DetailView):
         return donation
 
 
-class DonationLevelView(FormView):
+class DonationLevelView(ListView):
     """Overview of available donation levels"""
-    form_class = LevelForm
-    template_name = 'donations/donationlevel_form.html'
-
-    def form_valid(self, form):
-        level = form.cleaned_data['level']
-        return HttpResponseRedirect('{}?amount={}'.format(reverse('donations:payment'), level.amount))
+    model = DonationLevel
+    template_name = 'donations/donationlevel_list.html'
 
 
 class PaymentView(UpdateOrCreateRequiredMixin, MessageMixin, FormView):

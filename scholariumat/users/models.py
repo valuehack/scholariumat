@@ -36,8 +36,8 @@ class User(AbstractEmailUser):
 
     class Meta(AbstractEmailUser.Meta):
         swappable = 'AUTH_USER_MODEL'
-        verbose_name = 'User'
-        verbose_name_plural = 'Users'
+        verbose_name = 'Nutzer'
+        verbose_name_plural = 'Nutzer'
 
 
 class Profile(CartMixin, DonationMixin, LendingMixin, BalanceMixin, TimeStampedModel):
