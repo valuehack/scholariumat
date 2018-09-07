@@ -3,22 +3,19 @@
 {% block title %}Zahlung{% endblock %}
 
 {% block content %}
-{% if method == 'ueberweisung' %}
-  <p>Bitte überweisen Sie {{ request.POST.betrag }}€ auf folgendes Konto:</p>
-  <ul>
-    <li>scholarium</li>
-    <li>Erste Bank, Wien/Österreich</li>
-    <li>IBAN: AT27 2011 1827 1589 8503</li>
-    <li>BIC: GIBAATWWXXX</li>
-  </ul>
-  <p><b>Bitte verwenden Sie als Zahlungsreferenz/Betreff die Nummer: {{ nutzer.id }} </b></p>
-{% elif method == 'bar' %}
-  <p>Bitte schicken Sie uns den gewählten Betrag von {{ request.POST.betrag }}€ in Euro-Scheinen oder im ungefähren Edelmetallgegenwert (Gold-/Silbermünzen) an das scholarium, Schlösselgasse 19/2/18, 1080 Wien, Österreich. Alternativ können Sie uns den Betrag auch persönlich (bitte um Voranmeldung) oder bei einer unserer Veranstaltungen überbringen.</p>
-{% endif %}
+<div class="ui text container">
+  <h1 class="ui centered header">
+    {{ donation.method.title }}: {{ donation.amount }}€
+  </h1>
+  <h3 class="ui header">Referenz: {{ donation.slug|slice:':4' }}</h3>
+    <p>{{ donation.method.description|safe }}</p>
+    <form method="post">
+      {% csrf_token %}
+      {{ form }}
+      <button class="ui blue button" type="submit">Bestätigen</button>
+    </form>
+</div>
 
-<form method="post">
-    {% csrf_token %}
-    {{ form }}
-    <input type="submit" value="Speichern" />
-</form>
+
+
 {% endblock content %}

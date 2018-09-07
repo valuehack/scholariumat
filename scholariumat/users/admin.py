@@ -14,5 +14,6 @@ class ProfileAdmin(admin.ModelAdmin):
     list_filter = [LevelFilter]
     inlines = [DonationInline]
 
+
 admin.site.register(Profile, ProfileAdmin)
 admin.site.register(get_user_model(), UserAdmin)

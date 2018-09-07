@@ -3,11 +3,17 @@
     <a class="item">
       Blog
     </a>
-    <a href={% url 'library:list' %} class="item">
+    <a href="{% url 'library:list' %}" class="item">
       Bibliothek
     </a>
     <a class="item">
       Veranstaltungen
+    </a>
+    <a class="item">
+      Studium
+    </a>
+    <a href="{% url 'donations:levels' %}" class="right item">
+      <b>Unterstützen</b>
     </a>
   </div>
 </div>

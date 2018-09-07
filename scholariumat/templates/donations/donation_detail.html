@@ -14,7 +14,7 @@
     </div>
     <div class="ui divider"></div>
     <span class="meta">
-      Zahlung ({{ object.method.title }}) von {{ object.amount }}€ am {{ object.date }}
+      <b>Zahlung ({{ object.method.title }}) von {{ object.amount }}€ am {{ object.date }}</b>
         {% if object.reviewed %}
           <div class="ui icon label">
             <i class="check icon"></i>
@@ -34,7 +34,7 @@
       </div>
     </div>
   </div>
-  <a href="{% url 'donations:payment' %}?level={{ object.level.pk }}" class="ui bottom attached button">
+  <a href="{% url 'donations:payment' %}?level={{ object.level.pk }}" class="ui bottom blue attached button">
     Verlängern
   </a>
 </div>
@@ -66,7 +66,7 @@
               {{ donation.amount }}
             </div>
           </div>
-          <div class="ui right floated image label">
+          <div class="ui right floated blue image label">
             {{ donation.date }} - {{ donation.expiration }}
           </div>
         </div>

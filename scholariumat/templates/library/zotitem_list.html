@@ -38,12 +38,12 @@
   {% endif %}
 
   {% if children %}
-    <h3 class="ui small header">Kollektionen</h3>
-      <div class="ui grid menu">
+    <h3 class="ui header">Kollektionen</h3>
+      <div class="ui big grid menu">
         {% for child in children %}
           <a class="four wide column item" href="{% url 'library:collection' child.slug %}">
             {{ child }}
-            <div class="ui label">{{ child.zotitem_set.all|length }}</div>
+            <div class="ui blue label">{{ child.zotitem_set.all|length }}</div>
           </a>
         {% endfor %}
       </div>
@@ -51,7 +51,7 @@
 {% endif %}
 
 {% if object_list %}
-<h3 class="ui small header">Werke</h3>
+<h3 class="ui header">Werke</h3>
 <table class="ui table">
   <thead>
     <tr>
@@ -65,7 +65,7 @@
     {% for zotitem in object_list %}
     <tr>
       <td>
-        <a href={% url 'library:zot_item' zotitem.slug %}>{{ zotitem.title }}</a>
+        <a href="{% url 'library:zotitem' zotitem.slug %}" style="font-size: 17px;">{{ zotitem.title }}</a>
       </td>
       <td>
         {% for author in zotitem.authors.all %}

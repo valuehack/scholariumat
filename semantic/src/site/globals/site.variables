@@ -1,3 +1,33 @@
 /*******************************
      User Global Variables
 *******************************/
+
+@fontName          : 'EB Garamond';
+@googleFontName    : 'EB+Garamond:500|Raleway:300,400';
+
+@pageFont          : @fontName, serif;
+@headerFont        : 'Raleway', sans-serif;
+
+@headerFontWeight  : 300;
+@pageFontWeight    : 500;
+
+@h1 : unit((45 / 14), rem);
+@h2 : unit((28 / 14), rem);
+@h3 : unit((22 / 14), rem);
+@h4 : unit((19 / 14), rem);
+@h5 : unit((18 / 14), rem);
+
+/**
+@miniSize        : (12 / 14);
+@tinySize        : (13 / 14);
+@smallSize       : (14 / 14);
+@mediumSize      : (15 / 14);
+@largeSize       : (17 / 14);
+@bigSize         : (19 / 14);
+@hugeSize        : (21 / 14);
+@massiveSize     : (25 / 14);
+*/
+
+@primaryColor    : #2E4A62;
+@blue            : #2E4A62;
+@yellow          : #FF9C00;

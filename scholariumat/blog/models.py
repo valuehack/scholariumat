@@ -5,7 +5,7 @@ from django.conf import settings
 
 from pyzotero import zotero
 
-from products.models import ProductBase
+from products.behaviours import ProductBase
 from framework.behaviours import PublishAble
 
 logger = logging.getLogger(__name__)
