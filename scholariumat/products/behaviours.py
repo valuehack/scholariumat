@@ -2,9 +2,47 @@ import logging
 
 from django.db import models
 from django.conf import settings
+from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel
+
+from framework.behaviours import PermalinkAble
 
 
 logger = logging.getLogger(__name__)
+
+
+class ProductBase(TitleSlugDescriptionModel, TimeStampedModel, PermalinkAble):
+    """Abstract parent class for all product type classes."""
+
+    product = models.OneToOneField('products.Product', on_delete=models.CASCADE, null=True, editable=False)
+
+    def __str__(self):
+        return self.title
+
+    def save(self, *args, **kwargs):
+        if not self.product:
+            from .models import Product
+            self.product = Product.objects.create()
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):  # TODO: Gets ignored in bulk delete. pre_delete signal better?
+        self.product.delete()
+        super().delete(*args, **kwargs)
+
+    class Meta:
+        abstract = True
+
+
+class AttachmentBase(models.Model):
+    """Base class to create item attachment classes."""
+
+    item = models.OneToOneField('products.Item', on_delete=models.CASCADE)
+    format = models.CharField(max_length=10)
+
+    def get(self):
+        pass
+
+    class Meta:
+        abstract = True
 
 
 class BalanceMixin(models.Model):
@@ -37,7 +75,7 @@ class CartMixin(models.Model):
 
     @property
     def cart(self):
-        return self.purchase_set.filter(executed=False)
+        return self.purchase_set.filter(executed=False).order_by('-created')
 
     @property
     def cart_shipping(self):
@@ -53,9 +91,6 @@ class CartMixin(models.Model):
     def cart_available(self):
         return all([purchase.available for purchase in self.cart])
 
-    def add_to_cart(self, item, amount):
-        self.purchase_set.create(item=item, amount=amount)
-
     def clean_cart(self):
         for purchase in self.purchase_set.filter(executed=False):
             if not purchase.available:
@@ -68,8 +103,21 @@ class CartMixin(models.Model):
             return True
 
     @property
+    def purchases(self):
+        return self.purchase_set.filter(executed=True).order_by('-modified')
+
+    @property
+    def items_bought(self):
+        from .models import Item
+        return Item.objects.filter(purchase__in=self.purchases)
+
+    @property
     def orders(self):
-        return self.purchase_set.filter(executed=True, item__type__limited=True)
+        return self.purchases.filter(item__type__limited=True)
+
+    @property
+    def events_booked(self):
+        return self.purchases.filter(item__type__slug__in=['livestream', 'teilnahme'])
 
     class Meta:
         abstract = True

@@ -30,6 +30,14 @@ class DonationLevel(TitleSlugDescriptionModel):
         level = cls.objects.all().order_by('amount')
         return level[0].amount if level else None
 
+    @classmethod
+    def get_necessary_level(cls, amount):
+        level = cls.objects.filter(amount__gte=amount).order_by('amount')
+        if level:
+            return level[0]
+        else:
+            logger.info("No level available greater than {}".format(amount))
+
     def __str__(self):
         return '{}: {}'.format(self.amount, self.title)
 

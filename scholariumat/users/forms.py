@@ -36,11 +36,11 @@ class ProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
         fields = ['title', 'name', 'organization', 'street', 'postcode', 'city', 'country']
-        
+
         _field_class = {
             'title': 'three wide'
         }
-        
+
         # Layout used by django-semanticui
         layout = [
             ("Two Fields",

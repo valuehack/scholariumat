@@ -6,11 +6,11 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
 
-from vanilla import FormView, DetailView
+from vanilla import FormView, DetailView, ListView
 from braces.views import MessageMixin
 
 from users.views import UpdateOrCreateRequiredMixin
-from .forms import PaymentForm, ApprovalForm, LevelForm
+from .forms import PaymentForm, ApprovalForm
 from .models import DonationLevel, Donation
 
 
@@ -27,14 +27,10 @@ class DonationView(DetailView):
         return donation
 
 
-class DonationLevelView(FormView):
+class DonationLevelView(ListView):
     """Overview of available donation levels"""
-    form_class = LevelForm
-    template_name = 'donations/donationlevel_form.html'
-
-    def form_valid(self, form):
-        level = form.cleaned_data['level']
-        return HttpResponseRedirect('{}?amount={}'.format(reverse('donations:payment'), level.amount))
+    model = DonationLevel
+    template_name = 'donations/donationlevel_list.html'
 
 
 class PaymentView(UpdateOrCreateRequiredMixin, MessageMixin, FormView):
@@ -72,7 +68,7 @@ class ApprovalView(MessageMixin, FormView):
 
     def get_context_data(self, **kwargs):
         """Insert the form into the context dict."""
-        kwargs['method'] = self.donation.method.slug
+        kwargs['donation'] = self.donation
         return super().get_context_data(**kwargs)
 
     def dispatch(self, *args, **kwargs):

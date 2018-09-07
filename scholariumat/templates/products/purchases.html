@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}Bestellungen{% endblock %}
+
+{% block content %}
+<div class="ui text container">
+  <h1 class="ui centered header">Bestellungen</h1>
+  
+  {% if purchases %}
+    
+    {% if events %}
+      <h2 class="ui header">Veranstaltugen</h2>
+      {% if future_events %}
+        <h3 class="ui header">Kommende Veranstaltungen</h3>
+        <table class="ui large table">
+          <tbody>
+              {% for purchase in future_events %}
+                <tr>
+                  <td>
+                    {{ purchase.item.product }}
+                  </td>
+                </tr>
+              {% endfor %}
+          </tbody>
+        </table>
+      {% endif %}
+      {% if past_events %}
+        <div class="ui styled fluid accordion">
+          <div class="title">
+            <i class="dropdown icon"></i>
+            Vergangene Veranstaltungen
+          </div>
+          <div class="content">
+            <table class="ui large table">
+              <tbody>
+                  {% for purchase in past_events %}
+                    <tr>
+                      <td>
+                        {{ purchase.item.product }}
+                      </td>
+                      <td class="right aligned"><a class="ui small blue button">Zum Video</a></td>
+                    </tr>
+                  {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <script>
+        $('.ui.accordion')
+          .accordion()
+        ;
+        </script>
+      {% endif %}
+    {% endif %}
+    
+    {% if lendings %}
+    <h2 class="ui header">Geliehene Bücher</h2>
+    <table class="ui large table">
+      <tbody>
+          {% for purchase in lendings %}
+            <tr>
+              <td>
+                {{ purchase.item.product }}
+              </td>
+            </tr>
+          {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+    
+    {% if digital_content %}
+    <h2 class="ui header">Digitale Inhalte</h2>
+    <table class="ui table">
+      <tbody>
+          {% for purchase in digital_content %}
+            <tr>
+              <td><div class="ui label">{{ purchase.item.type }}</div></td>
+              <td>
+                {{ purchase.item.product }}
+              </td>
+              <td class="right aligned">
+                {% if purchase.item.attachment %}
+                  <form target="_blank" id="{{ purchase.pk }}_dlform" action="{% url 'products:purchases' %}" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="download" value="{{ purchase.item.pk }}">
+                  </form>
+                  <a onclick='document.forms["{{ purchase.pk }}_dlform"].submit(); return false;' class="ui small blue button">Download</a>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+    
+    {% if rest %}
+    <h2 class="ui header">Restliche Käufe</h2>
+    <table class="ui table">
+      <tbody>
+          {% for purchase in rest %}
+            <tr>
+              <td></td>
+              <td class="center aligned">
+                {% if purchase.item.type.limited %}{{ purchase.amount }}{% endif %}
+              </td>
+              <td><div class="ui label">{{ purchase.item.type }}</div></td>
+              <td>
+                {{ purchase.item.product }}
+              </td>
+              <td></td>
+            </tr>
+          {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+
+  {% else %}
+  <div class="ui floating medium message">Sie haben noch keine abgeschlossenen oder laufenden Bestellungen.</div>
+  {% endif %}
+</div>
+
+</div>
+{% endblock content %}

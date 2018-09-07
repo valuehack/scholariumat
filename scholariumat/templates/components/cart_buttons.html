@@ -1,3 +1,6 @@
+{% load product_tags %}
+{% load donation_tags %}
+
 {% if items %}
   <div class="ui centered card">
     <div class="content">
@@ -11,30 +14,67 @@
               {% csrf_token %}
               <input type="hidden" name="requested_item" value="{{ item.pk }}"/>
             </form>
-            {% if item.available %}
-              <div class="ui labeled button">
-                <div onclick='document.forms["{{ item.type.title }}_form"].submit(); return false;' class="ui animated button">
-                  <div class="visible content">
+            <div class="ui labeled button">
+              {% is_accessible request item as accessible %}
+              {% is_purchasable request item as purchasable %}
+
+              {% if accessible and not item.type.limited %}
+                {% if item.attachment %}
+                  <form target="_blank" id="{{ item.pk }}_dlform" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="download" value="{{ item.pk }}">
+                  </form>
+                  <div class="ui button">
                     {{ item.type.title }}
                   </div>
-                  <div class="hidden content">
-                    <i class="cart icon"></i>
+                  <a onclick='document.forms["{{ item.pk }}_dlform"].submit(); return false;' class="ui blue left pointing label">Download</a>
+              
+                {% else %}
+                  <div class="ui disabled button">
+                    {{ item.type.title }}
                   </div>
-                </div>
-                <div class="ui basic left pointing label">
-                  {{ item.price }}&nbsp;
-                  <i class="bitcoin fitted icon"></i>
-                </div>
-              </div>
-            {% else %}
-              <div class="ui labeled button">
+                  <div class="ui grey left pointing label">Bereits erworben</div>
+                {% endif %}
+
+              {% elif purchasable %} 
+                {% if item.available %}
+                  <div onclick='document.forms["{{ item.type.title }}_form"].submit(); return false;' class="ui animated button">
+                    <div class="visible content">
+                      {{ item.type.title }}
+                    </div>
+                    <div class="hidden content">
+                      <i class="cart icon"></i>
+                    </div>
+                  </div>
+                  <div class="ui basic left pointing label">
+                    {{ item.price }}&nbsp;
+                    <i class="bitcoin fitted icon"></i>
+                  </div>
+
+                {% else %}
+                  <div class="ui disabled button">
+                    {{ item.type.title }}
+                  </div>
+                  {% if item.type.requestable %}
+                    <a onclick='document.forms["{{ item.type.title }}_form"].submit(); return false;' class="ui yellow left pointing label">Anfragen</a>
+                  {% else %}
+                    <div class="ui grey left pointing label">{{ item.type.unavailability_notice }}</div>
+                  {% endif %}
+                {% endif %}
+                
+              {% else %}
                 <div class="ui disabled button">
                   {{ item.type.title }}
                 </div>
-                <a onclick='document.forms["{{ item.type.title }}_form"].submit(); return false;' class="ui yellow left pointing label">
-                  Preis anfragen</a>
-              </div>
-            {% endif %}
+                {% necessary_level item.type.purchasable as level %}
+                {% if level %}
+                  <a href="{% url 'donations:levels' %}" class="ui grey left pointing label">Verfügbar als {{ level.title }}</a>
+                {% else %}
+                  <div class="ui grey left pointing label">Nicht verfügbar</div>
+                {% endif %}
+              {% endif %}
+            
+            </div>
           </div>
         {% endfor %}
       </div>

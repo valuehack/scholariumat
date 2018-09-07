@@ -1,7 +1,7 @@
 from django.contrib import admin
 
-from .models import ZotItem, Author, Collection
-from products.admin import ProductBaseAdmin
+from .models import ZotItem, Author, Collection, ZotAttachment
+from products.admin import ProductBaseAdmin, AttachmentAdmin
 
 
 class ZotItemAdmin(ProductBaseAdmin):
@@ -10,10 +10,11 @@ class ZotItemAdmin(ProductBaseAdmin):
     list_display = ['title', 'get_authors', 'get_product']
     list_filter = ['published']
 
-    def get_authors(self, obj):  # TODO: Move to deatail view, big list becomes unresponsive.
+    def get_authors(self, obj):  # TODO: Move to detail view, big list becomes unresponsive.
         return ", ".join([author.__str__() for author in obj.authors.all()])
 
 
 admin.site.register(Author)
 admin.site.register(Collection)
 admin.site.register(ZotItem, ZotItemAdmin)
+admin.site.register(ZotAttachment, AttachmentAdmin)
