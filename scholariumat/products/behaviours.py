@@ -13,16 +13,16 @@ logger = logging.getLogger(__name__)
 class ProductBase(TitleSlugDescriptionModel, TimeStampedModel, PermalinkAble):
     """Abstract parent class for all product type classes."""
 
-    @staticmethod
-    def _default_profile():
-        from .models import Product
-        return Product.objects.create().pk
-
-    product = models.OneToOneField(
-        'products.Product', on_delete=models.CASCADE, default=_default_profile.__func__, editable=False)
+    product = models.OneToOneField('products.Product', on_delete=models.CASCADE, null=True, editable=False)
 
     def __str__(self):
         return self.title
+
+    def save(self, *args, **kwargs):
+        if not self.product:
+            from .models import Product
+            self.product = Product.objects.create()
+        super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):  # TODO: Gets ignored in bulk delete. pre_delete signal better?
         self.product.delete()
