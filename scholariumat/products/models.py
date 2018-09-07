@@ -57,11 +57,11 @@ class ItemType(TitleDescriptionModel, TimeStampedModel):
 class Item(TimeStampedModel):
     """Purchasable items."""
 
-    type = models.ForeignKey(ItemType, on_delete=models.CASCADE)
+    type = models.ForeignKey(ItemType, on_delete=models.CASCADE, verbose_name='Typ')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    price = models.SmallIntegerField(null=True, blank=True)
-    amount = models.IntegerField(null=True, blank=True)
-    requests = models.ManyToManyField('users.Profile', related_name='item_requests', blank=True)
+    price = models.SmallIntegerField('Preis', null=True, blank=True)
+    amount = models.IntegerField('Anzahl', null=True, blank=True)
+    requests = models.ManyToManyField('users.Profile', related_name='item_requests', blank=True, editable=False)
 
     @property
     def available(self):
