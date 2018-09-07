@@ -116,6 +116,10 @@ EMAIL_SUBJECT_PREFIX = env('DJANGO_EMAIL_SUBJECT_PREFIX', default='[scholarium.a
 # Django Admin URL regex.
 ADMIN_URL = env('DJANGO_ADMIN_URL')
 
+MANAGERS = [
+    ("""scholarium""", 'info@scholarium.at'),
+]
+
 # Anymail (Mailgun)
 # ------------------------------------------------------------------------------
 # https://anymail.readthedocs.io/en/stable/installation/#installing-anymail

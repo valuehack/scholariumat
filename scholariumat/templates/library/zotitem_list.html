@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% load sorting_tags %}
+{% load semanticui %}
+{% autosort zotitems %}
+
+{% block title %}Bibliothek{% endblock %}
+
+{% block content %}
+<h1 class="ui huge center aligned header">Bibliothek</h1>
+<div class="ui hidden section divider"></div>
+
+<div class="ui center aligned container">
+  <form class="ui form">
+    <div class="ui input">
+      <input name="search" placeholder="Suche..." type="text">
+    </div>
+    <button class="ui icon button" type="submit">
+      <i class="search icon"></i>
+    </button>
+  </form>
+</div>
+
+
+
+{% if request.GET.search %}
+  <h2>Suche: {{ request.GET.search }}</h2>
+{% else %}
+  {% if collection %}
+  <div class="ui header">
+    <div class="ui huge breadcrumb">
+      {% for parent in parents %}
+      <a class="section" href="{% url 'library:collection' parent.slug %}">{{ parent }}</a>
+      <i class="right chevron icon divider"></i>
+      {% endfor %}
+      <div class="active section">{{ collection }}</div>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if children %}
+    <h3 class="ui header">Kollektionen</h3>
+      <div class="ui big grid menu">
+        {% for child in children %}
+          <a class="four wide column item" href="{% url 'library:collection' child.slug %}">
+            {{ child }}
+            <div class="ui blue label">{{ child.zotitem_set.all|length }}</div>
+          </a>
+        {% endfor %}
+      </div>
+  {% endif %}
+{% endif %}
+
+{% if object_list %}
+<h3 class="ui header">Werke</h3>
+<table class="ui table">
+  <thead>
+    <tr>
+      <th>{% anchor title "Titel" %}</th>
+      <th>{% anchor authors "Autor" %}</th>
+      <th>{% anchor published "Jahr" %}</th>
+      <th>Verfügbarkeit</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for zotitem in object_list %}
+    <tr>
+      <td>
+        <a href="{% url 'library:zotitem' zotitem.slug %}" style="font-size: 17px;">{{ zotitem.title }}</a>
+      </td>
+      <td>
+        {% for author in zotitem.authors.all %}
+          <a href="{% url 'library:list' %}?search={{ author.name }}">{{ author.name }}</a><br>
+        {% endfor %}
+      </td>
+      <td>
+        {% if zotitem.published %}
+          {{ zotitem.published.year }}
+        {% endif %}
+      </td>
+      <td>
+        <div class="ui labels">
+        {% for item in zotitem.product.item_set.all %}
+          {% if item.available %}
+            <div class="ui label">
+              {{ item.type.title }}
+            </div>
+          {% else %}
+            <div class="ui disabled label">
+              {{ item.type.title }}
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+  
+  <tfoot>
+    <tr>
+      <th colspan="4">
+        <div class="ui right floated pagination menu">
+          {% include "components/pagination.html" %}
+        </div>
+      </th>
+    </tr>
+  </tfoot>
+</table>
+{% endif %}
+
+{% endblock content %}

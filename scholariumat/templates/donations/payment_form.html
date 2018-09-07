@@ -1,11 +1,22 @@
 {% extends 'base.html' %}
+{% load semanticui %}
 
 {% block title %}Zahlung{% endblock %}
 
 {% block content %}
-<form method="post">
+<div class="ui text container">
+  <form class="ui form" method="post">
     {% csrf_token %}
-    {{ form }}
-    <input type="submit" value="Speichern" />
-</form>
+    <div class="inline fields">
+      {% render_form form %}
+      <button class="ui blue basic button" type="submit">Bestätigen</button>
+    </div>
+  </form>
+</div>
+
+<script>
+$('.ui.dropdown')
+  .dropdown()
+;
+</script>
 {% endblock content %}

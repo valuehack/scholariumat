@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Werk{% endblock %}
+
+{% block content %}
+  <div class="ui text container">
+    <h2 class="ui header">{{ api_object.data.title }}</h2>
+      <div class="ui sub header">
+        {% for creator in api_object.data.creators %}
+          {{ creator.firstName }} {{ creator.lastName }}<br>
+        {% endfor %}
+      </div>
+    <div class="ui list">
+      {% if api_object.data.ISBN %}
+        <div class="item"><i class="book icon"></i><div class="content">ISBN: {{ api_object.data.ISBN }}</div></div>
+      {% endif %}
+      {% if api_object.data.date %}
+        <div class="item"><i class="calendar icon"></i><div class="content">{{ api_object.data.date }}</div></div>
+      {% endif %}
+      {% if api_object.data.language %}
+        <div class="item"><i class="language icon"></i><div class="content">{{ api_object.data.language }}</div></div>
+      {% endif %}
+      {% if api_object.data.numPages %}
+        <div class="item"><i class="hashtag icon"></i><div class="content"> Seitenzahl: {{ api_object.data.numPages }}</div></div>
+      {% endif %}
+      {% if api_object.data.url %}
+        <div class="item"><i class="linkify icon"></i><div class="content"><a href="{{ api_object.data.url }}">Weblink</a></div></div>
+      {% endif %}
+    </div>
+    {% if api_object.data.abstractNote %}<p>{{ api_object.data.abstractNote }}</p>{% endif %}
+    
+  {% include 'components/cart_buttons.html' with items=object.product.item_set.all %}
+</div>
+{% endblock content %}

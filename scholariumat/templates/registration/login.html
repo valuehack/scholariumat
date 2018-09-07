@@ -1,10 +1,13 @@
 {% extends 'base.html' %}
+{% load semanticui %}
 
 {% block content %}
-<form method="POST">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Einloggen</button>
-</form>
-<p><a href="{% url 'password_reset' %}">Passwort vergessen</a></p>
+<div class="ui text container">
+  <form class="ui form" method="POST">
+    {% csrf_token %}
+    {% render_form form %}
+    <button class="ui basic button" type="submit">Einloggen</button>
+    <a class="ui basic button" href="{% url 'password_reset' %}">Passwort vergessen</a>
+  </form>
+</div>
 {% endblock %}

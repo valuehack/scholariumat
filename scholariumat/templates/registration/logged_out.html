@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% load semanticui %}
+
+{% block content %}
+<div class="ui text container">
+  <p>
+    Vielen Dank für Ihren Besuch.
+  </p>
+  <a class="ui basic button" href="{% url 'login' %}">Erneut einloggen</a>
+</div>
+{% endblock %}

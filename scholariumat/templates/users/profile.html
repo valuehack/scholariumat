@@ -4,37 +4,39 @@
 {% block title %}Nutzerprofil{% endblock %}
 
 {% block content %}
-<div class="ui form">
-  <div class="field">
-    <label>Email-Adresse</label>
-    <input class="action input" value="{{ request.user.email }}" readonly="" type="text"></div><br>
-</div>
-<div class="ui fluid basic buttons">
-  <a class="ui basic red button" href="{% url 'users:update_email' %}">Emailadresse ändern</a><br>
-  <a class="ui basic red button" href="{% url 'password_change' %}">Passwort ändern</a>
-</div>
+<div class="ui text container">
+  <div class="ui form">
+    <div class="field">
+      <label>Email-Adresse</label>
+      <input class="action input" value="{{ request.user.email }}" readonly="" type="text"></div><br>
+  </div>
+  <div class="ui fluid basic buttons">
+    <a class="ui basic blue button" href="{% url 'users:update_email' %}">Emailadresse ändern</a><br>
+    <a class="ui basic blue button" href="{% url 'password_change' %}">Passwort ändern</a>
+  </div>
 
-<div class="ui hidden section divider"></div>
-<h2 class="ui horizontal divider header">Ihre Daten</h2>
-<form class="ui form" method="post">
-    {% csrf_token %}
-    <div class="fields">
-      {% render_field form.title _field_class='six wide' %}
-      {% render_field form.name _field_class='twelve wide' %}
-    </div>
-    {% render_field form.organization %}
-    <div class="fields">
-      {% render_field form.street _field_class='twelve wide' %}
-      {% render_field form.postcode _field_class='four wide' %}
-    </div>
-    <div class="fields">
-      {% render_field form.city _field_class='ten wide' %}
-      {% render_field form.country _override='CountrySelect' _field_class='six wide' %}
-    </div>
-    <div class="ui hidden divider"></div>
-    <div class="ui hidden divider"></div>
-    <button class="ui basic red eight wide field button" type="submit">Speichern</button>
-</form>
+  <div class="ui hidden section divider"></div>
+  <h2 class="ui horizontal divider header">Ihre Daten</h2>
+  <form class="ui form" method="post">
+      {% csrf_token %}
+      <div class="fields">
+        {% render_field form.title _field_class='six wide' %}
+        {% render_field form.name _field_class='twelve wide' %}
+      </div>
+      {% render_field form.organization %}
+      <div class="fields">
+        {% render_field form.street _field_class='twelve wide' %}
+        {% render_field form.postcode _field_class='four wide' %}
+      </div>
+      <div class="fields">
+        {% render_field form.city _field_class='ten wide' %}
+        {% render_field form.country _override='CountrySelect' _field_class='six wide' %}
+      </div>
+      <div class="ui hidden divider"></div>
+      <div class="ui hidden divider"></div>
+      <button class="ui basic blue eight wide field button" type="submit">Speichern</button>
+  </form>
+</div>
 
 <script>
 $('.ui.dropdown')

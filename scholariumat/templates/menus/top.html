@@ -2,37 +2,94 @@
 
   {% if request.user.is_authenticated %}  
     <div class="ui right floated compact menu">
-      <div class="ui floating top left pointing dropdown icon item">
+      <a class="ui {% if not request.user.profile.cart %}disabled {% endif %}icon item" id="basket">
         <i class="shop icon"></i>
-        <div class="menu items" style="min-width: 10em;">
-          <h2 class="header">Warenkorb</h2>
-          <div class="ui item">
-            <div class="content">
-              <div class="header">TestItem</div>
-              <div class="meta">
-                <span class="right floated">2</span>
-                <span>Description</span>
-              </div>
-              <div class="description">
-                <p>testest</p>
-              </div>
-            </div>
+        {% if request.user.profile.cart|length %}
+          <div class="ui blue small floating circular label">
+            {{ request.user.profile.cart|length }}
           </div>
-          <div class="divider"></div>
-          <a class="item" href="{% url 'users:profile' %}">Kaufen</a>
-        </div>
-      </div>
+        {% endif %}
+      </a>
       <div class="item">
         <span class="text">
           {{ request.user.profile.balance }}
           <i class="fitted bitcoin icon"></i>
         </span>
         <a href="{% url 'donations:levels' %}">
-          <div class="ui tiny circular yellow floating label">
+          <div class="ui small circular yellow floating label">
             <i class="fitted plus link icon"></i>
           </div>
         </a>
       </div>
+    </div>
+    
+    <div class="ui popup" id="basket_popup">
+      
+
+      
+          <div class="content">
+            <table class="ui very basic collapsing single line large table">
+              <tbody>
+                {% for purchase in request.user.profile.cart %}
+                  <tr>
+                    <td></td>
+                    <td class="center aligned">
+                        {% if purchase.item.type.limited %}{{ purchase.amount }}{% endif %}
+                    </td>
+                    <td>
+                      {% if not purchase.available %}
+                        <i id="{{ purchase.pk }}_popup" class="ui red link exclamation circle icon" data-content="Das Produkt ist in der gewünschten Menge nicht verfügbar"></i>
+                        <script>
+                          $('#{{ purchase.pk }}_popup')
+                            .popup()
+                          ;
+                        </script>
+                      {% endif %}
+                      <a href="{{ purchase.item.product.type.get_absolute_url }}">{{ purchase.item.product|truncatechars:45 }}</a></td>
+                    <td class="right aligned">
+                      {{ purchase.total }}
+                    </td>
+                    <td>
+                      <form id="{{ purchase.pk }}_itemform" action="{% url 'products:basket' %}" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="remove" value="{{ purchase.pk }}">
+                      </form>
+                      <a onclick='document.forms["{{ purchase.pk }}_itemform"].submit(); return false;'><i class="ui link times circle outline icon"></i></a>
+                    </td>
+                    <td></td>
+                  </tr>
+                {% endfor %}
+                {% if request.user.profile.cart_shipping %}
+                <tr>
+                  <td></td>
+                  <td></td>
+                  <td>Versand</td>
+                  <td class="right aligned">{{ request.user.profile.cart_shipping }}</td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                {% endif %}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <th></th>
+                  <th></th>
+                  <th></th>
+                  <th class="right aligned"><i class="ui bitcoin icon"></i><b>{{ request.user.profile.cart_total }}</b></th>
+                  <th></th>
+                  <th></th>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+      <div class="ui divider"></div>
+      <form id="buy_form" action="{% url 'products:basket' %}" method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="buy">
+      </form>
+      <a href="{% url 'products:basket' %}" class="ui button">Details</a>
+      <button onclick='document.forms["buy_form"].submit(); return false;' class="ui {% if not request.user.profile.cart_available %}disabled {% endif %} blue right floated button">Kaufen</button>
     </div>
 
     <div class="ui right floated compact menu" id="profile">
@@ -45,7 +102,7 @@
       <div>
       
       {% if request.user.profile.level %}
-        <a class="ui yellow right ribbon label" href="{% url 'donations:detail' %}">
+        <a class="ui blue large right ribbon label" href="{% url 'donations:detail' %}">
           <i class="university icon"></i>
           {{ request.user.profile.level.title }}
         </a>
@@ -53,7 +110,7 @@
       
       <!-- <span class="ui item"> -->
         {% if request.user.profile.name %}
-          <span class="ui center aligned header">
+          <h3 class="ui center aligned header">
             <div class="content">
               {{ request.user.profile.name }}
               {% if request.user.profile.organization %}
@@ -62,25 +119,27 @@
                 </div>
               {% endif %}
             </div>
-          </span>
+          </h3>
         {% endif %}
       </div>
-      <!-- </span> -->
       <div class="ui hidden divider"></div>
   
       <div class="ui vertical fluid menu">
-        <div class="item" href="{% url 'users:profile' %}">Profil bearbeiten</div>
-        <div class="item" href="{% url 'users:profile' %}">Email-Adresse ändern</div>
-        <div class="item" href="{% url 'users:profile' %}">Passwort ändern</div>
-        <div class="item" href="{% url 'users:profile' %}">Unterstützungen</div>
-        <div class="item" href="{% url 'users:profile' %}">Ausloggen</div>
+        <a class="item" href="{% url 'users:profile' %}">Profil bearbeiten</a>
+        <a class="item" href="{% url 'users:update_email' %}">Email-Adresse ändern</a>
+        <a class="item" href="{% url 'password_change' %}">Passwort ändern</a>
       </div>
 
       <div class="ui menu">
-        <a class="item" href="{% url 'donations:levels' %}">Unterstützen</a>
-        <a class="item" href="{% url 'users:profile' %}">Bestellungen</a>
-        <div class="divider"></div>
-        <a class="item" href="{% url 'users:profile' %}">Ausloggen</a>
+        {% if request.user.profile.donation %}
+          <a class="item" href="{% url 'donations:detail' %}">
+        {% else %}
+          <a class="disabled item">
+        {% endif %}
+          Unterstützungen
+        </a>
+        <a class="item" href="{% url 'products:purchases' %}">Käufe</a>
+        <a class="item" href="{% url 'logout' %}">Ausloggen</a>
       </div>
     </div>
 
@@ -91,16 +150,77 @@
     {% endif %}
 
   {% else %}
-    <div class="ui right floated  small compact menu">
-      <div class="item">Anmelden</div>
-      <div class="item">Eintragen</div>
+    <div class="ui right floated small compact menu">
+      <a class="login_open item">Anmelden</a>
+      <a class="register_open item">Eintragen</a>
     </div>
+
+    <div class="ui tiny login modal">
+      <div class="header">Anmelden</div>
+      <div class="content">
+        <form id="login_form" method="post" class="ui form" action="{% url 'login' %}">
+          {% csrf_token %}
+          <div class="field">
+            <div class="ui left icon input">
+              <input type="email" name="username" placeholder="Email">
+              <i class="user icon"></i>
+            </div>
+          </div>
+          <div class="field">
+            <div class="ui left icon input">
+              <input type="password" name="password" placeholder="Passwort">
+              <i class="lock icon"></i>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="actions">
+        <button class="ui left floated button" form="login_form" type="submit">Anmelden</button>
+        Sie haben noch keinen Zugang?
+        <button class="ui register_open button">Eintragen</button>
+      </div>
+    </div>
+
+    <div class="ui tiny register modal">
+      <div class="header">Eintragen</div>
+      <div class="content">
+        <form id="register_form" method="post" class="ui form" action="{% url 'users:signup' %}">
+          {% csrf_token %}
+          <div class="field">
+            <div class="ui left icon input">
+              <input type="email" name="email" placeholder="Email">
+              <i class="user icon"></i>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="actions">
+        <button class="ui left floated button" form="register_form" type="submit">Eintragen</button>
+        Sie sind bereits eingetragen?
+        <button class="ui login_open button">Anmelden</button>
+      </div>
+    </div>
+    <script>
+      $('.tiny.login.modal')
+        .modal('attach events', '.login_open', 'show')
+      ;
+      $('.tiny.register.modal')
+        .modal('attach events', '.register_open', 'show')
+      ;
+    </script>
   {% endif %}
 </div>
 <script>
-  $('.ui.dropdown').dropdown({action: 'nothing'});
+  // $('.ui.dropdown').dropdown({action: 'nothing'});
   $('#profile')
     .popup({
       on: 'click'
     });
+    {% if request.user.profile.cart %}
+  $('#basket')
+    .popup({
+      popup: '#basket_popup',
+      on: 'click'
+    });
+    {% endif %}
 </script>

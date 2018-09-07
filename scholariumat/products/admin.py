@@ -6,6 +6,8 @@ from .models import Item, ItemType, Product, Purchase
 
 
 class ProductBaseAdmin(admin.ModelAdmin):
+    search_fields = ['description', 'title']
+    list_display = ['title', 'get_product']
 
     def get_product(self, obj):
         product = obj.product
@@ -20,15 +22,23 @@ class ItemInline(admin.TabularInline):
 class ProductAdmin(admin.ModelAdmin):
     inlines = [ItemInline]
 
+    def get_search_fields(self, request):
+        """Searches realted one_to_one fields (actual products)"""
+        return [f'{related.name}__title' for related in self.model._meta.get_fields() if related.one_to_one]
+
 
 class PurchaseAdmin(admin.ModelAdmin):
     raw_id_fields = ['profile', 'item']
-    readonly_fields = ['applied']
+    readonly_fields = ['executed']
 
 
 class ItemAdmin(admin.ModelAdmin):
     raw_id_fields = ['product']
     list_display = ['type', 'price', 'product']
+
+
+class AttachmentAdmin(admin.ModelAdmin):
+    raw_id_fields = ['item']
 
 
 admin.site.register(Product, ProductAdmin)
