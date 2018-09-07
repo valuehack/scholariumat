@@ -10,7 +10,7 @@ class ZotItemAdmin(ProductBaseAdmin):
     list_display = ['title', 'get_authors', 'get_product']
     list_filter = ['published']
 
-    def get_authors(self, obj):  # TODO: Move to deatail view, big list becomes unresponsive.
+    def get_authors(self, obj):  # TODO: Move to detail view, big list becomes unresponsive.
         return ", ".join([author.__str__() for author in obj.authors.all()])
 
 
