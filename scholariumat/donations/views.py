@@ -10,7 +10,7 @@ from vanilla import FormView, DetailView, ListView
 from braces.views import MessageMixin
 
 from users.views import UpdateOrCreateRequiredMixin
-from .forms import PaymentForm, ApprovalForm, LevelForm
+from .forms import PaymentForm, ApprovalForm
 from .models import DonationLevel, Donation
 
 
@@ -68,7 +68,7 @@ class ApprovalView(MessageMixin, FormView):
 
     def get_context_data(self, **kwargs):
         """Insert the form into the context dict."""
-        kwargs['method'] = self.donation.method.slug
+        kwargs['donation'] = self.donation
         return super().get_context_data(**kwargs)
 
     def dispatch(self, *args, **kwargs):

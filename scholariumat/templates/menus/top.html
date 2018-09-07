@@ -131,7 +131,13 @@
       </div>
 
       <div class="ui menu">
-        <a class="item" href="{% url 'donations:detail' %}">Unterstützungen</a>
+        {% if request.user.profile.donation %}
+          <a class="item" href="{% url 'donations:detail' %}">
+        {% else %}
+          <a class="disabled item">
+        {% endif %}
+          Unterstützungen
+        </a>
         <a class="item" href="{% url 'products:purchases' %}">Käufe</a>
         <a class="item" href="{% url 'logout' %}">Ausloggen</a>
       </div>
