@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Veranstaltung{% endblock %}
+
+{% block content %}
+  <div class="ui text container">
+    <h2 class="ui header">{{ object.title }}</h2>
+    <p>{{ object.description }}</p>
+    
+    {% for event in object.event_set.all %}
+      {{ event }}
+    {% endfor %}
+
+</div>
+{% endblock content %}

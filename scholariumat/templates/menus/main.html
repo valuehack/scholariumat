@@ -6,10 +6,13 @@
     <a href="{% url 'library:list' %}" class="item">
       Bibliothek
     </a>
-    <a class="item">
-      Veranstaltungen
+    <a href="{% url 'events:type' 'salon' %}" class="item">
+      Salons
     </a>
-    <a class="item">
+    <a href="{% url 'events:type' 'seminar' %}" class="item">
+      Seminare
+    </a>
+    <a href="{% url 'events:type' 'studium' %}" class="item">
       Studium
     </a>
     <a href="{% url 'donations:levels' %}" class="right item">

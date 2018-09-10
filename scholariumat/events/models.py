@@ -3,14 +3,14 @@ from datetime import time
 from django.db import models
 from django.urls import reverse
 
-from django_extensions.db.models import TimeStampedModel, TitleDescriptionModel
+from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel
 
 from products.models import Item
 from products.behaviours import ProductBase
 from framework.behaviours import PublishAble
 
 
-class EventType(TitleDescriptionModel):
+class EventType(TitleSlugDescriptionModel):
 
     def __str__(self):
         return self.title
