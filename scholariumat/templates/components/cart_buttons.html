@@ -2,6 +2,9 @@
 {% load donation_tags %}
 
 {% if items %}
+<div class="ui right rail">
+  <div class="ui sticky">
+  <h3 class="ui header">Kaufoptionen</h3>
   <div class="ui centered card">
     <div class="content">
       <div class="column">
@@ -80,4 +83,13 @@
       </div>
     </div>
   </div>
+  </div>
+</div>
+<script>
+$('.ui.sticky')
+  .sticky({
+    pushing: true
+  })
+;
+</script>
 {% endif %}

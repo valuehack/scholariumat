@@ -100,7 +100,9 @@ class Payment(CommentAble):
 
     @property
     def reviewed(self):
-        return True if not self.method.local_approval else self.review
+        if self.method and not self.method.local_approval:
+            return True
+        return self.review
 
     @property
     def return_url(self):

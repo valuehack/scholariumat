@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load markup_tags %}
 
 {% block title %}Zahlung{% endblock %}
 
@@ -8,7 +9,7 @@
     {{ donation.method.title }}: {{ donation.amount }}€
   </h1>
   <h3 class="ui header">Referenz: {{ donation.slug|slice:':4' }}</h3>
-    <p>{{ donation.method.description|safe }}</p>
+    <p>{{ donation.method.description|apply_markup:"markdown" }}</p>
     <form method="post">
       {% csrf_token %}
       {{ form }}
