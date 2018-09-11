@@ -112,12 +112,23 @@ class CartMixin(models.Model):
         return Item.objects.filter(purchase__in=self.purchases)
 
     @property
+    def products_bought(self):
+        from .models import Product
+        return Product.objects.filter(item__purchase__in=self.purchases).distinct()
+
+    @property
     def orders(self):
         return self.purchases.filter(item__type__limited=True)
 
     @property
     def events_booked(self):
         return self.purchases.filter(item__type__slug__in=['livestream', 'teilnahme'])
+
+    def get_bought_amount(self, item):
+        n = 0
+        for purchase in self.purchases.filter(item=item):
+            n += purchase.amount
+        return n
 
     class Meta:
         abstract = True

@@ -1,9 +1,8 @@
-{% extends "base.html" %}
+{% extends "products/product_detail.html" %}
 
 {% block title %}Werk{% endblock %}
 
-{% block content %}
-  <div class="ui text container">
+{% block product %}
     <h2 class="ui header">{{ api_object.data.title }}</h2>
       <div class="ui sub header">
         {% for creator in api_object.data.creators %}
@@ -29,6 +28,4 @@
     </div>
     {% if api_object.data.abstractNote %}<p>{{ api_object.data.abstractNote }}</p>{% endif %}
     
-  {% include 'components/cart_buttons.html' with items=object.product.item_set.all %}
-</div>
-{% endblock content %}
+{% endblock product %}

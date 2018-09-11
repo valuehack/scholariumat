@@ -18,7 +18,7 @@
               <input type="hidden" name="requested_item" value="{{ item.pk }}"/>
             </form>
             <div class="ui labeled button">
-              {% is_accessible request item as accessible %}
+              {% number_accessible request item as accessible %}
               {% is_purchasable request item as purchasable %}
 
               {% if accessible and not item.type.limited %}

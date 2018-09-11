@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load product_tags %}
 
 {% block title %}Bestellungen{% endblock %}
 
@@ -14,16 +15,33 @@
         <h3 class="ui header">Kommende Veranstaltungen</h3>
         <table class="ui large table">
           <tbody>
-              {% for purchase in future_events %}
-                <tr>
-                  <td>
-                    {{ purchase.item.product }}
-                  </td>
-                </tr>
-              {% endfor %}
+            {% for product in future_events %}
+              <tr>
+                <td>
+                  {{ product }}
+                  {% for item in product.item_set.all %}
+                    {% number_accessible request item as accessible %}
+                    {% if accessible %}
+                      {{ item }}{% if accessible > 1 and item.type.limited %} x {{ accessible }}{% endif %}
+                    {% endif %}
+                  {% endfor %}
+                </td>
+              </tr>
+            {% endfor %}
           </tbody>
         </table>
       {% endif %}
+      
+      {% for product in request.user.profile.products_bought %}
+        {{ product }}:
+        {% for item in product.item_set.all %}
+          {% number_accessible request item as accessible %}
+          {% if accessible %}
+            {{ item }} x {{ accessible }}
+          {% endif %}
+        {% endfor %}
+      {% endfor %}
+      
       {% if past_events %}
         <div class="ui styled fluid accordion">
           <div class="title">
@@ -36,9 +54,14 @@
                   {% for purchase in past_events %}
                     <tr>
                       <td>
-                        {{ purchase.item.product }}
+                        <a href="{% url 'events:event' purchase.item.product.event.slug %}">{{ purchase.item.product }}</a>
+                          <div class="ui label">{{ purchase.item.type }}{% if purchase.item.type.limited %} x {{ purchase.amount }}{% endif %}</div>
                       </td>
-                      <td class="right aligned"><a class="ui small blue button">Zum Video</a></td>
+                      <td class="right aligned">
+                      {% if purchase.item.livestream %}
+                        <a href="{% url 'events:event' purchase.item.product.event.slug %}" class="ui small blue button">Zum Video</a>
+                      {% endif %}
+                      </td>
                     </tr>
                   {% endfor %}
               </tbody>

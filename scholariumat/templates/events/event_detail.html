@@ -1,44 +1,53 @@
-{% extends "base.html" %}
+{% extends "products/product_detail.html" %}
 {% load markup_tags %}
 {% load product_tags %}
 
 {% block title %}Veranstaltung{% endblock %}
 
-{% block content %}
-  <div class="ui text container">
-<div class="ui basic segment">
-    <h1 class="ui header">{{ object.title }}
+{% block product %}
+
+  <h1 class="ui header">{{ object.title }}
     <div class="ui sub header">{{ object.type }}</div>
-    </h1>
-    {% with object.livestream as livestream %}
-    {% if livestream %}
-      {% is_accessible request livestream.item as accessible %}
-      {% if accessible %}
-        {% if livestream.show %}
-          <div class="ui embed" data-url="{{ livestream.link_embedded }}?autoplay=0&showinfo=0&modestbranding=1&rel=0"></div>
-          <script>
+  </h1>
+  {% with object.livestream as livestream %}
+  {% if livestream %}
+    {% number_accessible request livestream.item as accessible %}
+    {% if accessible %}
+      {% if livestream.show %}
+        <div class="ui embed" data-url="{{ livestream.link_embedded }}?autoplay=0&showinfo=0&modestbranding=1&rel=0"></div>
+        <script>
           $('.ui.embed').embed();
-          </script>
-        {% else %}
-          <div class="ui floating message">Der Livestream erscheint kurz bevor Anfang des Salons an dieser Stelle</div>
-        {% endif %}
+        </script>
+      {% else %}
+        <div class="ui floating message">Der Livestream erscheint kurz bevor Anfang des Salons an dieser Stelle</div>
       {% endif %}
     {% endif %}
-    {% endwith %}
-    <div class="ui items">
-      <div class="item">
-        <i class="calendar icon"></i><div class="content">
-        {{ object.date }}{% if object.end_date %} - {{ object.end_date }}{% endif %}
-      </div></div>
-      {% if object.time_start %}
-        <div class="item">
-          <i class="clock icon"></i><div class="content">
-          {{ object.time_start }}{% if object.time_end %} - {{ object.time_end }}{% endif %}
-        </div></div>
-      {% endif %}
+  {% endif %}
+  {% endwith %}
+  <div class="ui items">
+    <div class="item">
+      <i class="calendar icon"></i>
+      <div class="content">
+        {{ object.date }}
+        {% if object.end_date %}
+          -
+          {{ object.end_date }}
+        {% endif %}
+      </div>
     </div>
-    <p>{{ object.description|apply_markup:"markdown" }}</p>
-{% include 'components/cart_buttons.html' with items=object.product.item_set.all %}
-</div>
-</div>
-{% endblock content %}
+    {% if object.time_start %}
+      <div class="item">
+        <i class="clock icon"></i>
+        <div class="content">
+          {{ object.time_start }}
+          {% if object.time_end %}
+            -
+            {{ object.time_end }}
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+  </div>
+  <p>{{ object.description|apply_markup:"markdown" }}</p>
+
+{% endblock product %}

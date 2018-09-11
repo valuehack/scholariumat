@@ -5,8 +5,8 @@ register = template.Library()
 
 
 @register.simple_tag
-def is_accessible(request, item):
-    return item.is_accessible(request.user.profile)
+def number_accessible(request, item):
+    return item.number_accessible(request.user.profile)
 
 
 @register.simple_tag
