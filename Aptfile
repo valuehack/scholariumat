@@ -1,2 +1,4 @@
 pandoc
 pandoc-citeproc
+texlive-latex-base
+texlive-fonts-recommended

@@ -7,7 +7,7 @@ env:
 install:
   - pip install -r requirements/test.txt
 before_script:
-  - sudo apt-get install -y pandoc pandoc-citeproc
+  - sudo apt-get install -y pandoc pandoc-citeproc texlive-latex-base texlive-fonts-recommended texlive-latex-recommended
   - psql -c 'create database travis_ci_test;' -U postgres
 script:
   - coverage run manage.py test

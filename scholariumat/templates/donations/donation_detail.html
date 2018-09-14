@@ -13,6 +13,7 @@
       {{ object.level.description|apply_markup:"markdown" }}
     </div>
     <div class="ui divider"></div>
+    {% if object.method %}
     <span class="meta">
       <b>Zahlung ({{ object.method.title }}) von {{ object.amount }}€ am {{ object.date }}</b>
         {% if object.reviewed %}
@@ -26,6 +27,7 @@
         </div>
         {% endif %}
     </span>
+    {% endif %}
     <div class="ui right floated image label">
       <i class="clock icon"></i>
       Ablauf
@@ -52,14 +54,16 @@
       {% for donation in profile.donations %}
         <div class="ui clearing segment">
           <span class="ui header">{{ donation.level.title }}</span>
-          <span class="ui image label">
-            {{ donation.method }}
-            {% if donation.reviewed %}
-              <div class="detail">
-                <i class="fitted check icon"></i>
-              </div>
-            {% endif %}
-          </span>
+          {% if donation.method %}
+            <span class="ui image label">
+              {{ donation.method }}
+              {% if donation.reviewed %}
+                <div class="detail">
+                  <i class="fitted check icon"></i>
+                </div>
+              {% endif %}
+            </span>
+          {% endif %}
           <div class="ui right floated image label">
             Höhe
             <div class="detail">

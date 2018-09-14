@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load markup_tags %}
+
+{% block title %}Veranstaltung{% endblock %}
+
+{% block content %}
+  <div class="ui text container">
+    <h1 class="ui centered header">{% firstof object.section_title object.title %}</h1>
+    {% if not request.user.is_authenticated %}<p>{{ object.description|apply_markup:"markdown" }}</p>{% endif %}
+    
+    {% for event in object.event_set.all %}
+    <div class="ui segment">
+      <h2 class="ui header">
+        <a href="{% url 'events:event' event.slug %}">{{ event.title }}</a>
+        <div class="sub header">
+          {{ event.date }}{% if event.time_start %}, {{ event.time_start }}
+          {% if event.time_end %} - {{ event.time_end }}{% endif %}
+          {% endif %}
+          {% if event.end_date %} - {{ event.end_date }}{% endif %}
+        </div>
+      </h2>
+      {{ event.description|apply_markup:"markdown" }}
+    </div>
+    {% endfor %}
+
+</div>
+{% endblock content %}

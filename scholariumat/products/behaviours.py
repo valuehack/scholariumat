@@ -33,7 +33,7 @@ class ProductBase(TitleSlugDescriptionModel, TimeStampedModel, PermalinkAble):
 
 
 class AttachmentBase(models.Model):
-    """Base class to create item attachment classes."""
+    """Base class to create downloadable item attachment classes."""
 
     item = models.OneToOneField('products.Item', on_delete=models.CASCADE)
     format = models.CharField(max_length=10)
@@ -112,12 +112,32 @@ class CartMixin(models.Model):
         return Item.objects.filter(purchase__in=self.purchases)
 
     @property
+    def products_bought(self):
+        from .models import Product
+        return Product.objects.filter(item__purchase__in=self.purchases).distinct()
+
+    def items_accessible(self, product):
+        return self.items_bought.filter(product=product)
+
+    def amount_accessible(self, item):
+        access = item.type.accessible
+        if access is not None and self.amount > access:
+            return 1
+        return self.get_bought_amount(item)
+
+    @property
     def orders(self):
         return self.purchases.filter(item__type__limited=True)
 
     @property
     def events_booked(self):
         return self.purchases.filter(item__type__slug__in=['livestream', 'teilnahme'])
+
+    def get_bought_amount(self, item):
+        n = 0
+        for purchase in self.purchases.filter(item=item):
+            n += purchase.amount
+        return n
 
     class Meta:
         abstract = True

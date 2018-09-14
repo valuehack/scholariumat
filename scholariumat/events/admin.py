@@ -8,6 +8,11 @@ class LivestreamAdmin(admin.ModelAdmin):
     raw_id_fields = ['item']
 
 
-admin.site.register(Event, ProductBaseAdmin)
+class EventAdmin(ProductBaseAdmin):
+    list_display = ProductBaseAdmin.list_display + ['type', 'date']
+    list_filter = ['type', 'date']
+
+
+admin.site.register(Event, EventAdmin)
 admin.site.register(EventType)
 admin.site.register(Livestream, LivestreamAdmin)

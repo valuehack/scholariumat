@@ -307,3 +307,6 @@ MESSAGE_CART_ADDED = "Warenkorb aktualisiert."
 
 # Products
 SHIPPING = 5
+
+# Directories
+TMP_DIR = '/tmp'

@@ -1,11 +1,13 @@
 import logging
-
+import pypandoc
 from pyzotero import zotero, zotero_errors
+from slugify import slugify
 from dateutil.parser import parse
 
 from django.db import models
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
+from django.http import HttpResponse
 
 from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel
 
@@ -30,14 +32,24 @@ class ZotAttachment(AttachmentBase):
     def get(self):
         zot = zotero.Zotero(settings.ZOTERO_USER_ID, settings.ZOTERO_LIBRARY_TYPE, settings.ZOTERO_API_KEY)
         if self.type == 'note':
-            # TODO: Generate pdf
-            return zot.item(self.key)['data']['note']
+            html = zot.item(self.key)['data']['note']
+            path = f'{settings.TMP_DIR}/{self.key}.pdf'
+            pypandoc.convert_text(html, 'pdf', format='html', outputfile=path)
+            logger.debug(f'Conversion to pdf successfull: {self.key}')
+            with open(path, 'rb') as file:
+                response = HttpResponse(file.read(), content_type=f'application/pdf')
         elif self.type == 'file':
             try:
-                return zot.file(self.key)
+                file = zot.file(self.key)
             except zotero_errors.ResourceNotFound:
                 # TODO: Inform scholarium that file is missing
                 logger.exception(f'Zotero: File at {self.key} is missing!')
+                return False
+            response = HttpResponse(file, content_type=f'application/{self.format}')
+
+        response['Content-Disposition'] = f'attachment; \
+            filename={slugify(self.item.product.zotitem.title)}.pdf'
+        return response
 
 
 class Collection(TitleSlugDescriptionModel, PermalinkAble):

@@ -43,12 +43,10 @@ class DownloadMixin():
 
         if 'download' in request.POST:
             item = Item.objects.get(pk=request.POST['download'])
-            if item.is_accessible(request.user.profile):
+            if request.user.profile.amount_accessible(item):
                 download = item.attachment.get()
                 if download:
-                    response = HttpResponse(download, content_type=f'application/{item.attachment.filetype}')
-                    response['Content-Disposition'] = f'attachment; \
-                        filename={slugify(item.product.type.title)}.{item.attachment.filetype}'
+                    return download
                 else:
                     messages.error(request, settings.MESSAGE_UNEXPECTED_ERROR)
                 return response
@@ -91,25 +89,15 @@ class PurchaseView(LoginRequiredMixin, DownloadMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         purchases = self.request.user.profile.purchases
+        products = self.request.user.profile.products_bought
 
         context = {
             'purchases': purchases,
-            'rest': purchases
         }
 
-        seperate_types = {
-            'events': ['livestream', 'attendence'],
-            'lendings': ['lending']
-        }
+        events = products.filter(item__type__slug__in=['livestream', 'attendence'])
+        context['future_events'] = events.filter(event__date__gte=date.today())
+        context['past_events'] = events.filter(event__date__lt=date.today())
 
-        for type, value in seperate_types.items():
-            context[type] = purchases.filter(item__type__slug__in=value)
-            context['rest'] = context['rest'].exclude(item__type__slug__in=value)
-
-        context['future_events'] = context['events'].filter(item__product__event__date__gte=date.today())
-        context['past_events'] = context['events'].filter(item__product__event__date__lt=date.today())
-
-        context['digital_content'] = purchases.filter(item__product__zotitem__isnull=False, item__type__limited=False)
-        context['rest'] = context['rest'].exclude(item__product__zotitem__isnull=False, item__type__limited=False)
-
+        context['digital_content'] = products.filter(zotitem__isnull=False, item__type__limited=False)
         return context

@@ -4,7 +4,31 @@ from datetime import date
 from django.test import TestCase
 from django.conf import settings
 
-from library.models import Collection, ZotItem
+from library.models import Collection, ZotItem, ZotAttachment
+from products.models import ItemType
+
+
+class AttachmentTest(TestCase):
+    def setUp(self):
+        self.mock_settings = {
+            'ZOTERO_USER_ID': '',
+            'ZOTERO_API_KEY': '',
+            'ZOTERO_LIBRARY_TYPE': ''
+        }
+
+    def test_pdf_generation(self):
+        product = ZotItem.objects.create(title='testtitle', slug='testkey')
+        type = ItemType.objects.create(title='typetitle', limited=False)
+        item = product.product.item_set.create(type=type)
+        attachment = ZotAttachment.objects.create(key='foo', type='note', format='pdf', item=item)
+
+        zotero = mock.MagicMock()
+        item = {'data': {'note': 'testtext'}}
+        zotero().item.return_value = item
+        with mock.patch('pyzotero.zotero.Zotero', zotero), self.settings(**self.mock_settings):
+            response = attachment.get()
+
+        self.assertEqual(response.status_code, 200)
 
 
 class ImportTest(TestCase):
