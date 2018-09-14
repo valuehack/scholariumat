@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load blog_tags %}
+{% load static %}
+
+{% block content %}
+  <div class="ui text container">
+    <h1 class="ui centered header">{% block title %}{{ object.title }}{% endblock %}
+      <div class="sub header">
+        {{ object.publish_date }}
+      </div>
+    </h1>
+    <div class="ui hidden divider"></div>
+    {% content_accessible request object as accessible %}
+    {{ object.public|safe }}
+    {% if object.private %}
+      {% if accessible %}
+        {{ object.private|safe }}
+      {% else %}
+        <div class="ui horizontal section divider header">VERTRAULICH</div>
+        <div class="ui floated message">
+          <div class="header">{{ object.private|wordcount }} Wörter</div>
+          <p>
+            {% if request.user.profile.last_donation %}
+              Ihre letzte Unterstützung liegt leider länger als ein Jahr zurück. Um alle Scholien wieder in voller Länge lesen zu können, <a href="{% url 'donations:levels' %}">erneuern Sie bitte Ihre Unterstützung</a>
+            {% else %}
+              Um den Artikel in voller Länge lesen zu können, <a href="{% url 'donations:levels' %}">werden Sie Unterstützer.</a>
+            {% endif %}
+          </p>
+        </div>
+        <div class="ui section divider"></div>
+      {% endif %}
+    {% endif %}
+    {% if object.public2 %}
+      {{ object.public2|safe }}
+    {% endif %}
+    {% if object.references %}
+      <h2 class="ui header">Literatur</h2>
+      {{ object.references|safe }}
+    {% endif %}
+  </div>
+{% endblock content %}

@@ -3,6 +3,7 @@
 
 {% block content %}
 <div class="ui text container">
+  <h1 class="ui centered header">Anmeldung</h1>
   <form class="ui form" method="POST">
     {% csrf_token %}
     {% render_form form %}

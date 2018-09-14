@@ -21,7 +21,7 @@ class PublishAble(models.Model):
     """Makes a model publishable by manipulating publish_date."""
 
     publish_date = models.DateField(null=True, blank=True)
-    priority = models.PositiveSmallIntegerField(default=0)
+    publish_priority = models.PositiveSmallIntegerField(default=0)
 
     def publish(self):
         self.publish_date = date.today()
@@ -58,7 +58,7 @@ class PublishAble(models.Model):
 
     class Meta:
         abstract = True
-        ordering = ['-publish_date', '-priority']
+        ordering = ['-publish_date', '-publish_priority']
 
 
 class PermalinkAble(models.Model):
