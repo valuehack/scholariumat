@@ -109,7 +109,7 @@ class CartMixin(models.Model):
     @property
     def items_bought(self):
         from .models import Item
-        return Item.objects.filter(purchase__in=self.purchases)
+        return Item.objects.filter(purchase__in=self.purchases).distinct()
 
     @property
     def products_bought(self):
