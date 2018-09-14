@@ -43,12 +43,10 @@ class DownloadMixin():
 
         if 'download' in request.POST:
             item = Item.objects.get(pk=request.POST['download'])
-            if item.is_accessible(request.user.profile):
+            if request.user.profile.amount_accessible(item):
                 download = item.attachment.get()
                 if download:
-                    response = HttpResponse(download, content_type=f'application/{item.attachment.filetype}')
-                    response['Content-Disposition'] = f'attachment; \
-                        filename={slugify(item.product.type.title)}.{item.attachment.filetype}'
+                    return download
                 else:
                     messages.error(request, settings.MESSAGE_UNEXPECTED_ERROR)
                 return response
@@ -102,5 +100,4 @@ class PurchaseView(LoginRequiredMixin, DownloadMixin, TemplateView):
         context['past_events'] = events.filter(event__date__lt=date.today())
 
         context['digital_content'] = products.filter(zotitem__isnull=False, item__type__limited=False)
-
         return context

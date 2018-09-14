@@ -1,0 +1,31 @@
+{% load product_tags %}
+<table class="ui large table">
+  <tbody>
+    {% for product in products %}
+      <tr>
+        <td>
+          <a href="{{ product.type.get_absolute_url }}">{{ product }}</a>
+          {% items_accessible request product as items %}
+          {% for item in items %}
+            {% if not item.attachment %}
+              <div class="ui label">{{ item.type }}</div>
+            {% endif %}
+          {% endfor %}
+        </td>
+        <td class="right aligned single line">
+          {% for item in items %}
+            {% if item.livestream %}
+              <a href="{% url 'events:event' product.event.slug %}" class="ui small blue button">Zum Livestream</a>
+            {% elif item.attachment %}
+              <form target="_blank" id="{{ item.pk }}_dlform" method="POST" style="display: inline;">
+                {% csrf_token %}
+                <input type="hidden" name="download" value="{{ item.pk }}">
+              </form>
+              <a onclick='document.forms["{{ item.pk }}_dlform"].submit(); return false;' class="ui small blue button">{{ item.type }}</a>
+            {% endif %}
+          {% endfor %}
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>

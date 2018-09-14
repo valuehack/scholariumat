@@ -78,12 +78,6 @@ class Item(TimeStampedModel):
     def is_purchasable(self, profile):
         return profile.amount >= self.type.purchasable
 
-    def number_accessible(self, profile):
-        access = self.type.accessible
-        if access is not None and profile.amount > access:
-            return 1
-        return profile.get_bought_amount(self)
-
     def download(self):
         return self.attachment.get() if self.attachment else None
 
