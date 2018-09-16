@@ -309,9 +309,6 @@ class Lending(TimeStampedModel, CommentAble):
     returned = models.DateField(blank=True, null=True)
     charged = models.DateField(blank=True, null=True)
 
-    def __str__(self):
-        return '%s: %s' % (self.profile.__str__(), self.purchase.__str__())
-
     class Meta:
         verbose_name = 'Leihe'
         verbose_name_plural = 'Leihen'
