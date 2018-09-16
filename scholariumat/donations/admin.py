@@ -18,7 +18,7 @@ class LevelFilter(SimpleListFilter):
         return [(level.amount, level) for level in DonationLevel.objects.all()]
 
     def queryset(self, request, queryset):
-        return queryset.filter(donation__amount__gte=self.value()) if self.value() else queryset.all()
+        return queryset.filter(donation__amount__gte=self.value()).distinct() if self.value() else queryset.all()
 
 
 admin.site.register(DonationLevel)
