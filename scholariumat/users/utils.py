@@ -7,6 +7,7 @@ from django.utils import translation
 from django.utils.translation import gettext as _
 
 from .models import Profile
+from donations.models import Donation, DonationLevel
 
 
 logger = logging.getLogger(__name__)
@@ -14,9 +15,12 @@ logger = logging.getLogger(__name__)
 
 def import_from_json():
     database = json.load(open(settings.ROOT_DIR.path('db.json')))
+
+    # Users, Profiles
+    logger.info('Importing users and profiles...')
+
     users = [i for i in database if i['model'] == 'Grundgeruest.nutzer']
     profiles = [i for i in database if i['model'] == 'Grundgeruest.scholariumprofile']
-    donations = [i for i in database if i['model'] == 'Grundgeruest.unterstuetzung']
 
     translation.activate('de')
     # from django_countries import countries
@@ -273,7 +277,8 @@ def import_from_json():
     }
     countries = {y: x for x, y in COUNTRIES.items()}
 
-    logger.info('Importing users...')
+    profile_pks = {}
+
     for user in users:
         user_defaults = {
             'password': user['fields']['password']
@@ -281,15 +286,14 @@ def import_from_json():
         user_new, created = get_user_model().objects.update_or_create(
             email=user['fields']['email'], defaults=user_defaults)
         if created:
-            logger.debug(f'Created user {user_new.name}')
+            logger.debug(f'Created user {user_new.email}')
 
         profile_defaults = {
             'name': '{} {}'.format(user['fields']['first_name'], user['fields']['last_name'])
         }
-        profile = next((profile['fields'] for profile in profiles if profile['fields']['user'] == user['pk']), None)
+        profile = next((profile for profile in profiles if profile['fields']['user'] == user['pk']), None)
 
         if profile:
-
             fields = [
                 ('balance', 'guthaben'),
                 ('organization', 'firma'),
@@ -297,25 +301,75 @@ def import_from_json():
                 ('postcode', 'plz'),
                 ('city', 'ort'),
                 ('phone', 'tel')
-                ('old_pk', 'pk')
             ]
 
             for field in fields:
-                if profile[field[1]]:
-                    profile_defaults[field[0]] = profile[field[1]]
+                if profile['fields'][field[1]]:
+                    profile_defaults[field[0]] = profile['fields'][field[1]]
 
-            if profile['anrede'] == 'Herr':
+            if profile['fields']['anrede'] == 'Herr':
                 profile_defaults['title'] = 'm'
-            elif profile['anrede'] == 'Frau':
+            elif profile['fields']['anrede'] == 'Frau':
                 profile_defaults['title'] = 'f'
 
-            profile_defaults['country'] = countries.get(profile['land'])
+            country = profile['fields']['land']
+            if len(country) > 2:
+                country = country.replace('Oe', 'Ö')
+                country_code = countries.get(country)
+                if country and not country_code:
+                    if country == 'United Kingdom':
+                        profile_defaults['country'] = 'UK'
+                    else:
+                        print(country, country_code)
+                        raise Exception
+                else:
+                    profile_defaults['country'] = country_code
+            else:
+                profile_defaults['country'] = country
 
-        try:
-            Profile.objects.update_or_create(user=user_new, defaults=profile_defaults)
-        except Exception as e:
-            print(e)
-            print(profile)
-            return profile_defaults
+            new, created = Profile.objects.update_or_create(user=user_new, defaults=profile_defaults)
+            profile_pks[profile['pk']] = new
+
+    # DonationLevels
+    logger.info('Importing donationlevels...')
+
+    levels = [i for i in database if i['model'] == 'Produkte.spendenstufe']
+
+    donationlevel_pks = {}
+
+    for level in levels:
+        new, created = DonationLevel.objects.update_or_create(
+            amount=level['fields']['spendenbeitrag'],
+            defaults={'title': level['fields']['bezeichnung']})
+        donationlevel_pks[level['pk']] = new
+
+        if created:
+            logger.debug(f'Created level {new.title}')
+
+    # Donations
+    logger.info('Importing donations...')
+
+    donations = [i for i in database if i['model'] == 'Grundgeruest.unterstuetzung']
+
+    for donation in donations:
+        profile = profile_pks[donation['fields']['profil']]
+
+        donation_defaults = {
+            'review': donation['fields']['ueberprueft']
+        }
+
+        if donation['fields']['zahlung_id']:
+            donation_defaults['payment_id'] = donation['fields']['zahlung_id']
+
+        new, created = Donation.objects.update_or_create(
+            profile=profile,
+            amount=donationlevel_pks[donation['fields']['stufe']].amount,
+            date=donation['fields']['datum'],
+            defaults=donation_defaults)
+
+        if created:
+            logger.debug(f'Created donation from {profile.name}')
+
+        new.execute()
 
     logger.info('Import finished')
