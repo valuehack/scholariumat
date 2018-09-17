@@ -27,7 +27,7 @@ class Product(models.Model):
 
     @property
     def items_available(self):
-        return self.item_set.filter(Q(price__gt=0), Q(amount__gt=0) | Q(type__limited=False))
+        return self.item_set.filter(Q(price__gt=0), Q(amount__gt=0) | Q(amount__isnull=True))
 
     def __str__(self):
         return self.type.__str__()
@@ -39,7 +39,6 @@ class Product(models.Model):
 
 class ItemType(TitleDescriptionModel, TimeStampedModel):
     slug = models.SlugField()
-    limited = models.BooleanField(default=True)
     shipping = models.BooleanField(default=False)
     requestable = models.BooleanField(default=False)
     purchasable = models.SmallIntegerField(default=0)
@@ -65,7 +64,7 @@ class Item(TimeStampedModel):
 
     @property
     def available(self):
-        return self.price and (self.amount or not self.type.limited)
+        return self.price and (self.amount is None or self.amount > 0)
 
     @property
     def attachment(self):
@@ -98,7 +97,7 @@ class Item(TimeStampedModel):
         """Only add a limited product if no purchase of it exists."""
         if not self.is_purchasable(profile):
             return False
-        if not self.type.limited:
+        if self.amount is None:
             purchase, created = Purchase.objects.get_or_create(profile=profile, item=self, defaults={'executed': False})
             if not created:
                 return False
@@ -111,7 +110,7 @@ class Item(TimeStampedModel):
 
     def sell(self, amount):
         """Given an amount, tries to lower local amount. Ignored if not limited."""
-        if self.type.limited:
+        if self.amount is not None:
             new_amount = self.amount - amount
             if new_amount >= 0:
                 self.amount = new_amount
@@ -125,7 +124,7 @@ class Item(TimeStampedModel):
 
     def refill(self, amount):
         """Refills amount."""
-        if self.type.limited:
+        if self.amount is not None:
             self.amount += amount
             self.save()
 
@@ -148,12 +147,12 @@ class Purchase(TimeStampedModel, CommentAble):
 
     @property
     def total(self):
-        return self.item.price * self.amount if self.item.type.limited else self.item.price
+        return self.item.price * self.amount if self.item.amount is not None else self.item.price
 
     @property
     def available(self):
         """Check if required amount is available"""
-        return self.item.available and (not self.item.type.limited or self.item.amount >= self.amount)
+        return self.item.available and (self.item.amount is None or self.item.amount >= self.amount)
 
     def execute(self):
         if self.profile.spend(self.total):

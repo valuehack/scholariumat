@@ -41,7 +41,7 @@
             <tr>
               <td></td>
               <td class="center aligned">
-                {% if purchase.item.type.limited %}{{ purchase.amount }}{% endif %}
+                {% if purchase.item.amount != None %}{{ purchase.amount }}{% endif %}
               </td>
               <td><div class="ui label">{{ purchase.item.type }}</div></td>
               <td>

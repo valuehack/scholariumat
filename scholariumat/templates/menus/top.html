@@ -34,7 +34,7 @@
                   <tr>
                     <td></td>
                     <td class="center aligned">
-                        {% if purchase.item.type.limited %}{{ purchase.amount }}{% endif %}
+                        {% if purchase.item.amount != None %}{{ purchase.amount }}{% endif %}
                     </td>
                     <td>
                       {% if not purchase.available %}

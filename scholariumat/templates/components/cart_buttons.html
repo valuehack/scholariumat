@@ -21,7 +21,7 @@
               {% amount_accessible request item as accessible %}
               {% is_purchasable request item as purchasable %}
 
-              {% if accessible and not item.type.limited %}
+              {% if accessible and item.amount == None %}
                 {% if item.attachment %}
                   <form target="_blank" id="{{ item.pk }}_dlform" method="POST">
                     {% csrf_token %}

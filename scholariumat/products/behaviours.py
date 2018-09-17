@@ -127,7 +127,7 @@ class CartMixin(models.Model):
 
     @property
     def orders(self):
-        return self.purchases.filter(item__type__limited=True)
+        return self.purchases.filter(amount__isnull=False)
 
     @property
     def events_booked(self):

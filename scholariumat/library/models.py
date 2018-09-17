@@ -76,7 +76,6 @@ class Collection(TitleSlugDescriptionModel, PermalinkAble):
 
         type_defaults = {
             'title': 'Verkauf',
-            'limited': True,
             'shipping': True
         }
         item_defaults = {'amount': 1}
@@ -139,7 +138,6 @@ class Collection(TitleSlugDescriptionModel, PermalinkAble):
         logger.info('updating attachments/notes...')
 
         type_defaults = {
-            'limited': False,
             'shipping': False
         }
         item_defaults = {'price': settings.DEFAULT_FILE_PRICE}

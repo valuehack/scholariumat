@@ -99,5 +99,5 @@ class PurchaseView(LoginRequiredMixin, DownloadMixin, TemplateView):
         context['future_events'] = events.filter(event__date__gte=date.today())
         context['past_events'] = events.filter(event__date__lt=date.today())
 
-        context['digital_content'] = products.filter(zotitem__isnull=False, item__type__limited=False)
+        context['digital_content'] = products.filter(zotitem__isnull=False, item__amount__isnull=True)
         return context
