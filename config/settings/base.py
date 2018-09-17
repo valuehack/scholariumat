@@ -258,6 +258,12 @@ LOGGING = {
     }
 }
 
+# django-countries
+
+COUNTRIES_FIRST = ['AT', 'DE', 'CH', 'LI']
+COUNTRIES_FIRST_REPEAT = True
+COUNTRIES_FIRST_BREAK = 20 * '-'
+
 # Users
 EXPIRATION_DAYS = 30  # Number of days before expiration to recieve warning
 DONATION_PERIOD = 365  # Days until new donations expire
