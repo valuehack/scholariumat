@@ -18,7 +18,7 @@ class AttachmentTest(TestCase):
 
     def test_pdf_generation(self):
         product = ZotItem.objects.create(title='testtitle', slug='testkey')
-        type = ItemType.objects.create(title='typetitle', limited=False)
+        type = ItemType.objects.create(title='typetitle')
         item = product.product.item_set.create(type=type)
         attachment = ZotAttachment.objects.create(key='foo', type='note', format='pdf', item=item)
 
