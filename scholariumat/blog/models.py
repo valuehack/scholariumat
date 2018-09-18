@@ -27,14 +27,18 @@ class Bibliography(TimeStampedModel):
 
 
 class Article(TitleSlugDescriptionModel, PublishAble):
-    text = models.TextField()
+    text = models.TextField(blank=True)
     public = models.TextField(editable=False, blank=True)
     public2 = models.TextField(editable=False, blank=True)
     private = models.TextField(editable=False, blank=True)
     references = models.TextField(editable=False, blank=True)
 
     def markdown_to_html(self):
-        logger.debug('Generating article...')
+        if not self.text:
+            logger.error(f'{self.title}: No article text found')
+            return False
+
+        logger.debug(f'Generating article {self.title}...')
         try:
             bib = Bibliography.objects.get(slug='zotero')
         except ObjectDoesNotExist:
@@ -119,6 +123,6 @@ class Article(TitleSlugDescriptionModel, PublishAble):
     def __str__(self):
         return self.title
 
-    class Meta:
+    class Meta(PublishAble.Meta):
         verbose_name = "Artikel"
         verbose_name_plural = "Artikel"

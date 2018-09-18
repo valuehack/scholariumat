@@ -1,12 +1,14 @@
 from datetime import date
+from slugify import slugify
 
 from django.db import models
 from django.urls import reverse
+from django.http import HttpResponse
 
 from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel
 
 from products.models import Item
-from products.behaviours import ProductBase
+from products.behaviours import ProductBase, AttachmentBase
 from framework.behaviours import PublishAble
 
 
@@ -30,7 +32,7 @@ class Event(ProductBase, PublishAble):
     time_start = models.TimeField(null=True, blank=True)
     time_end = models.TimeField(null=True, blank=True)
 
-    class Meta:
+    class Meta(PublishAble.Meta):
         verbose_name = "Veranstaltung"
         verbose_name_plural = "Veranstaltungen"
 
@@ -64,3 +66,13 @@ class Livestream(TimeStampedModel):
 
     def __str__(self):
         return f"Livestream: {self.item.product}"
+
+
+class Recording(AttachmentBase):
+    file = models.FileField()
+
+    def get(self):
+        response = HttpResponse(self.file, content_type=f'application/{self.format}')
+        response['Content-Disposition'] = f'attachment; \
+            filename={slugify(self.item.product.zotitem.title)}.{self.format}'
+        return response
