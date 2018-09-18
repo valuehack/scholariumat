@@ -61,8 +61,6 @@ class Profile(CartMixin, DonationMixin, LendingMixin, BalanceMixin, TimeStampedM
     country = CountryField('Land', blank_label='- Bitte Ihr Land auswählen -', null=True, blank=True)
     phone = models.CharField('Telefonnummer', max_length=40, blank=True)
 
-    pk_old = models.SmallIntegerField(null=True, blank=True, unique=True)
-
     @property
     def address(self):
         return '{}\n{}\n{} {}\n{}'.format(self.name, self.street, self.postcode,
