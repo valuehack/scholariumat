@@ -1,6 +1,7 @@
 import logging
 
 from django.db import models
+from django.db.models import Q
 from django.conf import settings
 from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel
 
@@ -108,22 +109,16 @@ class CartMixin(models.Model):
 
     @property
     def items_bought(self):
+        # TODO: Only for the same product!
         from .models import Item
-        return Item.objects.filter(purchase__in=self.purchases).distinct()
+        return Item.objects.filter(
+            Q(purchase__in=self.purchases) |
+            Q(type__contained_in__item__purchase__in=self.purchases)).distinct()
 
     @property
     def products_bought(self):
         from .models import Product
-        return Product.objects.filter(item__purchase__in=self.purchases).distinct()
-
-    def items_accessible(self, product):
-        return self.items_bought.filter(product=product)
-
-    def amount_accessible(self, item):
-        access = item.type.accessible
-        if access is not None and self.amount > access:
-            return 1
-        return self.get_bought_amount(item)
+        return Product.objects.filter(item__in=self.items_bought).distinct()
 
     @property
     def orders(self):
@@ -133,7 +128,20 @@ class CartMixin(models.Model):
     def events_booked(self):
         return self.purchases.filter(item__type__slug__in=['livestream', 'teilnahme'])
 
-    def get_bought_amount(self, item):
+    def amount_accessible(self, item):
+        access = item.type.accessible_at
+        if access is not None and self.amount > access:
+            return 1
+        return self.amount_bought(item)
+
+    def items_accessible(self, product):
+        items = []
+        for item in product.item_set.all():
+            if self.amount_accessible(item):
+                items.append(item)
+        return items
+
+    def amount_bought(self, item):
         n = 0
         for purchase in self.purchases.filter(item=item):
             n += purchase.amount

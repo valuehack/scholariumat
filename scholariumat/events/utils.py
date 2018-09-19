@@ -48,6 +48,8 @@ def import_from_json():
         if created:
             logging.debug(f'Created event {new.title}')
 
+        # TODO: buy livestream and recording together
+
         if event['fields']['link']:
             livestream_type, created = ItemType.objects.get_or_create(
                 slug='livestream',

@@ -41,8 +41,9 @@ class ItemType(TitleDescriptionModel, TimeStampedModel):
     slug = models.SlugField()
     shipping = models.BooleanField(default=False)
     requestable = models.BooleanField(default=False)
-    purchasable = models.SmallIntegerField(default=0)
-    accessible = models.SmallIntegerField(null=True, blank=True)
+    purchasable_at = models.SmallIntegerField(default=0)
+    accessible_at = models.SmallIntegerField(null=True, blank=True)
+    contains = models.ManyToManyField('self', related_name='contained_in', symmetrical=False)
     unavailability_notice = models.CharField(max_length=20, default="Nicht verfügbar")
 
     def __str__(self):
@@ -75,7 +76,7 @@ class Item(TimeStampedModel):
                 return getattr(self, item_rel.name)
 
     def is_purchasable(self, profile):
-        return profile.amount >= self.type.purchasable
+        return profile.amount >= self.type.purchasable_at
 
     def download(self):
         return self.attachment.get() if self.attachment else None

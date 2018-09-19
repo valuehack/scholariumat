@@ -340,7 +340,9 @@ def import_from_json():
     for level in levels:
         new, created = DonationLevel.objects.update_or_create(
             amount=level['fields']['spendenbeitrag'],
-            defaults={'title': level['fields']['bezeichnung']})
+            defaults={
+                'title': level['fields']['bezeichnung'],
+                'description': level['fields']['beschreibung']})
         donationlevel_pks[level['pk']] = new
 
         if created:
