@@ -43,7 +43,6 @@ class ItemType(TitleDescriptionModel, TimeStampedModel):
     requestable = models.BooleanField(default=False)
     purchasable_at = models.SmallIntegerField(default=0)
     accessible_at = models.SmallIntegerField(null=True, blank=True)
-    contains = models.ManyToManyField('self', related_name='contained_in', symmetrical=False)
     unavailability_notice = models.CharField(max_length=20, default="Nicht verfügbar")
 
     def __str__(self):
@@ -62,6 +61,11 @@ class Item(TimeStampedModel):
     price = models.SmallIntegerField('Preis', null=True, blank=True)
     amount = models.IntegerField('Anzahl', null=True, blank=True)
     requests = models.ManyToManyField('users.Profile', related_name='item_requests', blank=True, editable=False)
+
+    @property
+    def title(self):
+        # TODO
+        pass
 
     @property
     def available(self):
@@ -146,7 +150,6 @@ class Purchase(TimeStampedModel, CommentAble):
     shipped = models.DateField(blank=True, null=True)
     executed = models.BooleanField(default=False)
     free = models.BooleanField(default=False)
-    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, editable=False, related_name='children')
 
     @property
     def total(self):
@@ -164,15 +167,6 @@ class Purchase(TimeStampedModel, CommentAble):
             if self.item.sell(self.amount):
                 self.executed = True
                 self.save()
-
-                # TODO: Warum ist livestream/recording nicht eine Sache?
-                # Create purchases for contained items
-                for item in self.item.product.item_set.all():
-                    if item.type in self.item.type.contains.all():
-                            purchase = self.__class__.objects.create(
-                                item=item, profile=self.profile, free=True, parent=self)
-                            purchase.execute()
-
                 return True
             else:
                 self.profile.refill(self.total)

@@ -48,17 +48,15 @@ def import_from_json():
         if created:
             logging.debug(f'Created event {new.title}')
 
-        # TODO: buy livestream and recording together
+        livestream_type, created = ItemType.objects.get_or_create(
+            slug='livestream',
+            defaults={'title': 'Livestream'})
+
+        livestream_item, created = Item.objects.get_or_create(
+            product=new.product, type=livestream_type,
+            defaults={'price': 5})
 
         if event['fields']['link']:
-            livestream_type, created = ItemType.objects.get_or_create(
-                slug='livestream',
-                defaults={'title': 'Livestream'})
-
-            livestream_item, created = Item.objects.get_or_create(
-                product=new.product, type=livestream_type,
-                defaults={'price': 5})
-
             livestream, created = Livestream.objects.update_or_create(
                 item=livestream_item,
                 defaults={'link': event['fields']['link']})
@@ -66,16 +64,8 @@ def import_from_json():
                 logging.debug(f'Created livestream for {new.title}')
 
         if event['fields']['datei']:
-            recording_type, created = ItemType.objects.get_or_create(
-                slug='recording',
-                defaults={'title': 'Aufzeichnung'})
-
-            recording_item, created = Item.objects.get_or_create(
-                product=new.product, type=recording_type,
-                defaults={'price': 5})
-
             recording, created = Recording.objects.update_or_create(
-                item=recording_item,
+                item=livestream_item,
                 defaults={'file': event['fields']['datei']})
             if created:
                 logging.debug(f'Created recording for {new.title}')

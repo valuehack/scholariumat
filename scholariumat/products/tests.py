@@ -39,21 +39,6 @@ class PurchaseTest(ProductTest):
         purchase = Purchase.objects.create(profile=self.user.profile, item=self.item, amount=3)
         self.assertEqual(purchase.total, amount * self.price_start)
 
-    def test_buy_together(self):
-        itemtype = ItemType.objects.create(title='Kauf2')
-        self.itemtype.contains.add(itemtype)
-        item2 = Item.objects.create(type=itemtype, price=1, amount=10, product=self.book.product)
-
-        self.user.profile.refill(10)
-        purchase = Purchase.objects.create(profile=self.user.profile, item=self.item, amount=1)
-        purchase.execute()
-        self.assertEqual(purchase.executed, True)
-        self.assertIn(item2, self.user.profile.items_bought)
-        
-        # Test revert
-        purchase.revert()
-        self.assertNotIn(item2, self.user.profile.items_bought)
-
 
 class ItemTest(ProductTest):
     def setUp(self):
