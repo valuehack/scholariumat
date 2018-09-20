@@ -49,6 +49,10 @@ class PurchaseTest(ProductTest):
         purchase.execute()
         self.assertEqual(purchase.executed, True)
         self.assertIn(item2, self.user.profile.items_bought)
+        
+        # Test revert
+        purchase.revert()
+        self.assertNotIn(item2, self.user.profile.items_bought)
 
 
 class ItemTest(ProductTest):

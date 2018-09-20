@@ -145,9 +145,13 @@ class Purchase(TimeStampedModel, CommentAble):
     amount = models.SmallIntegerField(default=1)
     shipped = models.DateField(blank=True, null=True)
     executed = models.BooleanField(default=False)
+    free = models.BooleanField(default=False)
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, editable=False, related_name='children')
 
     @property
     def total(self):
+        if self.free:
+            return 0
         return self.item.price * self.amount if self.item.amount is not None else self.item.price
 
     @property
@@ -160,6 +164,15 @@ class Purchase(TimeStampedModel, CommentAble):
             if self.item.sell(self.amount):
                 self.executed = True
                 self.save()
+
+                # TODO: Warum ist livestream/recording nicht eine Sache?
+                # Create purchases for contained items
+                for item in self.item.product.item_set.all():
+                    if item.type in self.item.type.contains.all():
+                            purchase = self.__class__.objects.create(
+                                item=item, profile=self.profile, free=True, parent=self)
+                            purchase.execute()
+
                 return True
             else:
                 self.profile.refill(self.total)

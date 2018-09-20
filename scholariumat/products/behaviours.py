@@ -109,11 +109,8 @@ class CartMixin(models.Model):
 
     @property
     def items_bought(self):
-        # TODO: Only for the same product!
         from .models import Item
-        return Item.objects.filter(
-            Q(purchase__in=self.purchases) |
-            Q(type__contained_in__item__purchase__in=self.purchases)).distinct()
+        return Item.objects.filter(purchase__in=self.purchases).distinct()
 
     @property
     def products_bought(self):
@@ -135,17 +132,10 @@ class CartMixin(models.Model):
         return self.amount_bought(item)
 
     def items_accessible(self, product):
-        items = []
-        for item in product.item_set.all():
-            if self.amount_accessible(item):
-                items.append(item)
-        return items
+        return [item for item in product.item_set.all() if self.amount_accessible(item)]
 
     def amount_bought(self, item):
-        n = 0
-        for purchase in self.purchases.filter(item=item):
-            n += purchase.amount
-        return n
+        return sum(p.amount for p in self.purchases.filter(item=item))
 
     class Meta:
         abstract = True
