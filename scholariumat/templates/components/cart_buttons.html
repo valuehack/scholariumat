@@ -4,6 +4,30 @@
 {% if items %}
 <div class="ui right rail">
   <div class="ui sticky">
+  
+  <h3 class="ui header">Downloads</h3>
+  <div class="ui centered card">
+    <div class="content">
+      <div class="column">
+        {% for item in items %}
+          {% amount_accessible request item as accessible %}
+          {% if accessible %}
+            {% for attachment in item.attachments %}
+              <div class="row">
+                <form target="_blank" id="{{ attachment.pk }}_dlform" method="POST" style="display: inline;">
+                  {% csrf_token %}
+                  <input type="hidden" name="download" value="{{ item.pk }}">
+                  <input type="hidden" name="id" value="{{ forloop.counter0 }}">
+                </form>
+                <a onclick='document.forms["{{ attachment.pk }}_dlform"].submit(); return false;' class="ui small blue button">{{ attachment.type }}</a>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  
   <h3 class="ui header">Kaufoptionen</h3>
   <div class="ui centered card">
     <div class="content">
@@ -22,22 +46,10 @@
               {% is_purchasable request item as purchasable %}
 
               {% if accessible and item.amount == None %}
-                {% if item.attachment %}
-                  <form target="_blank" id="{{ item.pk }}_dlform" method="POST">
-                    {% csrf_token %}
-                    <input type="hidden" name="download" value="{{ item.pk }}">
-                  </form>
-                  <div class="ui button">
-                    {{ item.type.title }}
-                  </div>
-                  <a onclick='document.forms["{{ item.pk }}_dlform"].submit(); return false;' class="ui blue left pointing label">Download</a>
-              
-                {% else %}
-                  <div class="ui disabled button">
-                    {{ item.type.title }}
-                  </div>
-                  <div class="ui grey left pointing label">Bereits erworben</div>
-                {% endif %}
+                <div class="ui disabled button">
+                  {{ item.type.title }}
+                </div>
+                <div class="ui grey left pointing label">Bereits erworben</div>
 
               {% elif purchasable %} 
                 {% if item.available %}

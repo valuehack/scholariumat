@@ -1,5 +1,6 @@
 import logging
 from slugify import slugify
+from itertools import chain
 
 from django.db import models
 from django.db.models import Q
@@ -30,6 +31,9 @@ class Product(models.Model):
     @property
     def items_available(self):
         return self.item_set.filter(Q(price__gt=0), Q(amount__gt=0) | Q(amount__isnull=True))
+
+    def items_accessible(self, profile):
+        return [item for item in self.item_set.all() if item.amount_accessible(profile)]
 
     def __str__(self):
         return self.type.__str__()
@@ -63,32 +67,32 @@ class Item(TimeStampedModel):
     price = models.SmallIntegerField('Preis', null=True, blank=True)
     amount = models.IntegerField('Anzahl', null=True, blank=True)
     requests = models.ManyToManyField('users.Profile', related_name='item_requests', blank=True, editable=False)
-    attachments = models.ManyToManyField('products.Attachment', blank=True)
-
-    @property
-    def title(self):
-        # TODO
-        pass
 
     @property
     def available(self):
         return self.price and (self.amount is None or self.amount > 0)
 
     @property
-    def attachments(self): # TODO: Rename
+    def attachments(self):
         """Fetches related attachments"""
         attachment_list = []
         for item_rel in self._meta.get_fields():
             if item_rel.related_model and issubclass(item_rel.related_model, AttachmentBase)\
-                    and getattr(self, item_rel.name, False):
-                attachment_list.append(getattr(self, item_rel.name))
+                    and getattr(self, item_rel.get_accessor_name(), False):
+                attachment_list += (getattr(self, item_rel.get_accessor_name()).all())
         return attachment_list
 
     def is_purchasable(self, profile):
         return profile.amount >= self.type.purchasable_at
 
-    def download(self):
-        return self.attachment.get() if self.attachment else None
+    def amount_accessible(self, profile):
+        access = self.type.accessible_at
+        if access is not None and profile.amount > access:
+            return 1
+        return self.amount_bought(profile)
+
+    def amount_bought(self, profile):
+        return sum(p.amount for p in profile.purchases.filter(item=self))
 
     def request(self, profile):
         if self.type.requestable:
@@ -191,12 +195,15 @@ class Purchase(TimeStampedModel, CommentAble):
 
 
 class AttachmentType(TitleSlugDescriptionModel):
+    def __str__(self):
+        return self.title
+
     class Meta:
         verbose_name = 'Anhangstyp'
         verbose_name_plural = 'Anhangstypen'
 
 
-class Attachment(AttachmentBase):
+class FileAttachment(AttachmentBase):
     file = models.FileField()
 
     def get(self):

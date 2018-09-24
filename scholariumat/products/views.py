@@ -41,10 +41,11 @@ class DownloadMixin():
         else:
             response = self.get(request, *args, **kwargs)
 
-        if 'download' in request.POST and 'attachment' in request.POST:
+        if 'download' in request.POST:
             item = Item.objects.get(pk=request.POST['download'])
             if request.user.profile.amount_accessible(item):
-                download = item.attachments[request.POST['attachment']].get()
+                attachment = request.POST.get('id', 0)
+                download = item.attachments[attachment].get()
                 if download:
                     return download
                 else:

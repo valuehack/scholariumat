@@ -6,12 +6,12 @@ register = template.Library()
 
 @register.simple_tag
 def items_accessible(request, product):
-    return request.user.profile.items_accessible(product)
+    return product.items_accessible(request.user.profile)
 
 
 @register.simple_tag
 def amount_accessible(request, item):
-    return request.user.profile.amount_accessible(item)
+    return item.amount_accessible(request.user.profile)
 
 
 @register.simple_tag

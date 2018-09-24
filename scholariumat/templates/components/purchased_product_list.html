@@ -17,19 +17,11 @@
             {% if item.livestream %}
               <a href="{% url 'events:event' product.event.slug %}" class="ui small blue button">Zum Livestream</a>
             {% endif %}
-            {% if item.zotattachment %}
-              <form target="_blank" id="{{ item.zotattachment.pk }}_dlform" method="POST" style="display: inline;">
-                {% csrf_token %}
-                <input type="hidden" name="download" value="{{ item.pk }}">
-                <input type="hidden" name="zotattachment" value="{{ item.zotattachment.pk }}">
-              </form>
-              <a onclick='document.forms["{{ attachment.pk }}_dlform"].submit(); return false;' class="ui small blue button">{{ item.type }}</a>
-            {% endif %}
             {% for attachment in item.attachments %}
               <form target="_blank" id="{{ attachment.pk }}_dlform" method="POST" style="display: inline;">
                 {% csrf_token %}
                 <input type="hidden" name="download" value="{{ item.pk }}">
-                <input type="hidden" name="attachment" value="{{ forloop.counter }}">
+                <input type="hidden" name="id" value="{{ forloop.counter0 }}">
               </form>
               <a onclick='document.forms["{{ attachment.pk }}_dlform"].submit(); return false;' class="ui small blue button">{{ attachment.type }}</a>
             {% endfor %}

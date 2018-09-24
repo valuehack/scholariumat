@@ -41,8 +41,11 @@ class AttachmentBase(models.Model):
     def get(self):
         pass
 
+    # def is_accessible(self, profile):
+    #     return bool(self.item.amount_accessible(profile))
+
     def __str__(self):
-        return f'{self.item}: {self.type}'
+        return f'{self.item}: {self.type} Attachment'
 
     class Meta:
         abstract = True
@@ -126,18 +129,6 @@ class CartMixin(models.Model):
     @property
     def events_booked(self):
         return self.purchases.filter(item__type__slug__in=['livestream', 'teilnahme'])
-
-    def amount_accessible(self, item):
-        access = item.type.accessible_at
-        if access is not None and self.amount > access:
-            return 1
-        return self.amount_bought(item)
-
-    def items_accessible(self, product):
-        return [item for item in product.item_set.all() if self.amount_accessible(item)]
-
-    def amount_bought(self, item):
-        return sum(p.amount for p in self.purchases.filter(item=item))
 
     class Meta:
         abstract = True
