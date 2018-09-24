@@ -1,5 +1,6 @@
 import json
 import logging
+import pypandoc
 
 from django.conf import settings
 
@@ -37,6 +38,7 @@ def import_from_json():
             if article['fields']['literatur'] is not None:
                 defaults['references'] = article['fields']['literatur']
 
-        new, created = Article.objects.update_or_create(title=article['fields']['bezeichnung'], defaults=defaults)
+        title = pypandoc.convert(article['fields']['bezeichnung'], 'md', format='html')
+        new, created = Article.objects.update_or_create(title=title, defaults=defaults)
         if created:
             logger.debug(f'Created article {new.title}')
