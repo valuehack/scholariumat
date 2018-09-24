@@ -38,7 +38,7 @@ class Article(TitleSlugDescriptionModel, PublishAble):
             logger.error(f'{self.title}: No article text found')
             return False
 
-        logger.debug(f'Generating article {self.title}...')
+        logger.debug(f'Generating article {self.title}')
         try:
             bib = Bibliography.objects.get(slug='zotero')
         except ObjectDoesNotExist:

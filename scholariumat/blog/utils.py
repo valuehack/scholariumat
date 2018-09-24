@@ -30,13 +30,13 @@ def import_from_json():
         if md_article:
             defaults['text'] = md_article['fields']['text']
         else:
-            defaults['public'] = article['fields']['inhalt']
+            text = [pypandoc.convert(article['fields']['inhalt'], 'md', format='html')]
             if article['fields']['inhalt_nur_fuer_angemeldet'] is not None:
-                defaults['private'] = article['fields']['inhalt_nur_fuer_angemeldet']
+                text.append(pypandoc.convert(article['fields']['inhalt_nur_fuer_angemeldet'], 'md', format='html'))
             if article['fields']['inhalt2'] is not None:
-                defaults['public2'] = article['fields']['inhalt2']
-            if article['fields']['literatur'] is not None:
-                defaults['references'] = article['fields']['literatur']
+                text.append(pypandoc.convert(article['fields']['inhalt2'], 'md', format='html'))
+
+            defaults['text'] = '\n\n<<<\n\n'.join(text)
 
         title = pypandoc.convert(article['fields']['bezeichnung'], 'md', format='html')
         new, created = Article.objects.update_or_create(title=title, defaults=defaults)
