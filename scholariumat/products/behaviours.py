@@ -1,7 +1,6 @@
 import logging
 
 from django.db import models
-from django.db.models import Q
 from django.conf import settings
 from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel
 
@@ -36,11 +35,14 @@ class ProductBase(TitleSlugDescriptionModel, TimeStampedModel, PermalinkAble):
 class AttachmentBase(models.Model):
     """Base class to create downloadable item attachment classes."""
 
-    item = models.OneToOneField('products.Item', on_delete=models.CASCADE)
-    format = models.CharField(max_length=10)
+    type = models.ForeignKey('products.AttachmentType', on_delete=models.PROTECT)
+    item = models.ForeignKey('products.Item', on_delete=models.CASCADE)
 
     def get(self):
         pass
+
+    def __str__(self):
+        return f'{self.item}: {self.type}'
 
     class Meta:
         abstract = True

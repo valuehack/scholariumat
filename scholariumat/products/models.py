@@ -1,12 +1,14 @@
 import logging
+from slugify import slugify
 
 from django.db import models
 from django.db.models import Q
 from django.core.mail import mail_managers
 from django.urls import reverse_lazy
 from django.conf import settings
+from django.http import HttpResponse
 
-from django_extensions.db.models import TimeStampedModel, TitleDescriptionModel
+from django_extensions.db.models import TimeStampedModel, TitleDescriptionModel, TitleSlugDescriptionModel
 
 from framework.behaviours import CommentAble
 from .behaviours import AttachmentBase
@@ -61,6 +63,7 @@ class Item(TimeStampedModel):
     price = models.SmallIntegerField('Preis', null=True, blank=True)
     amount = models.IntegerField('Anzahl', null=True, blank=True)
     requests = models.ManyToManyField('users.Profile', related_name='item_requests', blank=True, editable=False)
+    attachments = models.ManyToManyField('products.Attachment', blank=True)
 
     @property
     def title(self):
@@ -72,12 +75,14 @@ class Item(TimeStampedModel):
         return self.price and (self.amount is None or self.amount > 0)
 
     @property
-    def attachment(self):
-        """Fetches related attachment"""
+    def attachments(self): # TODO: Rename
+        """Fetches related attachments"""
+        attachment_list = []
         for item_rel in self._meta.get_fields():
-            if item_rel.one_to_one and issubclass(item_rel.related_model, AttachmentBase) and \
-               getattr(self, item_rel.name, False):
-                return getattr(self, item_rel.name)
+            if item_rel.related_model and issubclass(item_rel.related_model, AttachmentBase)\
+                    and getattr(self, item_rel.name, False):
+                attachment_list.append(getattr(self, item_rel.name))
+        return attachment_list
 
     def is_purchasable(self, profile):
         return profile.amount >= self.type.purchasable_at
@@ -183,3 +188,23 @@ class Purchase(TimeStampedModel, CommentAble):
     class Meta():
         verbose_name = 'Kauf'
         verbose_name_plural = 'Käufe'
+
+
+class AttachmentType(TitleSlugDescriptionModel):
+    class Meta:
+        verbose_name = 'Anhangstyp'
+        verbose_name_plural = 'Anhangstypen'
+
+
+class Attachment(AttachmentBase):
+    file = models.FileField()
+
+    def get(self):
+        response = HttpResponse(self.file, content_type=f'application/{self.format}')
+        response['Content-Disposition'] = f'attachment; \
+            filename={slugify(self.item.product)}.{self.format}'
+        return response
+
+    class Meta:
+        verbose_name = 'Anhang'
+        verbose_name_plural = 'Anhänge'
