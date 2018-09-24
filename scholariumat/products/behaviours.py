@@ -41,9 +41,6 @@ class AttachmentBase(models.Model):
     def get(self):
         pass
 
-    # def is_accessible(self, profile):
-    #     return bool(self.item.amount_accessible(profile))
-
     def __str__(self):
         return f'{self.item}: {self.type} Attachment'
 

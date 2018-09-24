@@ -6,7 +6,9 @@
 {% block content %}
   <div class="ui text container">
     <h1 class="ui centered header">{% firstof object.section_title object.title %}</h1>
-    {% if not request.user.is_authenticated %}<p>{{ object.description|apply_markup:"markdown" }}</p>{% endif %}
+    {% if not request.user.is_authenticated %}
+      <p>{{ object.description|apply_markup:"markdown" }}</p>
+    {% endif %}
     
     {% for event in object.event_set.all %}
     <div class="ui segment">
@@ -19,7 +21,9 @@
           {% if event.end_date %} - {{ event.end_date }}{% endif %}
         </div>
       </h2>
-      {{ event.description|apply_markup:"markdown" }}
+      {% if event.description is not None %}
+        {{ event.description|apply_markup:"markdown" }}
+      {% endif %}
     </div>
     {% endfor %}
 

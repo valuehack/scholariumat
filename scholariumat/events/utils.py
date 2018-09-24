@@ -1,10 +1,11 @@
 import json
 import logging
+import pypandoc
 
 from django.conf import settings
 
-from products.models import Item, ItemType
-from .models import Event, Livestream, Recording, EventType
+from products.models import Item, ItemType, FileAttachment, AttachmentType
+from .models import Event, Livestream, EventType
 
 
 logger = logging.getLogger(__name__)
@@ -14,34 +15,44 @@ def import_from_json():
     database = json.load(open(settings.ROOT_DIR.path('db.json')))
 
     # Articles
-    logger.info('Importing articles...')
+    logger.info('Importing events...')
 
     events = [i for i in database if i['model'] == 'Veranstaltungen.veranstaltung']
     event_types = [i for i in database if i['model'] == 'Veranstaltungen.artderveranstaltung']
+
+    for type in event_types:
+        type_name = type['fields']['bezeichnung']
+        description = pypandoc.convert(type['fields']['beschreibung'], 'md', format='html')
+        if type_name == 'Salon':
+            type, created = EventType.objects.update_or_create(
+                slug='salon',
+                defaults={'title': type_name, 'section_title': 'Salons', 'description': description})
+        elif type_name == 'Seminar':
+            type, created = EventType.objects.update_or_create(
+                slug='seminar',
+                defaults={'title': type_name, 'section_title': 'Seminare', 'description': description})
+        elif type_name == 'Vorlesung' or type_name == 'Vortrag':
+            type, created = EventType.objects.update_or_create(
+                slug='vortrag',
+                defaults={'title': 'Vortrag', 'section_title': 'Vorträge'})
 
     for event in events:
         event_type = next((i for i in event_types if event['fields']['art_veranstaltung'] == i['pk']), None)
 
         defaults = {
-            'description': event['fields']['beschreibung'],
+            'description': pypandoc.convert(event['fields']['beschreibung'], 'md', format='html')
         }
 
         type_name = event_type['fields']['bezeichnung']
         if type_name == 'Salon':
-            type, created = EventType.objects.get_or_create(
-                slug='salon', defaults={'section_title': 'Salons'})
+            type = EventType.objects.get(slug='salon',)
         elif type_name == 'Seminar':
-            type, created = EventType.objects.get_or_create(
-                slug='seminar', defaults={'section_title': 'Seminare'})
+            type = EventType.objects.get(slug='seminar')
         elif type_name == 'Vorlesung' or type_name == 'Vortrag':
-            type, created = EventType.objects.get_or_create(
-                slug='vortrag', defaults={'section_title': 'Vorträge'})
-        else:
-            raise TypeError(f'Type {type_name} not found.')
-            return False
+            type = EventType.objects.get(slug='vortrag')
 
         new, created = Event.objects.update_or_create(
-            title=event['fields']['bezeichnung'],
+            title=pypandoc.convert(event['fields']['bezeichnung'], 'md', format='html'),
             date=event['fields']['datum'],
             type=type,
             defaults=defaults)
@@ -64,8 +75,11 @@ def import_from_json():
                 logging.debug(f'Created livestream for {new.title}')
 
         if event['fields']['datei']:
-            recording, created = Recording.objects.update_or_create(
+            attachment_type, created = AttachmentType.objects.get_or_create(
+                slug='recording', defaults={'title': 'Aufzeichnung'})
+            recording, created = FileAttachment.objects.update_or_create(
                 item=livestream_item,
+                type=attachment_type,
                 defaults={'file': event['fields']['datei']})
             if created:
                 logging.debug(f'Created recording for {new.title}')
