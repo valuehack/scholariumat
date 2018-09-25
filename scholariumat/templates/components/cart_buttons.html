@@ -24,36 +24,19 @@
 
               {% if accessible and item.amount == None %}
                 {% if item.attachments %}
-                {{item.attachments}}
-                <div class="row">
-                  {% if item.attachments|length >= 2 %}
-                        <div class="ui small blue dropdown icon button">
-                          <i class="ui download icon"></i>
-                          {{ item.type }}
-                          <div class="menu">
-                            {% for attachment in item.attachments %}
-                              <form target="_blank" id="{{ item.pk }}_{{ forloop.counter0 }}_dlform" method="POST" style="display: inline;">
-                                {% csrf_token %}
-                                <input type="hidden" name="download" value="{{ item.pk }}">
-                                <input type="hidden" name="id" value="{{ forloop.counter0 }}">
-                              </form>
-                              <a onclick='document.forms["{{ item.pk }}_{{ forloop.counter0 }}_dlform"].submit(); return false;' class="item">
-                                {{ attachment.type }}
-                              </a>
-                            {% endfor %}
-                          </div>
-                        </div>
-                  {% else %}
-                      <form target="_blank" id="{{ item.pk }}_dlform" method="POST" style="display: inline;">
+                    {% for attachment in item.attachments %}
+                    <div class="row">
+                      <form target="_blank" id="{{ item.pk }}_{{ forloop.counter0 }}_dlform" method="POST" style="display: inline;">
                         {% csrf_token %}
                         <input type="hidden" name="download" value="{{ item.pk }}">
+                        <input type="hidden" name="id" value="{{ forloop.counter0 }}">
                       </form>
-                      <a onclick='document.forms["{{ item.pk }}_dlform"].submit(); return false;' class="ui small blue icon button">
+                      <a onclick='document.forms["{{ item.pk }}_{{ forloop.counter0 }}_dlform"].submit(); return false;' class="ui small blue icon button">
                         <i class="ui download icon"></i>
-                        {{ item.attachments.0.type.title }}
+                        {{ attachment }}
                       </a>
-                  {% endif %}
-                </div>
+                    </div>
+                    {% endfor %}
                 {% else %}
                   <div class="ui disabled button">
                     {{ item.type.title }}

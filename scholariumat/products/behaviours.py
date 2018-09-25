@@ -42,7 +42,9 @@ class AttachmentBase(models.Model):
         pass
 
     def __str__(self):
-        return f'{self.item}: {self.type} Attachment'
+        item_type = self.item.type.__str__()
+        type = self.type.__str__()
+        return f'{item_type}: {type}' if item_type != type else type
 
     class Meta:
         abstract = True

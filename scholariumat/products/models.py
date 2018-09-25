@@ -211,9 +211,10 @@ class FileAttachment(AttachmentBase):
     file = models.FileField()
 
     def get(self):
-        response = HttpResponse(self.file, content_type=f'application/{self.format}')
+        print(self.file)
+        response = HttpResponse(self.file, content_type=f'application/{self.type.slug}')
         response['Content-Disposition'] = f'attachment; \
-            filename={slugify(self.item.product)}.{self.format}'
+            filename={slugify(self.item.product)}.{self.type.slug}'
         return response
 
     class Meta:

@@ -313,6 +313,7 @@ MESSAGE_UNEXPECTED_ERROR = "Ein unerwarteter Fehler ist aufgetreten. "\
 MESSAGE_REQUEST_SEND = "Vielen Dank für Ihr Interesse. Wir werden Sie benachrichtigen, \
     wenn das Produkt verfügbar ist."
 MESSAGE_CART_ADDED = "Warenkorb aktualisiert."
+MESSAGE_NOT_FOUND = "Bitte entschuldigen Sie, die Datei scheint nicht mehr vorhanden zu sein."
 
 # Products
 SHIPPING = 5

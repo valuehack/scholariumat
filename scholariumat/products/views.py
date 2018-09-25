@@ -5,6 +5,7 @@ from django.conf import settings
 from django.urls import reverse
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.mail import mail_managers
 
 from vanilla import ListView, TemplateView
 from braces.views import LoginRequiredMixin, MessageMixin
@@ -43,13 +44,19 @@ class DownloadMixin():
         if 'download' in request.POST:
             item = Item.objects.get(pk=request.POST['download'])
             if item.amount_accessible(request.user.profile):
-                attachment = int(request.POST.get('id', '0'))
-                download = item.attachments[attachment].get()
-                if download:
-                    return download
-                else:
-                    messages.error(request, settings.MESSAGE_UNEXPECTED_ERROR)
-                return response
+                attachment = item.attachments[int(request.POST.get('id', '0'))]
+                try:
+                    download = attachment.get()
+                    if download:
+                        return download
+                    raise FileNotFoundError()
+                except FileNotFoundError:
+                    messages.error(request, settings.MESSAGE_NOT_FOUND)
+                    edit_url = reverse('admin:products_item_change', args=[item.pk])
+                    mail_managers(
+                        f'Fehlende Datei: {item.product} als {attachment}',
+                        f'Das Item kann unter folgender URL editiert werden: {settings.DEFAULT_DOMAIN}{edit_url}')
+
             else:
                 return HttpResponse(status=405)
 
