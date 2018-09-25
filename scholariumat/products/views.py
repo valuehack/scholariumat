@@ -1,5 +1,4 @@
 from datetime import date
-from slugify import slugify
 
 from django.contrib import messages
 from django.conf import settings
@@ -43,8 +42,8 @@ class DownloadMixin():
 
         if 'download' in request.POST:
             item = Item.objects.get(pk=request.POST['download'])
-            if request.user.profile.amount_accessible(item):
-                attachment = request.POST.get('id', 0)
+            if item.amount_accessible(request.user.profile):
+                attachment = int(request.POST.get('id', '0'))
                 download = item.attachments[attachment].get()
                 if download:
                     return download

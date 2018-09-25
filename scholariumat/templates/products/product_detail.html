@@ -5,7 +5,7 @@
     <div class="ui basic segment">
       {% block product %}
       {% endblock product %}
-      {% include 'components/cart_buttons.html' with items=object.product.item_set.all %}
+      {% include 'components/cart_buttons.html' with product=object.product %}
     </div>
   </div>
 {% endblock content %}

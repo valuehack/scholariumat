@@ -1,6 +1,5 @@
 import logging
 from slugify import slugify
-from itertools import chain
 
 from django.db import models
 from django.db.models import Q
@@ -34,6 +33,11 @@ class Product(models.Model):
 
     def items_accessible(self, profile):
         return [item for item in self.item_set.all() if item.amount_accessible(profile)]
+
+    def attachments_accessible(self, profile):
+        attachments = []
+        for item in self.items_accessible(profile):
+            attachments += [attachment for attachment in item.attachments if item.amount_accessible(profile)]
 
     def __str__(self):
         return self.type.__str__()

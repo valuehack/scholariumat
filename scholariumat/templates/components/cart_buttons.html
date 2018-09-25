@@ -1,38 +1,15 @@
 {% load product_tags %}
 {% load donation_tags %}
 
-{% if items %}
+{% if product.item_set.all %}
 <div class="ui right rail">
   <div class="ui sticky">
-  
-  <h3 class="ui header">Downloads</h3>
+
+  <h3 class="ui header">Formate</h3>
   <div class="ui centered card">
     <div class="content">
       <div class="column">
-        {% for item in items %}
-          {% amount_accessible request item as accessible %}
-          {% if accessible %}
-            {% for attachment in item.attachments %}
-              <div class="row">
-                <form target="_blank" id="{{ attachment.pk }}_dlform" method="POST" style="display: inline;">
-                  {% csrf_token %}
-                  <input type="hidden" name="download" value="{{ item.pk }}">
-                  <input type="hidden" name="id" value="{{ forloop.counter0 }}">
-                </form>
-                <a onclick='document.forms["{{ attachment.pk }}_dlform"].submit(); return false;' class="ui small blue button">{{ attachment.type }}</a>
-              </div>
-            {% endfor %}
-          {% endif %}
-        {% endfor %}
-      </div>
-    </div>
-  </div>
-  
-  <h3 class="ui header">Kaufoptionen</h3>
-  <div class="ui centered card">
-    <div class="content">
-      <div class="column">
-        {% for item in items %}
+        {% for item in product.item_set.all %}
           {% if forloop.counter is not 1 %}
             <div class="ui divider"></div>
           {% endif %}
@@ -46,10 +23,43 @@
               {% is_purchasable request item as purchasable %}
 
               {% if accessible and item.amount == None %}
-                <div class="ui disabled button">
-                  {{ item.type.title }}
+                {% if item.attachments %}
+                {{item.attachments}}
+                <div class="row">
+                  {% if item.attachments|length >= 2 %}
+                        <div class="ui small blue dropdown icon button">
+                          <i class="ui download icon"></i>
+                          {{ item.type }}
+                          <div class="menu">
+                            {% for attachment in item.attachments %}
+                              <form target="_blank" id="{{ item.pk }}_{{ forloop.counter0 }}_dlform" method="POST" style="display: inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="download" value="{{ item.pk }}">
+                                <input type="hidden" name="id" value="{{ forloop.counter0 }}">
+                              </form>
+                              <a onclick='document.forms["{{ item.pk }}_{{ forloop.counter0 }}_dlform"].submit(); return false;' class="item">
+                                {{ attachment.type }}
+                              </a>
+                            {% endfor %}
+                          </div>
+                        </div>
+                  {% else %}
+                      <form target="_blank" id="{{ item.pk }}_dlform" method="POST" style="display: inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="download" value="{{ item.pk }}">
+                      </form>
+                      <a onclick='document.forms["{{ item.pk }}_dlform"].submit(); return false;' class="ui small blue icon button">
+                        <i class="ui download icon"></i>
+                        {{ item.attachments.0.type.title }}
+                      </a>
+                  {% endif %}
                 </div>
-                <div class="ui grey left pointing label">Bereits erworben</div>
+                {% else %}
+                  <div class="ui disabled button">
+                    {{ item.type.title }}
+                  </div>
+                  <div class="ui grey left pointing label">Bereits erworben</div>
+                {% endif %}
 
               {% elif purchasable %} 
                 {% if item.available %}
