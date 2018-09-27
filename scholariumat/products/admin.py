@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
 
-from .models import Item, ItemType, Product, Purchase
+from .models import Item, ItemType, Product, Purchase, FileAttachment
 
 
 class ProductBaseAdmin(admin.ModelAdmin):
@@ -17,6 +17,7 @@ class ProductBaseAdmin(admin.ModelAdmin):
 
 class ItemInline(admin.TabularInline):
     model = Item
+    show_change_link = True
 
 
 class ProductAdmin(admin.ModelAdmin):
@@ -32,7 +33,12 @@ class PurchaseAdmin(admin.ModelAdmin):
     readonly_fields = ['executed']
 
 
+class AttachmentInline(admin.TabularInline):
+    model = FileAttachment
+
+
 class ItemAdmin(admin.ModelAdmin):
+    inlines = [AttachmentInline]
     raw_id_fields = ['product']
     list_display = ['type', 'price', 'product']
 

@@ -16,13 +16,15 @@
           {% for item in items %}
             {% if item.livestream %}
               <a href="{% url 'events:event' product.event.slug %}" class="ui small blue button">Zum Livestream</a>
-            {% elif item.attachment %}
-              <form target="_blank" id="{{ item.pk }}_dlform" method="POST" style="display: inline;">
+            {% endif %}
+            {% for attachment in item.attachments %}
+              <form target="_blank" id="{{ attachment.pk }}_dlform" method="POST" style="display: inline;">
                 {% csrf_token %}
                 <input type="hidden" name="download" value="{{ item.pk }}">
+                <input type="hidden" name="id" value="{{ forloop.counter0 }}">
               </form>
-              <a onclick='document.forms["{{ item.pk }}_dlform"].submit(); return false;' class="ui small blue button">{{ item.type }}</a>
-            {% endif %}
+              <a onclick='document.forms["{{ attachment.pk }}_dlform"].submit(); return false;' class="ui small blue button">{{ attachment.type }}</a>
+            {% endfor %}
           {% endfor %}
         </td>
       </tr>

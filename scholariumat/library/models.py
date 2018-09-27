@@ -11,7 +11,7 @@ from django.http import HttpResponse
 
 from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel
 
-from products.models import Purchase, ItemType
+from products.models import Purchase, ItemType, AttachmentType
 from products.behaviours import AttachmentBase, ProductBase
 from framework.behaviours import CommentAble, PermalinkAble
 
@@ -21,31 +21,31 @@ logger = logging.getLogger(__name__)
 
 class ZotAttachment(AttachmentBase):
 
-    TYPE_CHOICES = [
+    FORMAT_CHOICES = [
         ('file', 'Datei'),
         ('note', 'Notiz')
     ]
 
     key = models.CharField(max_length=100, blank=True)
-    type = models.CharField(max_length=5, choices=TYPE_CHOICES)
+    format = models.CharField(max_length=5, choices=FORMAT_CHOICES)
 
     def get(self):
         zot = zotero.Zotero(settings.ZOTERO_USER_ID, settings.ZOTERO_LIBRARY_TYPE, settings.ZOTERO_API_KEY)
-        if self.type == 'note':
+        if self.format == 'note':
             html = zot.item(self.key)['data']['note']
             path = f'{settings.TMP_DIR}/{self.key}.pdf'
             pypandoc.convert_text(html, 'pdf', format='html', outputfile=path)
             logger.debug(f'Conversion to pdf successfull: {self.key}')
             with open(path, 'rb') as file:
                 response = HttpResponse(file.read(), content_type=f'application/pdf')
-        elif self.type == 'file':
+        elif self.format == 'file':
             try:
                 file = zot.file(self.key)
             except zotero_errors.ResourceNotFound:
                 # TODO: Inform scholarium that file is missing
                 logger.exception(f'Zotero: File at {self.key} is missing!')
                 return False
-            response = HttpResponse(file, content_type=f'application/{self.format}')
+            response = HttpResponse(file, content_type=f'application/{self.type.slug}')
 
         response['Content-Disposition'] = f'attachment; \
             filename={slugify(self.item.product.zotitem.title)}.pdf'
@@ -57,7 +57,7 @@ class Collection(TitleSlugDescriptionModel, PermalinkAble):
 
     def sync(self):
         """
-        Retrieves and saves metadata from all items, attachmets and notes inside the collection from zotero.
+        Retrieves and saves metadata from all items, attachments and notes inside the collection from zotero.
         """
         logger.info('Retrieving items in {}'.format(self.title))
 
@@ -171,10 +171,12 @@ class Collection(TitleSlugDescriptionModel, PermalinkAble):
         logger.info('cleaning up...')
         child_keys = [child['data']['key'] for child in children]
         for zot_item in ZotItem.objects.filter(collection=self):
-            # Only delete items with zotero attachment
-            # TODO: Avoid queryset -> list
-            for item in zot_item.product.item_set.filter(zotattachment__isnull=False):
-                if item.zotattachment.key not in child_keys:
+            for item in zot_item.product.item_set.filter(type__slug__in=settings.DOWNLOAD_FORMATS):
+                attachments = ZotAttachment.objects.filter(item=item)
+                for attachment in attachments:
+                    if attachment.key not in child_keys:
+                        attachment.delete()
+                if not item.attachments:
                     item.delete()
 
         logger.info('Sync finished.')
@@ -276,15 +278,18 @@ class ZotItem(ProductBase):
         item = self.product.item_set.update_or_create(type=itemtype, defaults=item_defaults)[0]
 
         if file_key:  # Create/Update attachment if necessary
+            attachment_type, created = AttachmentType.objects.get_or_create(slug='pdf', defaults={'title': 'PDF'})
+            if created:
+                logger.debug('Created attachment type {}'.format(attachment_type))
             defaults = {
                 'key': file_key,
-                'format': 'pdf'
+                'type': attachment_type
             }
             if type == 'note':
-                defaults['type'] = type
+                defaults['format'] = type
             else:
-                defaults['type'] = 'file'
-            ZotAttachment.objects.update_or_create(item=item, defaults=defaults)
+                defaults['format'] = 'file'
+            attachment, created = ZotAttachment.objects.update_or_create(item=item, defaults=defaults)
         return item
 
     def get_or_create_author(self, name):

@@ -1,12 +1,14 @@
 import logging
+from slugify import slugify
 
 from django.db import models
 from django.db.models import Q
 from django.core.mail import mail_managers
 from django.urls import reverse_lazy
 from django.conf import settings
+from django.http import HttpResponse
 
-from django_extensions.db.models import TimeStampedModel, TitleDescriptionModel
+from django_extensions.db.models import TimeStampedModel, TitleDescriptionModel, TitleSlugDescriptionModel
 
 from framework.behaviours import CommentAble
 from .behaviours import AttachmentBase
@@ -29,6 +31,14 @@ class Product(models.Model):
     def items_available(self):
         return self.item_set.filter(Q(price__gt=0), Q(amount__gt=0) | Q(amount__isnull=True))
 
+    def items_accessible(self, profile):
+        return [item for item in self.item_set.all() if item.amount_accessible(profile)]
+
+    def attachments_accessible(self, profile):
+        attachments = []
+        for item in self.items_accessible(profile):
+            attachments += [attachment for attachment in item.attachments if item.amount_accessible(profile)]
+
     def __str__(self):
         return self.type.__str__()
 
@@ -41,8 +51,8 @@ class ItemType(TitleDescriptionModel, TimeStampedModel):
     slug = models.SlugField()
     shipping = models.BooleanField(default=False)
     requestable = models.BooleanField(default=False)
-    purchasable = models.SmallIntegerField(default=0)
-    accessible = models.SmallIntegerField(null=True, blank=True)
+    purchasable_at = models.SmallIntegerField(default=0)
+    accessible_at = models.SmallIntegerField(null=True, blank=True)
     unavailability_notice = models.CharField(max_length=20, default="Nicht verfügbar")
 
     def __str__(self):
@@ -67,18 +77,26 @@ class Item(TimeStampedModel):
         return self.price and (self.amount is None or self.amount > 0)
 
     @property
-    def attachment(self):
-        """Fetches related attachment"""
+    def attachments(self):
+        """Fetches related attachments"""
+        attachment_list = []
         for item_rel in self._meta.get_fields():
-            if item_rel.one_to_one and issubclass(item_rel.related_model, AttachmentBase) and \
-               getattr(self, item_rel.name, False):
-                return getattr(self, item_rel.name)
+            if item_rel.related_model and issubclass(item_rel.related_model, AttachmentBase)\
+                    and getattr(self, item_rel.get_accessor_name(), False):
+                attachment_list += (getattr(self, item_rel.get_accessor_name()).all())
+        return attachment_list
 
     def is_purchasable(self, profile):
-        return profile.amount >= self.type.purchasable
+        return profile.amount >= self.type.purchasable_at
 
-    def download(self):
-        return self.attachment.get() if self.attachment else None
+    def amount_accessible(self, profile):
+        access = self.type.accessible_at
+        if access is not None and profile.amount > access:
+            return 1
+        return self.amount_bought(profile)
+
+    def amount_bought(self, profile):
+        return sum(p.amount for p in profile.purchases.filter(item=self))
 
     def request(self, profile):
         if self.type.requestable:
@@ -144,9 +162,12 @@ class Purchase(TimeStampedModel, CommentAble):
     amount = models.SmallIntegerField(default=1)
     shipped = models.DateField(blank=True, null=True)
     executed = models.BooleanField(default=False)
+    free = models.BooleanField(default=False)
 
     @property
     def total(self):
+        if self.free:
+            return 0
         return self.item.price * self.amount if self.item.amount is not None else self.item.price
 
     @property
@@ -175,3 +196,27 @@ class Purchase(TimeStampedModel, CommentAble):
     class Meta():
         verbose_name = 'Kauf'
         verbose_name_plural = 'Käufe'
+
+
+class AttachmentType(TitleSlugDescriptionModel):
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        verbose_name = 'Anhangstyp'
+        verbose_name_plural = 'Anhangstypen'
+
+
+class FileAttachment(AttachmentBase):
+    file = models.FileField()
+
+    def get(self):
+        print(self.file)
+        response = HttpResponse(self.file, content_type=f'application/{self.type.slug}')
+        response['Content-Disposition'] = f'attachment; \
+            filename={slugify(self.item.product)}.{self.type.slug}'
+        return response
+
+    class Meta:
+        verbose_name = 'Anhang'
+        verbose_name_plural = 'Anhänge'

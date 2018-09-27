@@ -30,10 +30,6 @@ class Event(ProductBase, PublishAble):
     time_start = models.TimeField(null=True, blank=True)
     time_end = models.TimeField(null=True, blank=True)
 
-    class Meta:
-        verbose_name = "Veranstaltung"
-        verbose_name_plural = "Veranstaltungen"
-
     @property
     def livestream(self):
         return Livestream.objects.get(item__product__event=self)
@@ -43,6 +39,11 @@ class Event(ProductBase, PublishAble):
 
     def __str__(self):
         return '%s: %s' % (self.type.title, self.title)
+
+    class Meta:
+        ordering = ['-date']
+        verbose_name = "Veranstaltung"
+        verbose_name_plural = "Veranstaltungen"
 
 
 class Livestream(TimeStampedModel):

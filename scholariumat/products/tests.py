@@ -11,8 +11,8 @@ class ProductTest(TestCase):
         self.user = get_user_model().objects.create(email='a.b@c.de')
         Profile.objects.create(user=self.user)
         self.book = ZotItem.objects.create(title='Testbook', slug='testslug')
-        itemtype = ItemType.objects.create(title='Kauf')
-        self.item = Item.objects.create(type=itemtype, price=price, amount=amount, product=self.book.product)
+        self.itemtype = ItemType.objects.create(title='Kauf')
+        self.item = Item.objects.create(type=self.itemtype, price=price, amount=amount, product=self.book.product)
 
 
 class PurchaseTest(ProductTest):

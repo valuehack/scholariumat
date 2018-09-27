@@ -258,6 +258,12 @@ LOGGING = {
     }
 }
 
+# django-countries
+
+COUNTRIES_FIRST = ['AT', 'DE', 'CH', 'LI']
+COUNTRIES_FIRST_REPEAT = True
+COUNTRIES_FIRST_BREAK = 20 * '-'
+
 # Users
 EXPIRATION_DAYS = 30  # Number of days before expiration to recieve warning
 DONATION_PERIOD = 365  # Days until new donations expire
@@ -307,6 +313,7 @@ MESSAGE_UNEXPECTED_ERROR = "Ein unerwarteter Fehler ist aufgetreten. "\
 MESSAGE_REQUEST_SEND = "Vielen Dank für Ihr Interesse. Wir werden Sie benachrichtigen, \
     wenn das Produkt verfügbar ist."
 MESSAGE_CART_ADDED = "Warenkorb aktualisiert."
+MESSAGE_NOT_FOUND = "Bitte entschuldigen Sie, die Datei scheint nicht mehr vorhanden zu sein."
 
 # Products
 SHIPPING = 5

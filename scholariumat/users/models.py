@@ -54,12 +54,12 @@ class Profile(CartMixin, DonationMixin, LendingMixin, BalanceMixin, TimeStampedM
 
     title = models.CharField('Anrede', max_length=1, choices=TITLE_CHOICES, null=True)
     name = models.CharField(max_length=200, blank=True)
-    organization = models.CharField('Firma', max_length=30, blank=True)
-    street = models.CharField('Straße', max_length=30, blank=True)
+    organization = models.CharField('Firma', max_length=70, blank=True)
+    street = models.CharField('Straße', max_length=50, blank=True)
     postcode = models.CharField('PLZ', max_length=10, blank=True)
     city = models.CharField('Ort', max_length=30, blank=True)
     country = CountryField('Land', blank_label='- Bitte Ihr Land auswählen -', null=True, blank=True)
-    phone = models.CharField('Telefonnummer', max_length=20, blank=True)
+    phone = models.CharField('Telefonnummer', max_length=40, blank=True)
 
     @property
     def address(self):

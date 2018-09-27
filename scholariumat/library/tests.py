@@ -5,7 +5,7 @@ from django.test import TestCase
 from django.conf import settings
 
 from library.models import Collection, ZotItem, ZotAttachment
-from products.models import ItemType
+from products.models import ItemType, AttachmentType
 
 
 class AttachmentTest(TestCase):
@@ -20,7 +20,8 @@ class AttachmentTest(TestCase):
         product = ZotItem.objects.create(title='testtitle', slug='testkey')
         type = ItemType.objects.create(title='typetitle')
         item = product.product.item_set.create(type=type)
-        attachment = ZotAttachment.objects.create(key='foo', type='note', format='pdf', item=item)
+        attachment_type = AttachmentType.objects.create(title='PDF')
+        attachment = ZotAttachment.objects.create(key='foo', format='note', type=attachment_type, item=item)
 
         zotero = mock.MagicMock()
         item = {'data': {'note': 'testtext'}}
@@ -105,4 +106,9 @@ class SyncTest(TestCase):
         self.assertTrue(testitem.product.item_set.filter(type__slug='purchase'))
         # Test if purchase item with attachment and got created
         pdf_item = testitem.product.item_set.get(type__slug='pdf')
-        self.assertEqual(pdf_item.attachment.key, items[1]['data']['key'])
+        self.assertEqual(pdf_item.attachments[0].key, items[1]['data']['key'])
+        # Test deletion
+        zotero().everything.return_value = [items[0]]
+        with mock.patch('pyzotero.zotero.Zotero', zotero), self.settings(**self.mock_settings):
+            collection.sync()
+        self.assertEqual(pdf_item.attachments, [])
