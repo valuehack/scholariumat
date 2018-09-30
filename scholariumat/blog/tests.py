@@ -32,4 +32,5 @@ class PandocTest(TestCase):
 
     def test_pandoc(self):
         article = Article.objects.create(title='Testarticle', text='#test')
-        self.assertEqual(article.public, '<h1 id="test">test</h1>\n')
+        self.assertNotEqual(article.public, '')
+        self.assertNotEqual(article.public, '#test')
