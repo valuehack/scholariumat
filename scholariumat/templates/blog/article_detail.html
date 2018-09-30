@@ -1,10 +1,11 @@
 {% extends "base.html" %}
+{% load markup_tags %}
 {% load blog_tags %}
 {% load static %}
 
 {% block content %}
   <div class="ui text container">
-    <h1 class="ui centered header">{% block title %}{{ object.title }}{% endblock %}
+    <h1 class="ui centered header">{% block title %}{{ object.title|apply_markup:"markdown" }}{% endblock %}
       <div class="sub header">
         {{ object.publish_date }}
       </div>
