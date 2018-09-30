@@ -1,13 +1,12 @@
 import logging
 import pypandoc
 import re
+import tempfile
 
 from django.urls import reverse
 from django.db import models
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
-from django.core.files.storage import default_storage
-
 from pyzotero import zotero
 from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel
 
@@ -46,11 +45,12 @@ class Article(TitleSlugDescriptionModel, PublishAble):
             logger.exception('No bibliography found')
             return False
 
-        with default_storage.open(bib.file.name) as bibliography:
-            md = f"---\nbibliography: {bibliography}\n---\n\n{self.text}\n\n## Literatur"
+        tmp_file = tempfile.NamedTemporaryFile(suffix='.bib')
+        tmp_file.write(bib.file.read())
 
-            # to html
-            html = pypandoc.convert(md, 'html', format='md', filters=['pandoc-citeproc'])
+        md = f"---\nbibliography: {tmp_file.name}\n---\n\n{self.text}\n\n## Literatur"
+        # to html
+        html = pypandoc.convert(md, 'html', format='md', filters=['pandoc-citeproc'])
 
         # # Add class to quotes
         # p = re.compile("<blockquote>")
