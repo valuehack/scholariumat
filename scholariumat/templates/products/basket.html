@@ -6,7 +6,7 @@
 <div class="ui text container">
   <h1 class="ui centered header">Warenkorb</h1>
   {% if request.user.profile.cart %}
-  <table class="ui large table">
+  <table class="ui large unstackable table">
     <tbody>
       {% for purchase in request.user.profile.cart %}
         <tr {% if not purchase.available %}class="negative"{% endif %}>

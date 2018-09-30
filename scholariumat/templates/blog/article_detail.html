@@ -3,9 +3,11 @@
 {% load blog_tags %}
 {% load static %}
 
+{% block title %}{{ object.title }}{% endblock %}
+
 {% block content %}
   <div class="ui text container">
-    <h1 class="ui centered header">{% block title %}{{ object.title|apply_markup:"markdown" }}{% endblock %}
+    <h1 class="ui centered header">{{ object.title|apply_markup:"markdown" }}
       <div class="sub header">
         {{ object.publish_date }}
       </div>

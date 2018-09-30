@@ -39,10 +39,10 @@
 
   {% if children %}
     <h3 class="ui header">Kollektionen</h3>
-      <div class="ui big grid menu">
+      <div class="ui big stackable borderless grid menu">
         {% for child in children %}
           <a class="four wide column item" href="{% url 'library:collection' child.slug %}">
-            {{ child }}
+            &nbsp&nbsp{{ child }}
             <div class="ui blue label">{{ child.zotitem_set.all|length }}</div>
           </a>
         {% endfor %}
