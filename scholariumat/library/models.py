@@ -55,6 +55,18 @@ class ZotAttachment(AttachmentBase):
 class Collection(TitleSlugDescriptionModel, PermalinkAble):
     parent = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL)
 
+    @property
+    def children(self):
+        return self.__class__.objects.filter(parent=self)
+
+    @property
+    def num_items(self):
+        items = 0
+        for child in self.children:
+            items += child.num_items
+        items += len(ZotItem.objects.filter(collection=self))
+        return items
+
     def sync(self):
         """
         Retrieves and saves metadata from all items, attachments and notes inside the collection from zotero.

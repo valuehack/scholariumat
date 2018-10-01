@@ -43,7 +43,7 @@
         {% for child in children %}
           <a class="four wide column item" href="{% url 'library:collection' child.slug %}">
             &nbsp&nbsp{{ child }}
-            <div class="ui blue label">{{ child.zotitem_set.all|length }}</div>
+            <div class="ui blue label">{{ child.num_items }}</div>
           </a>
         {% endfor %}
       </div>
