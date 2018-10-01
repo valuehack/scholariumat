@@ -19,6 +19,7 @@ class UserForm(forms.ModelForm):
         user = super().save(commit=commit)
         if commit:
             Profile.objects.create(user=user, **profile_kwargs)
+            logger.info(f'Created profile for {user}')
             user.send_activation_mail()
         return user
 

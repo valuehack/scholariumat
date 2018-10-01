@@ -86,11 +86,9 @@ class CreateProfileView(AnonymousRequiredMixin, RedirectMixin, MessageMixin, Cre
         return context
 
     def form_valid(self, form):
-        user = form.save(commit=False)
-        profile = ProfileForm(self.request.POST, instance=user.profile)
-        if profile.is_valid():
-            form.save(profile_kwargs=profile)
-            profile.save()
+        profile_form = ProfileForm(self.request.POST)
+        if profile_form.is_valid():
+            user = form.save(profile_kwargs=profile_form.cleaned_data)
             self.messages.info('Profil gespeichert')
             self.request.session['updated'] = user.profile.pk
             return HttpResponseRedirect(self.get_success_url())

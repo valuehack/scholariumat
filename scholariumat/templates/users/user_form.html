@@ -1,6 +1,24 @@
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    {{ profile_form.as_p }}
-    <input type="submit" value="Speichern" />
-</form>
+{% extends 'base.html' %}
+{% load semanticui %}
+
+{% block content %}
+<h1 class="ui centered header">
+  Kontaktinformationen
+</h1>
+<div class="ui hidden divider"></div>
+<div class="ui text container">
+  <form class="ui form" method="post">
+      {% csrf_token %}
+      {% render_form form %}
+      {% render_form profile_form %}
+      {% render_field profile_form.country _override='CountrySelect' %}
+      <div class="ui hidden divider"></div>
+      <input class="ui blue button" type="submit" value="Speichern" />
+  </form>
+</div>
+<script>
+$('.ui.dropdown')
+  .dropdown()
+;
+</script>
+{% endblock content %}
