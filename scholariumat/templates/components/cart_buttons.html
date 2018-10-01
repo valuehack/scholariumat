@@ -2,9 +2,9 @@
 {% load donation_tags %}
 
 {% if product.item_set.all %}
-  <div class="ui sticky">
+  <div class="ui hidden divider"></div>
 
-  <h3 class="ui header">Formate</h3>
+  <h2 class="ui header">Formate</h2>
   <div class="ui centered card">
     <div class="content">
       <div class="column">
@@ -86,7 +86,6 @@
         {% endfor %}
       </div>
     </div>
-  </div>
   </div>
 <script>
 $('.ui.sticky')
