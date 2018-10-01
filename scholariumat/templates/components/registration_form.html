@@ -1,0 +1,13 @@
+<div class="ui hidden divider"></div>
+<div class="ui centered card">
+  <div class="content">
+  <form id="register_form" method="post" class="ui form" action="{% url 'users:signup' %}">
+    {% csrf_token %}
+      <div class="ui input">
+        <input type="email" name="email" placeholder="Email-Adresse">
+        
+    </div>
+    <button class="ui blue button" type="submit">Eintragen</button>
+  </form>
+  </div>
+</div>

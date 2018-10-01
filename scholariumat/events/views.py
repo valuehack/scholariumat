@@ -1,12 +1,34 @@
-from vanilla import DetailView
+from datetime import date
+from vanilla import DetailView, ListView
+
+from django.db.models import Q
 
 from products.views import PurchaseMixin, DownloadMixin
 from .models import Event, EventType
 
 
-class EventListView(DetailView):
-    model = EventType
-    lookup_field = 'slug'
+class EventListView(ListView):
+    model = Event
+    paginate_by = 5
+    event_type = None
+
+    def dispatch(self, *args, **kwargs):
+        event_type = self.kwargs.get('event_type')
+        if event_type:
+            self.event_type = EventType.objects.get(Q(section_title=event_type) | Q(slug=event_type))
+        return super().dispatch(*args, **kwargs)
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        return qs.filter(type=self.event_type, date__gt=date.today()).order_by('date')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.event_type:
+            context['section_title'] = self.event_type.section_title or self.event_type.title
+        else:
+            context['section_title'] = 'Veranstaltungen'
+        return context
 
 
 class EventView(PurchaseMixin, DownloadMixin, DetailView):

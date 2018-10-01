@@ -2,6 +2,7 @@ from django.urls import reverse
 from django.http import HttpResponseRedirect
 
 from braces.views import OrderableListMixin
+from vanilla import TemplateView
 
 
 class CompatibleOrderableListMixin(OrderableListMixin):
@@ -39,3 +40,11 @@ class CompatibleOrderableListMixin(OrderableListMixin):
 
 def homeview(request):
     return HttpResponseRedirect(reverse('users:profile'))
+
+
+class FaqView(TemplateView):
+    template_name = 'framework/faq.html'
+
+
+class ContactView(TemplateView):
+    template_name = 'framework/contact.html'

@@ -11,3 +11,4 @@ class ArticleDetailView(LoginRequiredMixin, DetailView):
 
 class ArticleListView(ListView):
     model = Article
+    paginate_by = 5
