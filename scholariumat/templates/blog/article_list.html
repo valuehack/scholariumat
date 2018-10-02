@@ -25,10 +25,12 @@
           <div class="ui section divider"></div>
         {% endif %}
       {% endfor %}
-      <div class="ui hidden section divider"></div>
-      <div class="ui right floated pagination menu">
-        {% include "components/pagination.html" %}
-      </div>
+      {% if paginator.num_pages > 1 %}
+        <div class="ui hidden section divider"></div>
+        <div class="ui right floated pagination menu">
+          {% include "components/pagination.html" %}
+        </div>
+      {% endif %}
 
     {% else %}
 

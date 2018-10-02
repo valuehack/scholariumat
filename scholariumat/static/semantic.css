@@ -8,7 +8,7 @@
  * http://opensource.org/licenses/MIT
  *
  */
-@import url('https://fonts.googleapis.com/css?family=EB+Garamond:500|Raleway:300,400:400,700,400italic,700italic&subset=latin');
+@import url('https://fonts.googleapis.com/css?family=EB+Garamond:400|Raleway:300,400:400,700,400italic,700italic&subset=latin');
 /*!
  * # Semantic UI 2.4.0 - Reset
  * http://github.com/semantic-org/semantic-ui/
@@ -759,6 +759,23 @@ body .ui.inverted::-webkit-scrollbar-thumb:hover {
 /*******************************
          Site Overrides
 *******************************/
+
+.ui.segment,
+.ui.segments .segment {
+  font-size: 17px !important;
+}
+
+.ui.big.menu {
+  font-size: 17px !important;
+}
+
+.ui.text.container {
+  font-size: 17px !important;
+}
+
+.ui.button {
+  font-family: Raleway, sans-serif !important;
+}
 /*!
  * # Semantic UI 2.4.0 - Button
  * http://github.com/semantic-org/semantic-ui/

@@ -1,3 +1,19 @@
 /*******************************
          Site Overrides
 *******************************/
+
+.ui.segment, .ui.segments .segment {
+  font-size: 17px !important;
+}
+
+.ui.big.menu {
+  font-size: 17px !important;
+}
+
+.ui.text.container {
+  font-size: 17px !important;
+}
+
+.ui.button {
+  font-family: Raleway, sans-serif !important;
+}
