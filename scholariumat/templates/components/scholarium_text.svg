@@ -25,17 +25,8 @@
         font-family: AGaramondPro-Regular, Adobe Garamond Pro;
       }
       .cls-6 {
-        font-size: 34.7px;
+        font-size: 34.5px;
         font-family: FuturaPT-Book, Futura PT;
-      }
-      .cls-7 {
-        letter-spacing: -0.04em;
-      }
-      .cls-8 {
-        letter-spacing: -0.02em;
-      }
-      .cls-9 {
-        letter-spacing: -0.1em;
       }
     </style>
     <clipPath id="clip-path" transform="translate(-0.38 6.51)"><polyline class="cls-1" points="601.04 -152.08 601.04 282.69 -41.04 282.69 -41.04 -152.08"/></clipPath>
@@ -47,12 +38,6 @@
     transform="translate(-0.38 6.51)"/></g>
   <text class="cls-5" transform="translate(126.99 97.49)">scholarium</text>
   <text class="cls-6" transform="translate(1.62 172.41)">
-    <tspan class="cls-7">R</tspan>
-    <tspan x="16.07" y="0">ealität er</tspan>
-    <tspan class="cls-8" x="133.59" y="0">k</tspan>
-    <tspan x="147.57" y="0">ennen,
-    </tspan>
-    <tspan class="cls-9" x="247.47" y="0">W</tspan>
-    <tspan x="277.28" y="0">erte schaffen, Sinn finden.</tspan>
+    <tspan>Realität erkennen, Werte schaffen, Sinn finden.</tspan>
   </text>
 </svg>
