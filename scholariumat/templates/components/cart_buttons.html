@@ -1,6 +1,7 @@
 {% load product_tags %}
 {% load donation_tags %}
 
+{% if request.user.is_authenticated %}
 {% if product.item_set.all %}
   <div class="ui hidden divider"></div>
 
@@ -94,4 +95,5 @@ $('.ui.sticky')
   })
 ;
 </script>
+{% endif %}
 {% endif %}
