@@ -184,7 +184,7 @@
     <div class="ui tiny register modal">
       <div class="header">Eintragen</div>
       <div class="content">
-        <form id="register_form" method="post" class="ui form" action="{% url 'users:signup' %}">
+        <form id="register_form_top" method="post" class="ui form" action="{% url 'users:signup' %}">
           {% csrf_token %}
           <div class="field">
             <div class="ui left icon input">
@@ -195,7 +195,7 @@
         </form>
       </div>
       <div class="actions">
-        <button class="ui left floated button" form="register_form" type="submit">Eintragen</button>
+        <button class="ui left floated button" form="register_form_top" type="submit">Eintragen</button>
         Sie sind bereits eingetragen?
         <button class="ui login_open button">Anmelden</button>
       </div>
