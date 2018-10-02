@@ -3,11 +3,13 @@
   <div class="content">
   <form id="register_form" method="post" class="ui form" action="{% url 'users:signup' %}">
     {% csrf_token %}
-      <div class="ui input">
+      <div class="ui fluid input">
         <input type="email" name="email" placeholder="Email-Adresse">
         
     </div>
-    <button class="ui blue button" type="submit">Eintragen</button>
+    <div class="ui divider"></div>
+      <button class="ui blue fluid big button" type="submit">~ Kostenlos eintragen ~</button>
+
   </form>
   </div>
 </div>
