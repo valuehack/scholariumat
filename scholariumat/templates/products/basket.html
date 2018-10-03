@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Warenkorb{% endblock %}
 
@@ -6,7 +7,7 @@
 <div class="ui text container">
   <h1 class="ui centered header">Warenkorb</h1>
   {% if request.user.profile.cart %}
-  <table class="ui large unstackable table">
+  <table class="ui unstackable table">
     <tbody>
       {% for purchase in request.user.profile.cart %}
         <tr {% if not purchase.available %}class="negative"{% endif %}>
@@ -54,8 +55,12 @@
         <th></th>
         <th></th>
         <th></th>
-        <th></th>
-        <th class="right aligned single line"><b><i class="ui bitcoin icon"></i>{{ request.user.profile.cart_total }}</b></th>
+        <th>
+          <div style="height: 1em;">
+            <img class="ui right floated image" src="{% static 'images/coin.png' %}" style="height: 1.2em; width: auto; left: 15px;">
+          </div>
+        </th>
+        <th class="right aligned single line"><b>{{ request.user.profile.cart_total }}</b></th>
         <th><button onclick='document.forms["buy_form"].submit(); return false;' class="ui {% if not request.user.profile.cart_available %}disabled {% endif %} blue right floated button">Kaufen</button></th>
       </tr>
     </tfoot>

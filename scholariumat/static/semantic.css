@@ -4317,7 +4317,7 @@ body .ui.inverted::-webkit-scrollbar-thumb:hover {
 
 .ui.yellow.buttons .button,
 .ui.yellow.button {
-  background-color: #FF9C00;
+  background-color: #ffce43;
   color: #FFFFFF;
   text-shadow: none;
   background-image: none;
@@ -4330,21 +4330,21 @@ body .ui.inverted::-webkit-scrollbar-thumb:hover {
 
 .ui.yellow.buttons .button:hover,
 .ui.yellow.button:hover {
-  background-color: #e68c00;
+  background-color: #ffc729;
   color: #FFFFFF;
   text-shadow: none;
 }
 
 .ui.yellow.buttons .button:focus,
 .ui.yellow.button:focus {
-  background-color: #d68300;
+  background-color: #ffc31a;
   color: #FFFFFF;
   text-shadow: none;
 }
 
 .ui.yellow.buttons .button:active,
 .ui.yellow.button:active {
-  background-color: #cc7d00;
+  background-color: #ffc110;
   color: #FFFFFF;
   text-shadow: none;
 }
@@ -4353,7 +4353,7 @@ body .ui.inverted::-webkit-scrollbar-thumb:hover {
 .ui.yellow.buttons .active.button:active,
 .ui.yellow.active.button,
 .ui.yellow.button .active.button:active {
-  background-color: #e68c00;
+  background-color: #ffc729;
   color: #FFFFFF;
   text-shadow: none;
 }
@@ -4362,40 +4362,40 @@ body .ui.inverted::-webkit-scrollbar-thumb:hover {
 
 .ui.basic.yellow.buttons .button,
 .ui.basic.yellow.button {
-  -webkit-box-shadow: 0px 0px 0px 1px #FF9C00 inset !important;
-  box-shadow: 0px 0px 0px 1px #FF9C00 inset !important;
-  color: #FF9C00 !important;
+  -webkit-box-shadow: 0px 0px 0px 1px #ffce43 inset !important;
+  box-shadow: 0px 0px 0px 1px #ffce43 inset !important;
+  color: #ffce43 !important;
 }
 
 .ui.basic.yellow.buttons .button:hover,
 .ui.basic.yellow.button:hover {
   background: transparent !important;
-  -webkit-box-shadow: 0px 0px 0px 1px #e68c00 inset !important;
-  box-shadow: 0px 0px 0px 1px #e68c00 inset !important;
-  color: #e68c00 !important;
+  -webkit-box-shadow: 0px 0px 0px 1px #ffc729 inset !important;
+  box-shadow: 0px 0px 0px 1px #ffc729 inset !important;
+  color: #ffc729 !important;
 }
 
 .ui.basic.yellow.buttons .button:focus,
 .ui.basic.yellow.button:focus {
   background: transparent !important;
-  -webkit-box-shadow: 0px 0px 0px 1px #d68300 inset !important;
-  box-shadow: 0px 0px 0px 1px #d68300 inset !important;
-  color: #e68c00 !important;
+  -webkit-box-shadow: 0px 0px 0px 1px #ffc31a inset !important;
+  box-shadow: 0px 0px 0px 1px #ffc31a inset !important;
+  color: #ffc729 !important;
 }
 
 .ui.basic.yellow.buttons .active.button,
 .ui.basic.yellow.active.button {
   background: transparent !important;
-  -webkit-box-shadow: 0px 0px 0px 1px #e68c00 inset !important;
-  box-shadow: 0px 0px 0px 1px #e68c00 inset !important;
-  color: #cc7d00 !important;
+  -webkit-box-shadow: 0px 0px 0px 1px #ffc729 inset !important;
+  box-shadow: 0px 0px 0px 1px #ffc729 inset !important;
+  color: #ffc110 !important;
 }
 
 .ui.basic.yellow.buttons .button:active,
 .ui.basic.yellow.button:active {
-  -webkit-box-shadow: 0px 0px 0px 1px #cc7d00 inset !important;
-  box-shadow: 0px 0px 0px 1px #cc7d00 inset !important;
-  color: #cc7d00 !important;
+  -webkit-box-shadow: 0px 0px 0px 1px #ffc110 inset !important;
+  box-shadow: 0px 0px 0px 1px #ffc110 inset !important;
+  color: #ffc110 !important;
 }
 
 .ui.buttons:not(.vertical) > .basic.yellow.button:not(:first-child) {
@@ -7277,15 +7277,15 @@ a.ui.inverted.olive.header:hover {
 /*--- Yellow ---*/
 
 .ui.yellow.header {
-  color: #FF9C00 !important;
+  color: #ffce43 !important;
 }
 
 a.ui.yellow.header:hover {
-  color: #e68c00 !important;
+  color: #ffc729 !important;
 }
 
 .ui.yellow.dividing.header {
-  border-bottom: 2px solid #FF9C00;
+  border-bottom: 2px solid #ffce43;
 }
 
 /* Inverted */
@@ -7933,7 +7933,7 @@ i.inverted.circular.orange.icon {
 /* Yellow */
 
 i.yellow.icon {
-  color: #FF9C00 !important;
+  color: #ffce43 !important;
 }
 
 i.inverted.yellow.icon {
@@ -7942,7 +7942,7 @@ i.inverted.yellow.icon {
 
 i.inverted.bordered.yellow.icon,
 i.inverted.circular.yellow.icon {
-  background-color: #FF9C00 !important;
+  background-color: #ffce43 !important;
   color: #FFFFFF !important;
 }
 
@@ -15359,8 +15359,8 @@ a.ui.basic.orange.label:hover {
 
 .ui.yellow.labels .label,
 .ui.yellow.label {
-  background-color: #FF9C00 !important;
-  border-color: #FF9C00 !important;
+  background-color: #ffce43 !important;
+  border-color: #ffce43 !important;
   color: #FFFFFF !important;
 }
 
@@ -15368,8 +15368,8 @@ a.ui.basic.orange.label:hover {
 
 .ui.yellow.labels .label:hover,
 a.ui.yellow.label:hover {
-  background-color: #e68c00 !important;
-  border-color: #e68c00 !important;
+  background-color: #ffc729 !important;
+  border-color: #ffc729 !important;
   color: #FFFFFF !important;
 }
 
@@ -15383,22 +15383,22 @@ a.ui.yellow.label:hover {
 /* Ribbon */
 
 .ui.yellow.ribbon.label {
-  border-color: #cc7d00 !important;
+  border-color: #ffc110 !important;
 }
 
 /* Basic */
 
 .ui.basic.yellow.label {
   background: none #FFFFFF !important;
-  color: #FF9C00 !important;
-  border-color: #FF9C00 !important;
+  color: #ffce43 !important;
+  border-color: #ffce43 !important;
 }
 
 .ui.basic.yellow.labels a.label:hover,
 a.ui.basic.yellow.label:hover {
   background-color: #FFFFFF !important;
-  color: #e68c00 !important;
-  border-color: #e68c00 !important;
+  color: #ffc729 !important;
+  border-color: #ffc729 !important;
 }
 
 /*--- Olive ---*/
@@ -18732,11 +18732,11 @@ ol.ui.horizontal.list li:before,
 /* Yellow */
 
 .ui.yellow.segment:not(.inverted) {
-  border-top: 2px solid #FF9C00 !important;
+  border-top: 2px solid #ffce43 !important;
 }
 
 .ui.inverted.yellow.segment {
-  background-color: #FF9C00 !important;
+  background-color: #ffce43 !important;
   color: #FFFFFF !important;
 }
 
@@ -22599,7 +22599,7 @@ ol.ui.horizontal.list li:before,
 .ui.grid > .yellow.row,
 .ui.grid > .yellow.column,
 .ui.grid > .row > .yellow.column {
-  background-color: #FF9C00 !important;
+  background-color: #ffce43 !important;
   color: #FFFFFF;
 }
 
@@ -24817,8 +24817,8 @@ Floated Menu / Item
 
 .ui.menu .yellow.active.item,
 .ui.yellow.menu .active.item {
-  border-color: #FF9C00 !important;
-  color: #FF9C00 !important;
+  border-color: #ffce43 !important;
+  color: #ffce43 !important;
 }
 
 .ui.menu .olive.active.item,
@@ -25042,7 +25042,7 @@ Floated Menu / Item
 
 .ui.inverted.menu .yellow.active.item,
 .ui.inverted.yellow.menu {
-  background-color: #FF9C00;
+  background-color: #ffce43;
 }
 
 .ui.inverted.yellow.menu .item:before {
@@ -26955,11 +26955,11 @@ Floated Menu / Item
 /* Yellow */
 
 .ui.yellow.table {
-  border-top: 0.2em solid #FF9C00;
+  border-top: 0.2em solid #ffce43;
 }
 
 .ui.inverted.yellow.table {
-  background-color: #FF9C00 !important;
+  background-color: #ffce43 !important;
   color: #FFFFFF !important;
 }
 
@@ -28381,15 +28381,15 @@ a.ui.card:hover,
 .ui.yellow.cards > .card,
 .ui.cards > .yellow.card,
 .ui.yellow.card {
-  -webkit-box-shadow: 0px 0px 0px 1px #D4D4D5, 0px 2px 0px 0px #FF9C00, 0px 1px 3px 0px #D4D4D5;
-  box-shadow: 0px 0px 0px 1px #D4D4D5, 0px 2px 0px 0px #FF9C00, 0px 1px 3px 0px #D4D4D5;
+  -webkit-box-shadow: 0px 0px 0px 1px #D4D4D5, 0px 2px 0px 0px #ffce43, 0px 1px 3px 0px #D4D4D5;
+  box-shadow: 0px 0px 0px 1px #D4D4D5, 0px 2px 0px 0px #ffce43, 0px 1px 3px 0px #D4D4D5;
 }
 
 .ui.yellow.cards > .card:hover,
 .ui.cards > .yellow.card:hover,
 .ui.yellow.card:hover {
-  -webkit-box-shadow: 0px 0px 0px 1px #D4D4D5, 0px 2px 0px 0px #e68c00, 0px 1px 3px 0px #BCBDBD;
-  box-shadow: 0px 0px 0px 1px #D4D4D5, 0px 2px 0px 0px #e68c00, 0px 1px 3px 0px #BCBDBD;
+  -webkit-box-shadow: 0px 0px 0px 1px #D4D4D5, 0px 2px 0px 0px #ffc729, 0px 1px 3px 0px #BCBDBD;
+  box-shadow: 0px 0px 0px 1px #D4D4D5, 0px 2px 0px 0px #ffc729, 0px 1px 3px 0px #BCBDBD;
 }
 
 /* Olive */
@@ -30391,7 +30391,7 @@ a.ui.card:hover,
 .ui.yellow.statistics .statistic > .value,
 .ui.statistics .yellow.statistic > .value,
 .ui.yellow.statistic > .value {
-  color: #FF9C00;
+  color: #ffce43;
 }
 
 .ui.olive.statistics .statistic > .value,
@@ -35777,7 +35777,7 @@ a.ui.nag {
 /* Yellow */
 
 .ui.yellow.progress .bar {
-  background-color: #FF9C00;
+  background-color: #ffce43;
 }
 
 .ui.yellow.inverted.progress .bar {

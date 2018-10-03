@@ -600,10 +600,10 @@
 
 /* Yellow */
 .ui.yellow.segment:not(.inverted) {
-  border-top: 2px solid #FF9C00 !important;
+  border-top: 2px solid #ffce43 !important;
 }
 .ui.inverted.yellow.segment {
-  background-color: #FF9C00 !important;
+  background-color: #ffce43 !important;
   color: #FFFFFF !important;
 }
 

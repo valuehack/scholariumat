@@ -1,3 +1,5 @@
+{% load static %}
+
 <div class="ui container">
 
   {% if request.user.is_authenticated %}  
@@ -12,12 +14,14 @@
       </a>
       <div class="item">
         <span class="text">
-          {{ request.user.profile.balance }}
-          <i class="fitted bitcoin icon"></i>
+          {{ request.user.profile.balance }}&nbsp;&nbsp;
         </span>
+        <div style="height: 1em;">
+          <img class="ui image" src="{% static 'images/coin.png' %}" style="height: 1.4em; width: auto; bottom: 0.2em;">
+        </div>
         <a href="{% url 'donations:levels' %}">
           <div class="ui small circular yellow floating label">
-            <i class="fitted plus link icon"></i>
+            <i class="fitted plus white link icon"></i>
           </div>
         </a>
       </div>
@@ -28,7 +32,7 @@
 
       
           <div class="content">
-            <table class="ui very basic collapsing single line large unstackable table">
+            <table class="ui very basic collapsing single line unstackable table">
               <tbody>
                 {% for purchase in request.user.profile.cart %}
                   <tr>
@@ -45,7 +49,7 @@
                           ;
                         </script>
                       {% endif %}
-                      <a href="{{ purchase.item.product.type.get_absolute_url }}">{{ purchase.item.product|truncatechars:45 }}</a></td>
+                      <a href="{{ purchase.item.product.type.get_absolute_url }}">{{ purchase.item.product|truncatechars:35 }}</a></td>
                     <td class="right aligned">
                       {{ purchase.total }}
                     </td>
@@ -74,8 +78,13 @@
                 <tr>
                   <th></th>
                   <th></th>
-                  <th></th>
-                  <th class="right aligned"><i class="ui bitcoin icon"></i><b>{{ request.user.profile.cart_total }}</b></th>
+                  <th>
+                    <div style="height: 1em;">
+                      <img class="ui right floated image" src="{% static 'images/coin.png' %}" style="height: 1.2em; width: auto; left: 15px;">
+                    </div>
+                  </th>
+                  <th class="right aligned"><b>{{ request.user.profile.cart_total }}</b>
+                  </th>
                   <th></th>
                   <th></th>
                 </tr>
@@ -211,16 +220,17 @@
   {% endif %}
 </div>
 <script>
-  // $('.ui.dropdown').dropdown({action: 'nothing'});
   $('#profile')
     .popup({
-      on: 'click'
+      on: 'click',
+      lastResort:	'bottom center'
     });
     {% if request.user.profile.cart %}
-  $('#basket')
-    .popup({
-      popup: '#basket_popup',
-      on: 'click'
-    });
+      $('#basket')
+        .popup({
+          popup: '#basket_popup',
+          on: 'click',
+          lastResort:	'bottom center'
+        });
     {% endif %}
 </script>

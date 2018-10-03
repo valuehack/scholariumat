@@ -1,5 +1,6 @@
 {% load product_tags %}
 {% load donation_tags %}
+{% load static %}
 
 {% if request.user.is_authenticated %}
 {% if product.item_set.all %}
@@ -55,8 +56,10 @@
                     </div>
                   </div>
                   <div class="ui basic left pointing label">
-                    {{ item.price }}&nbsp;
-                    <i class="bitcoin fitted icon"></i>
+                    {{ item.price }}&nbsp;&nbsp;
+                    <div style="height: 1em;">
+                      <img class="ui image" src="{% static 'images/coin.png' %}" style="height: 1.2em; width: auto; bottom: 0.1em;">
+                    </div>
                   </div>
 
                 {% else %}

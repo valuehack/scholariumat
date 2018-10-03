@@ -592,16 +592,16 @@ a.ui.basic.orange.label:hover {
 
 .ui.yellow.labels .label,
 .ui.yellow.label {
-  background-color: #FF9C00 !important;
-  border-color: #FF9C00 !important;
+  background-color: #ffce43 !important;
+  border-color: #ffce43 !important;
   color: #FFFFFF !important;
 }
 
 /* Link */
 .ui.yellow.labels .label:hover,
 a.ui.yellow.label:hover {
-  background-color: #e68c00 !important;
-  border-color: #e68c00 !important;
+  background-color: #ffc729 !important;
+  border-color: #ffc729 !important;
   color: #FFFFFF !important;
 }
 
@@ -613,20 +613,20 @@ a.ui.yellow.label:hover {
 
 /* Ribbon */
 .ui.yellow.ribbon.label {
-  border-color: #cc7d00 !important;
+  border-color: #ffc110 !important;
 }
 
 /* Basic */
 .ui.basic.yellow.label {
   background: none #FFFFFF !important;
-  color: #FF9C00 !important;
-  border-color: #FF9C00 !important;
+  color: #ffce43 !important;
+  border-color: #ffce43 !important;
 }
 .ui.basic.yellow.labels a.label:hover,
 a.ui.basic.yellow.label:hover {
   background-color: #FFFFFF !important;
-  color: #e68c00 !important;
-  border-color: #e68c00 !important;
+  color: #ffc729 !important;
+  border-color: #ffc729 !important;
 }
 
 /*--- Olive ---*/
