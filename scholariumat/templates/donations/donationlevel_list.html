@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load markup_tags %}
+{% load static %}
 
 {% block title %}Unterstützen{% endblock %}
 
@@ -25,4 +26,6 @@
   {% endfor %}
 </div>
 
+<div class="ui hidden section divider"></div>
+<img class="ui centered small image" src="{% static 'images/divider.png' %}"></img>
 {% endblock content %}
