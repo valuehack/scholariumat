@@ -17,3 +17,7 @@
 .ui.button {
   font-family: Raleway, sans-serif !important;
 }
+
+h1 {
+  font-weight: 800 !important;
+}

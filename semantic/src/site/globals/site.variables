@@ -3,12 +3,12 @@
 *******************************/
 
 @fontName          : 'EB Garamond';
-@googleFontName    : 'EB+Garamond:400|Raleway:300,400';
+@googleFontName    : 'EB+Garamond:400|Raleway:500,800';
 
 @pageFont          : @fontName, serif;
 @headerFont        : 'Raleway', sans-serif;
 
-@headerFontWeight  : 300;
+@headerFontWeight  : 500;
 @pageFontWeight    : 400;
 
 @h1 : unit((45 / 14), rem);
