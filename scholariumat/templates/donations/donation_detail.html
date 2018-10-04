@@ -38,7 +38,7 @@
       </div>
     </div>
   </div>
-  <a href="{% url 'donations:payment' %}?level={{ object.level.pk }}" class="ui bottom blue attached button">
+  <a href="{% url 'donations:payment' %}?amount={{ object.level.amount }}" class="ui bottom blue attached button">
     Verlängern
   </a>
 </div>

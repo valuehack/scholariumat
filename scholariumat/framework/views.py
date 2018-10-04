@@ -1,7 +1,7 @@
 from django.urls import reverse
 from django.http import HttpResponseRedirect
 
-from braces.views import OrderableListMixin
+from braces.views import OrderableListMixin, LoginRequiredMixin
 from vanilla import TemplateView
 
 
@@ -38,8 +38,8 @@ class CompatibleOrderableListMixin(OrderableListMixin):
         return queryset.order_by(order_by)
 
 
-def homeview(request):
-    return HttpResponseRedirect(reverse('users:profile'))
+class HomeView(TemplateView):
+    template_name = 'framework/home.html'
 
 
 class FaqView(TemplateView):

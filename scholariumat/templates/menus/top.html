@@ -139,13 +139,10 @@
       </div>
       <div class="ui hidden divider"></div>
   
-      <div class="ui vertical fluid menu">
+      <div class="ui vertical fluid menu" style="min-width: 20em;">
         <a class="item" href="{% url 'users:profile' %}">Profil bearbeiten</a>
         <a class="item" href="{% url 'users:update_email' %}">Email-Adresse ändern</a>
         <a class="item" href="{% url 'password_change' %}">Passwort ändern</a>
-      </div>
-
-      <div class="ui menu">
         {% if request.user.profile.donation %}
           <a class="item" href="{% url 'donations:detail' %}">
         {% else %}
@@ -154,7 +151,10 @@
           Unterstützungen
         </a>
         <a class="item" href="{% url 'products:purchases' %}">Bestellungen</a>
-        <a class="item" href="{% url 'logout' %}">Ausloggen</a>
+      </div>
+
+      <div class="ui right floated compact menu">
+        <a class="item" href="{% url 'logout' %}">Abmelden</a>
       </div>
     </div>
 
@@ -236,6 +236,7 @@
         .popup({
           popup: '#basket_popup',
           on: 'click',
+          position   : 'bottom center',
           lastResort:	'bottom center'
         });
     {% endif %}
