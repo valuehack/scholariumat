@@ -2,14 +2,15 @@
 {% load semanticui %}
 {% load markup_tags %}
 
-{% block title %}Nutzerprofil{% endblock %}
-
 {% block content %}
 
 <div class="ui text container">
+<h1 class="ui centered header">
+  {% block title %}Ihre Unterstützungen{% endblock %}
+</h1>
 <div class="ui fluid card">
   <div class="content">
-    <h2 class="ui centered huge header">{{ object.level.title }}</h2>
+    <h2 class="ui centered header">{{ object.level.title }}</h2>
     <div class="description">
       {{ object.level.description|apply_markup:"markdown" }}
     </div>
@@ -54,7 +55,7 @@
     <div class="ui segments">
       {% for donation in profile.donations %}
         <div class="ui clearing segment">
-          <span class="ui header">{{ donation.level.title }}</span>
+          <span class="ui small header">{{ donation.level.title }}</span>
           {% if donation.method %}
             <span class="ui image label">
               {{ donation.method }}

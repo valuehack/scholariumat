@@ -103,7 +103,11 @@
 
     <div class="ui right floated compact menu" id="profile">
       <a class="item">
-        {{ request.user }}
+        {% if request.user.profile.name %}
+          {{ request.user.profile.name }}
+        {% else %}
+          {{ request.user }}
+        {% endif %}
         <i class="dropdown icon"></i>
       </a>
     </div>
@@ -118,18 +122,20 @@
       {% endif %}
       
       <!-- <span class="ui item"> -->
-        {% if request.user.profile.name %}
           <h3 class="ui center aligned header">
             <div class="content">
-              {{ request.user.profile.name }}
-              {% if request.user.profile.organization %}
-                <div class="sub header">
-                  {{ request.user.profile.organization }}
-                </div>
+              {% if request.user.profile.name %}
+                {{ request.user.profile.name }}
+                {% if request.user.profile.organization %}
+                  <div class="sub header">
+                    {{ request.user.email }}
+                  </div>
+                {% endif %}
+              {% else %}
+                {{ request.user.email }}
               {% endif %}
             </div>
           </h3>
-        {% endif %}
       </div>
       <div class="ui hidden divider"></div>
   

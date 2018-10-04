@@ -1,11 +1,9 @@
 {% extends 'base.html' %}
 {% load semanticui %}
 
-{% block title %}Nutzerprofil{% endblock %}
-
 {% block content %}
 <h1 class="ui centered header">
-  Kontaktinformationen
+  {% block title %}Kontaktinformationen{% endblock %}
 </h1>
 <div class="ui hidden divider"></div>
 <div class="ui text container">
