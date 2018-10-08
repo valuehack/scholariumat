@@ -3,10 +3,8 @@
 {% load semanticui %}
 {% autosort zotitems %}
 
-{% block title %}Bibliothek{% endblock %}
-
 {% block content %}
-<h1 class="ui huge center aligned header">Bibliothek</h1>
+<h1 class="ui huge center aligned header">{% block title %}Bibliothek{% endblock %}</h1>
 <div class="ui hidden section divider"></div>
 
 <div class="ui center aligned container">

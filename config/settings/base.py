@@ -11,7 +11,7 @@ env = environ.Env()
 
 # GENERAL
 # ------------------------------------------------------------------------------
-DEFAULT_DOMAIN = 'https://scholarium.at'
+DEFAULT_DOMAIN = env('DEFAULT_DOMAIN', default='https://scholarium.at')
 # https://docs.djangoproject.com/en/dev/ref/settings/#debug
 DEBUG = env.bool('DJANGO_DEBUG', False)
 # Local time zone. Choices are

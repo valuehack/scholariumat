@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+{% if request.user.is_authenticated %}
+{% else %}
+  <div class="ui text container">
+    <h1 class="ui centered header">Wilkommen im scholarium</h1>
+    <div class="ui hidden divider"></div>
+    <p>
+      Wir leben in der Zeit der großen Ent-Täuschung: Bequeme Gewissheiten schwinden, und das Misstrauen in die Institutionen steigt. Insbesondere durch Politik, Banken und Universitäten – die Domänen vermeintlicher "Experten" – fühlen sich viele verraten
+      und flüchten in antiintellektuelle, antimarktwirtschaftliche und antigesellschaftliche Fundamentalopposition. In der Tat sind die genannten Institutionen gekippt, hinter den Fassaden regiert der Bluff. Umso wichtiger wird allerdings kritische
+      Erkenntnis, unternehmerisches Wagnis und gesellschaftliches Engagement. Das erfordert zugleich Demut und Rückgrat, was nur wenige aufbringen können. Mut gibt uns die bürgerliche Perspektive, dass Veränderungen zum Guten selten von Mehrheiten und
+      Gewalten ausgehen, sondern durch Erkenntnisse, Werte und Schaffenskraft einer kleinen Minderheit.
+    </p>
+    <div class="ui segment">
+      <img class="ui image" src="{% static '/images/runde.png' %}"/>
+    </div>
+    <p>
+      <i>scholarium</i>
+      bedeutet Gemeinschaft der Lernenden und ist das, was die Universität hätte sein können, aber nicht sein durfte. Das
+      <i>scholarium</i>
+      ist kein subventionierter Elfenbeinturm, keine staatsakkreditierte Zertifikatsfabrik, keine "Denkfabrik" einer Lobby, kein Missionierungswerk einer Ersatzreligion. Das
+      <i>scholarium</i>
+      ist ein lernendes Unternehmen, in dem unbequeme Erkenntnis und reale Wertschöpfung auf einzigartige Weise verbunden werden. Damit bietet das
+      <i>scholarium</i>
+      eine seltene Nische für die wenigen Verbliebenen, die besonnen dem Wahnsinn der Zeit trotzen: Differenzierte Orientierung statt ideologischer Verkürzung für Klicks und Likes, echte Bildung statt zertifizierte "Ausbildung" an der Realität vorbei,
+      mutiges Nachdenken über Alternativen und Auswege statt staatstragendem Mitläufertum.
+    </p>
+    <div class="ui segment">
+      <img class="ui image" src="{% static '/images/jubilaeum.png' %}"/>
+    </div>
+    <p>
+      Warum braucht es ein solches Unternehmen &uuml;berhaupt? Institute und Initiativen mit guten Intentionen gibt es zur Gen&uuml;ge. Die meisten sind allerdings ideologisch motiviert, das hei&szlig;t, sie wissen schon, was gut f&uuml;r uns ist, haben
+      fertige Schlussfolgerungen und entwickeln erst danach Argumente, um andere zu bekehren. In aller Regel sind solche Initiativen subventioniert, das hei&szlig;t, Interessengruppen zahlen f&uuml;r diese (letztlich nicht zielf&uuml;hrende)
+      Missionierungsarbeit, oder es flie&szlig;t gar Steuergeld hinein, das hei&szlig;t, wir zahlen alle mit, egal ob wir die Werte teilen und die Arbeit sch&auml;tzen. Das ist nat&uuml;rlich die ideale Voraussetzung f&uuml;r Unprofessionalit&auml;t,
+      Verschwendung, Selbstbeweihr&auml;ucherung, Anpassung und Denkverbote. Sind sie nicht subventioniert, so sind es meist Hobby&ndash;Projekte mit der typischen Vereinsmeierei (je drei Engagierte werden vier Vereine gr&uuml;nden, die ihren jeweiligen
+      Anspruch auf Wichtigkeit durch ausgefeilte Strukturen und Versprechen zelebrieren).
+    </p>
+    <div class="ui segment">
+      <img class="ui image" src="{% static '/images/runde2.png' %}"/>
+    </div>
+    <p>
+      Im
+      <i>scholarium</i>
+      besteht eine der letzten Möglichkeiten, in Europa ein
+      <i>studium generale</i>
+      zu betreiben: Theorie ohne politisch korrekte Tabus, besserwisserische Ideologien und verstaubte Lehrpläne; Praxis ohne modischen Unsinn, hysterische Ungeduld und unreflektierte Imitation. Vollzeit oder Halbzeit, ab zwei Monaten, flexibel und auf
+      persönliche Interessen zugeschnitten. Zwei Schienen werden derzeit geboten:
+    </p>
+    <p>1.)
+      <i><b>studium generale</b></i>, d.h. intensive, realistische, kritische, interdisziplinäre Erkenntnis auf höchstem Niveau ohne akademische Bluffs und politische Agenden – mit dem Ziel tiefen Verständnisses der Welt und ihrer Dynamiken. Große Werke, große
+      Gedanken, große Traditionen statt Zeitgeist.
+    </p>
+    <p>2.)
+      <i><b>digital entrepreneurship</b></i>, d.h. praktische Aneignung jener Fertigkeiten, die nötig sind, um den ungeheuren ökonomischen und technologischen Wandel einzuholen und zu überholen – mit dem Ziel eigener unternehmerischer Projekte.
+    </p>
+  <div class="ui hidden section divider"></div>
+  <img class="ui centered small image" src="{% static 'images/divider.png' %}"></img>
+</div>
+{% endif %}
+{% endblock %}

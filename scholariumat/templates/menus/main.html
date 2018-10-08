@@ -1,26 +1,47 @@
 <div class="ui big stackable attached menu">
   <div class="ui container">
-    <a href="{% url 'blog:list' %}"  class="item">
-      Scholien
-    </a>
-    <a href="{% url 'library:list' %}" class="item">
-      Bibliothek
-    </a>
-    <a href="{% url 'events:type' 'salon' %}" class="item">
-      Salons
-    </a>
-    <a href="{% url 'events:type' 'seminar' %}" class="item">
-      Seminare
-    </a>
-    <a href="{% url 'events:type' 'studium' %}" class="item">
-      Studium
-    </a>
-    <a href="{% url 'framework:faq' %}" class="item">
-      Häufige Fragen
-    </a>
-    <a href="{% url 'framework:contact' %}" class="item">
-      Kontakt
-    </a>
+    {% if request.user.is_authenticated %}
+      <a href="{% url 'blog:list' %}"  class="item">
+        Scholien
+      </a>
+      <a href="{% url 'library:list' %}" class="item">
+        Bibliothek
+      </a>
+      <a href="{% url 'events:type' 'salon' %}" class="item">
+        Salons
+      </a>
+      <a href="{% url 'events:type' 'seminar' %}" class="item">
+        Seminare
+      </a>
+      <a href="{% url 'events:type' 'studium' %}" class="item">
+        Studium
+      </a>
+      <a href="{% url 'framework:faq' %}" class="item">
+        Häufige Fragen
+      </a>
+      <a href="{% url 'framework:contact' %}" class="item">
+        Kontakt
+      </a>
+    {% else %}
+      <a href="{% url 'framework:faq' %}" class="item">
+        Häufige Fragen
+      </a>
+      <a href="{% url 'blog:list' %}"  class="item">
+        Scholien
+      </a>
+      <a href="{% url 'events:type' 'salon' %}" class="item">
+        Salons
+      </a>
+      <a href="{% url 'events:type' 'seminar' %}" class="item">
+        Seminare
+      </a>
+      <a href="{% url 'events:type' 'studium' %}" class="item">
+        Studium
+      </a>
+      <a href="{% url 'framework:contact' %}" class="item">
+        Kontakt
+      </a>
+    {% endif %}
     <a href="{% url 'donations:levels' %}" class="right item">
       <b>Unterstützen</b>
     </a>

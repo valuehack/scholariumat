@@ -1,11 +1,9 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Warenkorb{% endblock %}
-
 {% block content %}
 <div class="ui text container">
-  <h1 class="ui centered header">Warenkorb</h1>
+  <h1 class="ui centered header">{% block title %}Warenkorb{% endblock %}</h1>
   {% if request.user.profile.cart %}
   <table class="ui unstackable table">
     <tbody>

@@ -4,7 +4,7 @@ psycopg2-binary==2.7.5  # https://github.com/psycopg/psycopg2
 
 # Testing
 # ------------------------------------------------------------------------------
-pytest==3.8.1  # https://github.com/pytest-dev/pytest
+pytest==3.8.2  # https://github.com/pytest-dev/pytest
 pytest-sugar==0.9.1  # https://github.com/Frozenball/pytest-
 
 # Django
@@ -18,4 +18,4 @@ pytest-django==3.4.3  # https://github.com/pytest-dev/pytest-django
 # ------------------------------------------------------------------------------
 flake8==3.5.0  # https://github.com/PyCQA/flake8
 coverage==4.5.1  # https://github.com/nedbat/coveragepy
-coveralls==1.5.0  # https://github.com/coveralls-clients/coveralls-python
+coveralls==1.5.1  # https://github.com/coveralls-clients/coveralls-python

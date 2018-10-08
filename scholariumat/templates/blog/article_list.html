@@ -2,11 +2,9 @@
 {% load markup_tags %}
 {% load static %}
 
-{% block title %}Scholien{% endblock %}
-
 {% block content %}
   <div class="ui text container">
-    <h1 class="ui centered header">Scholien</h1>
+    <h1 class="ui centered header">{% block title %}Scholien{% endblock %}</h1>
     <div class="ui hidden divider"></div>
 
     {% if user.is_authenticated %}
