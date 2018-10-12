@@ -3,10 +3,8 @@
 {% load semanticui %}
 {% autosort zotitems %}
 
-{% block title %}Bibliothek{% endblock %}
-
 {% block content %}
-<h1 class="ui huge center aligned header">Bibliothek</h1>
+<h1 class="ui huge center aligned header">{% block title %}Bibliothek{% endblock %}</h1>
 <div class="ui hidden section divider"></div>
 
 <div class="ui center aligned container">
@@ -39,11 +37,11 @@
 
   {% if children %}
     <h3 class="ui header">Kollektionen</h3>
-      <div class="ui big grid menu">
+      <div class="ui big stackable borderless grid menu">
         {% for child in children %}
           <a class="four wide column item" href="{% url 'library:collection' child.slug %}">
-            {{ child }}
-            <div class="ui blue label">{{ child.zotitem_set.all|length }}</div>
+            &nbsp&nbsp{{ child }}
+            <div class="ui blue label">{{ child.num_items }}</div>
           </a>
         {% endfor %}
       </div>

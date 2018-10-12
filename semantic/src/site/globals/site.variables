@@ -3,19 +3,22 @@
 *******************************/
 
 @fontName          : 'EB Garamond';
-@googleFontName    : 'EB+Garamond:500|Raleway:300,400';
+@googleFontName    : 'EB+Garamond:400|Raleway:500,800';
 
 @pageFont          : @fontName, serif;
 @headerFont        : 'Raleway', sans-serif;
 
-@headerFontWeight  : 300;
-@pageFontWeight    : 500;
+@headerFontWeight  : 500;
+@pageFontWeight    : 400;
 
 @h1 : unit((45 / 14), rem);
 @h2 : unit((28 / 14), rem);
 @h3 : unit((22 / 14), rem);
 @h4 : unit((19 / 14), rem);
 @h5 : unit((18 / 14), rem);
+
+// @emSize   : 17px;
+
 
 /**
 @miniSize        : (12 / 14);
@@ -30,4 +33,4 @@
 
 @primaryColor    : #2E4A62;
 @blue            : #2E4A62;
-@yellow          : #FF9C00;
+@yellow          : #ffce43;

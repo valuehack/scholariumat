@@ -14,15 +14,17 @@ class UserForm(forms.ModelForm):
         model = get_user_model()
         fields = ['email']
 
-    def save(self, commit=True):
+    def save(self, commit=True, profile_kwargs={}):
         """Sends out email with pw reset link if user is created."""
         user = super().save(commit=commit)
         if commit:
+            Profile.objects.create(user=user, **profile_kwargs)
+            logger.info(f'Created profile for {user}')
             user.send_activation_mail()
         return user
 
 
-class UpdateEmailForm(UserForm):
+class UpdateEmailForm(forms.ModelForm):
     password = forms.CharField(label='Bestätigen Sie Ihr Passwort', widget=forms.PasswordInput)
 
     def clean_password(self):
@@ -30,6 +32,10 @@ class UpdateEmailForm(UserForm):
         if not self.instance.check_password(password):
             raise forms.ValidationError('Invalid password')
         return password
+
+    class Meta:
+        model = get_user_model()
+        fields = ['email']
 
 
 class ProfileForm(forms.ModelForm):

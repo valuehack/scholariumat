@@ -63,8 +63,7 @@ class Profile(CartMixin, DonationMixin, LendingMixin, BalanceMixin, TimeStampedM
 
     @property
     def address(self):
-        return '{}\n{}\n{} {}\n{}'.format(self.name, self.street, self.postcode,
-                                          self.city, self.country.get('name', ''))
+        return f'{self.name}, {self.street}, {self.postcode} {self.city}, {self.country}'
 
     def __str__(self):
         return self.user.__str__()

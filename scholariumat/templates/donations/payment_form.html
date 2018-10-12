@@ -7,10 +7,8 @@
 <div class="ui text container">
   <form class="ui form" method="post">
     {% csrf_token %}
-    <div class="inline fields">
-      {% render_form form %}
-      <button class="ui blue basic button" type="submit">Bestätigen</button>
-    </div>
+    {% render_form form %}
+    <button class="ui blue basic button" type="submit">Bestätigen</button>
   </form>
 </div>
 

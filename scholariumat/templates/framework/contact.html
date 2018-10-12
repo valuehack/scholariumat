@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+  <div class="ui text container">
+    <h1 class="ui centered header">{% block title %}Kontakt{% endblock %}</h1>
+    <div class="ui center aligned basic segment">
+      <h3 class="ui header">
+        Schlösselgasse 19/2/18<br>
+        1080 Wien<br>
+      </h3>
+      <h3>E-Mail: <a href="mailto:info@scholarium.at">info@scholarium.at</a></h3>
+    </div>
+      <div class="ui segment">
+      <div class="ui embed" data-url="https://maps.google.com/maps?q=scholarium&t=&z=17&ie=UTF8&iwloc=&output=embed"></div>
+    </div>
+      <script>
+        $('.ui.embed').embed();
+      </script>
+  <div class="ui hidden section divider"></div>
+  <img class="ui centered small image" src="{% static 'images/divider.png' %}"></img>
+{% endblock content %}

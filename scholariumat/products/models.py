@@ -178,6 +178,11 @@ class Purchase(TimeStampedModel, CommentAble):
     def execute(self):
         if self.profile.spend(self.total):
             if self.item.sell(self.amount):
+                if self.item.type.shipping:
+                    mail_managers(
+                        f'Bestellung: {self.item.product}',
+                        f'Nutzer {self.profile} hat {self.item.product} im Format {self.item.type} bestellt. '
+                        f'Adresse: {self.profile.address}')
                 self.executed = True
                 self.save()
                 return True

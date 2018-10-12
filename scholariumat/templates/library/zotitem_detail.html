@@ -1,9 +1,7 @@
 {% extends "products/product_detail.html" %}
 
-{% block title %}Werk{% endblock %}
-
 {% block product %}
-    <h2 class="ui header">{{ api_object.data.title }}</h2>
+    <h2 class="ui header">{% block title %}{{ api_object.data.title }}{% endblock %}</h2>
       <div class="ui sub header">
         {% for creator in api_object.data.creators %}
           {{ creator.firstName }} {{ creator.lastName }}<br>

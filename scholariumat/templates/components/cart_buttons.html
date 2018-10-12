@@ -1,13 +1,14 @@
 {% load product_tags %}
 {% load donation_tags %}
+{% load static %}
 
+{% if request.user.is_authenticated %}
 {% if product.item_set.all %}
-<div class="ui right rail">
-  <div class="ui sticky">
+  <div class="ui hidden divider"></div>
 
-  <h3 class="ui header">Formate</h3>
   <div class="ui centered card">
     <div class="content">
+      <h2 class="ui header">Formate</h2>
       <div class="column">
         {% for item in product.item_set.all %}
           {% if forloop.counter is not 1 %}
@@ -55,8 +56,10 @@
                     </div>
                   </div>
                   <div class="ui basic left pointing label">
-                    {{ item.price }}&nbsp;
-                    <i class="bitcoin fitted icon"></i>
+                    {{ item.price }}&nbsp;&nbsp;
+                    <div style="height: 1em;">
+                      <img class="ui image" src="{% static 'images/coin.png' %}" style="height: 1.2em; width: auto; bottom: 0.1em;">
+                    </div>
                   </div>
 
                 {% else %}
@@ -88,8 +91,6 @@
       </div>
     </div>
   </div>
-  </div>
-</div>
 <script>
 $('.ui.sticky')
   .sticky({
@@ -97,4 +98,8 @@ $('.ui.sticky')
   })
 ;
 </script>
+{% endif %}
+{% else %}
+
+{% include 'components/registration_form.html' %}
 {% endif %}

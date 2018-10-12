@@ -1,0 +1,25 @@
+<div class="ui hidden section divider"></div>
+  <div class="ui basic center aligned segment">
+  <a href="{% url 'login' %}" class="ui blue button">Anmelden</a><br><br>
+<div class="ui grid">
+  <div class="five wide column"></div>
+  <div class="six wide column">
+    <div class="ui horizontal divider">oder</div>
+  </div>
+  <div class="five wide column"></div>
+</div>
+<div class="ui centered card">
+  <div class="content">
+  <form id="register_form" method="post" class="ui form" action="{% url 'users:signup' %}">
+    {% csrf_token %}
+      <div class="ui fluid input">
+        <input type="email" name="email" placeholder="Email-Adresse">
+        
+    </div>
+    <div class="ui divider"></div>
+      <button class="ui blue fluid button" type="submit">Kostenlos eintragen</button>
+
+  </form>
+  </div>
+</div>
+</div>

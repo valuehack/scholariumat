@@ -1,9 +1,11 @@
 from django.urls import path
 
-from .views import homeview
+from .views import HomeView, FaqView, ContactView
 
 app_name = 'framework'
 
 urlpatterns = [
-    path('', homeview, name='home'),
+    path('', HomeView.as_view(), name='home'),
+    path('fragen', FaqView.as_view(), name='faq'),
+    path('Kontakt', ContactView.as_view(), name='contact')
 ]

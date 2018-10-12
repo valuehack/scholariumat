@@ -1,10 +1,12 @@
 {% extends 'base.html' %}
 {% load semanticui %}
 
-{% block title %}Nutzerprofil{% endblock %}
-
 {% block content %}
 <div class="ui text container">
+  <h1 class="ui centered header">
+    {% block title %}Profileinstellungen{% endblock %}
+  </h1>
+  <div class="ui hidden divider"></div>
   <div class="ui form">
     <div class="field">
       <label>Email-Adresse</label>
@@ -16,7 +18,7 @@
   </div>
 
   <div class="ui hidden section divider"></div>
-  <h2 class="ui horizontal divider header">Ihre Daten</h2>
+  <h2 class="ui horizontal divider header">Ihre Kontaktdaten</h2>
   <form class="ui form" method="post">
       {% csrf_token %}
       <div class="fields">
