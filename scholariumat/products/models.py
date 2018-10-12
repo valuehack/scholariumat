@@ -38,6 +38,7 @@ class Product(models.Model):
         attachments = []
         for item in self.items_accessible(profile):
             attachments += [attachment for attachment in item.attachments if item.amount_accessible(profile)]
+        return list(set(attachments))
 
     def __str__(self):
         return self.type.__str__()
@@ -71,6 +72,7 @@ class Item(TimeStampedModel):
     price = models.SmallIntegerField('Preis', null=True, blank=True)
     amount = models.IntegerField('Anzahl', null=True, blank=True)
     requests = models.ManyToManyField('users.Profile', related_name='item_requests', blank=True, editable=False)
+    files = models.ManyToManyField('products.FileAttachment', blank=True)
 
     @property
     def available(self):
@@ -84,7 +86,7 @@ class Item(TimeStampedModel):
             if item_rel.related_model and issubclass(item_rel.related_model, AttachmentBase)\
                     and getattr(self, item_rel.get_accessor_name(), False):
                 attachment_list += (getattr(self, item_rel.get_accessor_name()).all())
-        return attachment_list
+        return list(self.files.all()) + attachment_list
 
     def is_purchasable(self, profile):
         return profile.amount >= self.type.purchasable_at
@@ -147,7 +149,7 @@ class Item(TimeStampedModel):
             self.save()
 
     def __str__(self):
-        return '{} für {} Punkte'.format(self.type.__str__(), self.price)
+        return '{}: {} für {} Punkte'.format(self.product.__str__(), self.type.__str__(), self.price)
 
     class Meta:
         verbose_name = 'Item'
@@ -212,8 +214,9 @@ class AttachmentType(TitleSlugDescriptionModel):
         verbose_name_plural = 'Anhangstypen'
 
 
-class FileAttachment(AttachmentBase):
+class FileAttachment(models.Model):
     file = models.FileField()
+    type = models.ForeignKey('products.AttachmentType', on_delete=models.PROTECT)
 
     def get(self):
         print(self.file)
@@ -221,6 +224,9 @@ class FileAttachment(AttachmentBase):
         response['Content-Disposition'] = f'attachment; \
             filename={slugify(self.item.product)}.{self.type.slug}'
         return response
+
+    def __str__(self):
+        return f'{self.type.__str__()}: {self.file.name}'
 
     class Meta:
         verbose_name = 'Anhang'

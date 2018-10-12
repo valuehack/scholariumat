@@ -1,5 +1,6 @@
 from datetime import date
 from vanilla import DetailView, ListView
+from braces.views import LoginRequiredMixin
 
 from django.db.models import Q
 
@@ -34,3 +35,13 @@ class EventListView(ListView):
 class EventView(PurchaseMixin, DownloadMixin, DetailView):
     model = Event
     lookup_field = 'slug'
+
+
+class RecordingsView(LoginRequiredMixin, PurchaseMixin, DownloadMixin, ListView):
+    model = Event
+    paginate_by = 10
+    template_name = 'events/recording_list.html'
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        return qs.filter(date__lt=date.today()).order_by('-date')

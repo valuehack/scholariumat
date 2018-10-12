@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load markup_tags %}
+
+{% block content %}
+  <div class="ui container">
+    <h1 class="ui centered header">
+      {% block title %}Aufzeichnungen{% endblock %}
+    </h1>
+    {% if not request.user.is_authenticated %}
+      <p>Beschreibung</p>
+    {% endif %}
+    <div class="ui hidden divider"></div>
+
+    <table class="ui large celled table">
+      <thead>
+        <tr>
+          <th>Veranstaltung</th>
+          <th>Art</th>
+          <th>Datum</th>
+          <th>Formate</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for event in object_list %}
+        <tr>
+          <td><h4 class="ui header"><a href="{% url 'events:event' event.slug %}">{{ event.title }}</a></h3></td>
+          <td class="collapsing">{{ event.type }}</td>
+          <td class="single line collapsing">{{ event.date }}</td>
+          <td class="collapsing single line">{% include 'components/cart_buttons_list.html' with product=event.product %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    
+    {% if paginator.num_pages > 1 %}
+    <tfoot>
+      <tr>
+        <th colspan="4">
+          <div class="ui right floated pagination menu">
+            {% include "components/pagination.html" %}
+          </div>
+        </th>
+      </tr>
+    </tfoot>
+    {% endif %}
+  
+</table>
+  </div>
+{% endblock content %}

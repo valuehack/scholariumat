@@ -17,6 +17,7 @@ class ProductBaseAdmin(admin.ModelAdmin):
 
 class ItemInline(admin.TabularInline):
     model = Item
+    raw_id_fields = ['files']
     show_change_link = True
 
 
@@ -33,13 +34,8 @@ class PurchaseAdmin(admin.ModelAdmin):
     readonly_fields = ['executed']
 
 
-class AttachmentInline(admin.TabularInline):
-    model = FileAttachment
-
-
 class ItemAdmin(admin.ModelAdmin):
-    inlines = [AttachmentInline]
-    raw_id_fields = ['product']
+    raw_id_fields = ['product', 'files']
     list_display = ['type', 'price', 'product']
 
 
@@ -51,3 +47,4 @@ admin.site.register(Product, ProductAdmin)
 admin.site.register(ItemType)
 admin.site.register(Purchase, PurchaseAdmin)
 admin.site.register(Item, ItemAdmin)
+admin.site.register(FileAttachment)

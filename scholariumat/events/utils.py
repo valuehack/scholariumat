@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 import pypandoc
 
 from django.conf import settings
@@ -62,6 +63,11 @@ def import_from_json():
         livestream_type, created = ItemType.objects.get_or_create(
             slug='livestream',
             defaults={'title': 'Livestream'})
+        recording_type, created = ItemType.objects.get_or_create(
+            slug='recording',
+            defaults={'title': 'Aufzeichnung'})
+
+        livestream_item = None
 
         if event['fields']['link']:
             livestream_item, created = Item.objects.get_or_create(
@@ -75,15 +81,27 @@ def import_from_json():
                 logging.debug(f'Created livestream for {new.title}')
 
         if event['fields']['datei']:
-            livestream_item, created = Item.objects.get_or_create(
-                product=new.product, type=livestream_type,
+            attachment_type, created = AttachmentType.objects.get_or_create(
+                slug='mp3', defaults={'title': 'MP3'})
+
+            file_name = os.path.split(event['fields']['datei'])[1]
+            downloaded = FileAttachment.objects.filter(
+                type=attachment_type,
+                file=file_name)
+            if downloaded:
+                recording = downloaded.get()
+            else:
+                recording, created = FileAttachment.objects.get_or_create(
+                    type=attachment_type,
+                    file=event['fields']['datei'])
+
+            recording_item, created = Item.objects.get_or_create(
+                product=new.product, type=recording_type,
                 defaults={'price': 5})
 
-            attachment_type, created = AttachmentType.objects.get_or_create(
-                slug='recording', defaults={'title': 'Aufzeichnung'})
-            recording, created = FileAttachment.objects.update_or_create(
-                item=livestream_item,
-                type=attachment_type,
-                defaults={'file': event['fields']['datei']})
+            recording_item.files.add(recording)
+            if livestream_item:
+                livestream_item.files.add(recording)
+
             if created:
                 logging.debug(f'Created recording for {new.title}')
