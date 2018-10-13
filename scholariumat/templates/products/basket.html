@@ -13,7 +13,7 @@
           <td class="center aligned">
             {% if purchase.item.amount != None %}{{ purchase.amount }}{% endif %}
           </td>
-          <td><div class="ui label">{{ purchase.item.type }}</div></td>
+          <td><div class="ui label">{{ purchase.item }}</div></td>
           <td>
             {% if not purchase.available %}
               <i id="{{ purchase.pk }}_basket_popup" class="ui red link exclamation circle icon" data-content="Das Produkt ist in der gewünschten Menge nicht verfügbar"></i>

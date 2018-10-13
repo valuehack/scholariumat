@@ -2,30 +2,16 @@
 <table class="ui large table">
   <tbody>
     {% for product in products %}
+    {% items_accessible request product as items %}
       <tr>
         <td>
           <a href="{{ product.type.get_absolute_url }}">{{ product }}</a>
-          {% items_accessible request product as items %}
           {% for item in items %}
-            {% if not item.attachment %}
               <div class="ui label">{{ item.type }}</div>
-            {% endif %}
           {% endfor %}
         </td>
-        <td class="right aligned single line">
-          {% for item in items %}
-            {% if item.livestream %}
-              <a href="{% url 'events:event' product.event.slug %}" class="ui small blue button">Zum Livestream</a>
-            {% endif %}
-            {% for attachment in item.attachments %}
-              <form target="_blank" id="{{ attachment.pk }}_dlform" method="POST" style="display: inline;">
-                {% csrf_token %}
-                <input type="hidden" name="download" value="{{ item.pk }}">
-                <input type="hidden" name="id" value="{{ forloop.counter0 }}">
-              </form>
-              <a onclick='document.forms["{{ attachment.pk }}_dlform"].submit(); return false;' class="ui small blue button">{{ attachment.type }}</a>
-            {% endfor %}
-          {% endfor %}
+        <td>
+          {% include 'components/download_dropdown.html' with product=product %}
         </td>
       </tr>
     {% endfor %}

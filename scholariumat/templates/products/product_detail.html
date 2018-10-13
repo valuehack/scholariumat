@@ -1,11 +1,36 @@
 {% extends "base.html" %}
+{% load product_tags %}
 
 {% block content %}
   <div class="ui text container">
     <div class="ui basic segment">
-      {% block product %}
-      {% endblock product %}
-      {% include 'components/cart_buttons.html' with product=object.product %}
+      {% block product %}{% endblock product %}
+
+      <div class="ui hidden divider"></div>
+        <div class="ui centered cards">
+          {% any_attachments_accessible request object.product as attachments %}
+          {% if attachments %}
+          <div class="ui card">
+            <div class="content">
+              <h2 class="ui header">Downloads</h2>
+              <div class="ui center aligned basic segment">
+                {% include 'components/download_buttons.html' with product=object.product %}
+              </div>
+            </div>
+          </div>
+          {% endif %}
+          {% items_available request object.product as items %}
+          {% if items %}
+            <div class="ui card">
+              <div class="content">
+                <h2 class="ui header">Formate</h2>
+                <div class="ui center aligned basic segment">
+                  {% include 'components/cart_buttons_list.html' with product=object.product %}
+                </div>
+              </div>
+            </div>
+          {% endif %}
+
+      </div>
     </div>
-  </div>
-{% endblock content %}
+  {% endblock content %}

@@ -1,0 +1,31 @@
+{% load product_tags %}
+
+{% any_attachments_accessible request product as attachments %}
+{% items_accessible request product as items %}
+{% if attachments %}
+  <div class="ui dropdown">
+    <i class="download icon"></i>
+    <div class="menu">
+    {% for item in items %}
+      {% for attachment in item.attachments %}
+        <div class="item">
+          <form target="_blank" id="{{ item.pk }}_{{ forloop.counter0 }}_dlform" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="download" value="{{ item.pk }}">
+            <input type="hidden" name="id" value="{{ forloop.counter0 }}">
+          </form>
+          <a onclick='document.forms["{{ item.pk }}_{{ forloop.counter0 }}_dlform"].submit(); return false;'>
+            {% if item.title %}{{ item.title }}:{% endif %}
+            {{ attachment.type }}
+          </a>
+        </div>
+      {% endfor %}
+    {% endfor %}
+  </div>
+  </div>
+  <script>
+    $('.ui.dropdown').dropdown({
+      'action': 'nothing'
+    })
+  </script>
+{% endif %}

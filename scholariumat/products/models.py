@@ -27,18 +27,20 @@ class Product(models.Model):
             if product_rel.one_to_one and getattr(self, product_rel.name, False):
                 return getattr(self, product_rel.name)
 
-    @property
-    def items_available(self):
-        return self.item_set.filter(Q(price__gt=0), Q(amount__gt=0) | Q(amount__isnull=True))
+    def items_available(self, profile):
+        """Returns unaccessible items that are visible for user"""
+        return self.item_set.exclude(id__in=self.items_accessible(profile))
 
     def items_accessible(self, profile):
-        return [item for item in self.item_set.all() if item.amount_accessible(profile)]
+        """Returns items that can be accessed by user"""
+        return self.item_set.filter(
+            Q(purchase__in=profile.purchases) | Q(type__accessible_at__lt=profile.amount)).distinct()
 
-    def attachments_accessible(self, profile):
-        attachments = []
+    def any_attachments_accessible(self, profile):
+        """Only checks for existence for performance reasons"""
         for item in self.items_accessible(profile):
-            attachments += [attachment for attachment in item.attachments if item.amount_accessible(profile)]
-        return list(set(attachments))
+            if item.attachments:
+                return True
 
     def __str__(self):
         return self.type.__str__()
@@ -65,8 +67,15 @@ class ItemType(TitleDescriptionModel, TimeStampedModel):
 
 
 class Item(TimeStampedModel):
-    """Purchasable items."""
+    """
+    Items are purchasable can have 3 states in relation to a user:
+    - requestable: Is visible and can be requested.
+    - purchasable: Can be purchased.
+    - accessible: Can be accessed, attachments can be downloaded, etc.
+    If amount is None, the item is unlimited.
+    """
 
+    title = models.CharField(max_length=50, blank=True)
     type = models.ForeignKey(ItemType, on_delete=models.CASCADE, verbose_name='Typ')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     price = models.SmallIntegerField('Preis', null=True, blank=True)
@@ -80,7 +89,8 @@ class Item(TimeStampedModel):
 
     @property
     def attachments(self):
-        """Fetches related attachments"""
+        # TODO: Remove? Custom attachments should maybe be handled individually when needed.
+        """Fetches related attachments """
         attachment_list = []
         for item_rel in self._meta.get_fields():
             if item_rel.related_model and issubclass(item_rel.related_model, AttachmentBase)\
@@ -88,17 +98,24 @@ class Item(TimeStampedModel):
                 attachment_list += (getattr(self, item_rel.get_accessor_name()).all())
         return list(self.files.all()) + attachment_list
 
+    def is_requestable(self, profile):
+        return not self.available and profile.amount >= self.type.purchasable_at and \
+            self.type.requestable
+
     def is_purchasable(self, profile):
-        return profile.amount >= self.type.purchasable_at
+        return self.available and profile.amount >= self.type.purchasable_at and \
+            not self.is_accessible(profile)
+
+    def amount_purchased(self, profile):
+        return sum(p.amount for p in profile.purchases.filter(item=self))
+
+    def is_accessible(self, profile):
+        return profile.amount >= self.type.accessible_at if self.type.accessible_at is not None else \
+            bool(profile.purchases.filter(item=self))
 
     def amount_accessible(self, profile):
-        access = self.type.accessible_at
-        if access is not None and profile.amount > access:
-            return 1
-        return self.amount_bought(profile)
-
-    def amount_bought(self, profile):
-        return sum(p.amount for p in profile.purchases.filter(item=self))
+        return 1 if self.type.accessible_at is not None and profile.amount >= self.type.accessible_at else \
+            self.amount_purchased(profile)
 
     def request(self, profile):
         if self.type.requestable:
@@ -115,18 +132,17 @@ class Item(TimeStampedModel):
 
     def add_to_cart(self, profile):
         """Only add a limited product if no purchase of it exists."""
-        if not self.is_purchasable(profile):
-            return False
-        if self.amount is None:
-            purchase, created = Purchase.objects.get_or_create(profile=profile, item=self, defaults={'executed': False})
-            if not created:
-                return False
-        else:
-            purchase, created = Purchase.objects.get_or_create(profile=profile, item=self, executed=False)
-            if not created:
-                purchase.amount += 1
-                purchase.save()
-        return True
+        if self.is_purchasable(profile):
+            if self.amount is None:
+                purchase, created = Purchase.objects.get_or_create(
+                    profile=profile, item=self, defaults={'executed': False})
+                return created
+            else:
+                purchase, created = Purchase.objects.get_or_create(profile=profile, item=self, executed=False)
+                if not created:
+                    purchase.amount += 1
+                    purchase.save()
+            return True
 
     def sell(self, amount):
         """Given an amount, tries to lower local amount. Ignored if not limited."""
@@ -149,7 +165,9 @@ class Item(TimeStampedModel):
             self.save()
 
     def __str__(self):
-        return '{}: {} für {} Punkte'.format(self.product.__str__(), self.type.__str__(), self.price)
+        if self.title:
+            return f'{self.type.title}: {self.title}'
+        return self.type.title
 
     class Meta:
         verbose_name = 'Item'

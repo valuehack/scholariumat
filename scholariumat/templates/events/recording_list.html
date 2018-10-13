@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load markup_tags %}
+{% load product_tags %} 
 
 {% block content %}
   <div class="ui container">
@@ -11,13 +12,14 @@
     {% endif %}
     <div class="ui hidden divider"></div>
 
-    <table class="ui large celled table">
+    <table class="ui large table">
       <thead>
         <tr>
           <th>Veranstaltung</th>
           <th>Art</th>
           <th>Datum</th>
-          <th>Formate</th>
+          <th></th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
@@ -26,6 +28,9 @@
           <td><h4 class="ui header"><a href="{% url 'events:event' event.slug %}">{{ event.title }}</a></h3></td>
           <td class="collapsing">{{ event.type }}</td>
           <td class="single line collapsing">{{ event.date }}</td>
+          <td class="collapsing single line">
+            {% include 'components/download_dropdown.html' with product=event.product %}
+          </td>
           <td class="collapsing single line">{% include 'components/cart_buttons_list.html' with product=event.product %}</td>
         </tr>
       {% endfor %}
@@ -34,7 +39,7 @@
     {% if paginator.num_pages > 1 %}
     <tfoot>
       <tr>
-        <th colspan="4">
+        <th colspan="5">
           <div class="ui right floated pagination menu">
             {% include "components/pagination.html" %}
           </div>
