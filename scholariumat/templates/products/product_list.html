@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load markup_tags %}
+
+{% block content %}
+  <div class="ui text container">
+    <h1 class="ui centered header">
+      {% block title %}{% endblock %}
+    </h1>
+    <div class="ui hidden divider"></div>
+
+    {% for object in object_list %}
+      <div class="ui basic segment">
+        <h2 class="ui centered header">
+          <a href="{{ object.get_absolute_url }}">{{ object.title }}</a>
+        </h2>
+        {% if object.description is not None %}
+          {{ object.description|apply_markup:"markdown"|truncatewords:60 }}
+        {% endif %}
+      </div>
+      {% if not forloop.last %}
+        <div class="ui section divider"></div>
+      {% endif %}
+    {% endfor %}
+    {% if paginator.num_pages > 1 %}
+      <div class="ui hidden section divider"></div>
+      <div class="ui right floated pagination menu">
+        {% include "components/pagination.html" %}
+      </div>
+    {% endif %}
+
+  </div>
+{% endblock content %}

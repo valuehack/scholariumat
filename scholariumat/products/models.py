@@ -1,5 +1,6 @@
 import logging
 from slugify import slugify
+from datetime import date
 
 from django.db import models
 from django.db.models import Q
@@ -29,7 +30,7 @@ class Product(models.Model):
 
     def items_available(self, profile):
         """Returns unaccessible items that are visible for user"""
-        return self.item_set.exclude(id__in=self.items_accessible(profile))
+        return self.item_set.exclude(type__buy_once=True, id__in=self.items_accessible(profile))
 
     def items_accessible(self, profile):
         """Returns items that can be accessed by user"""
@@ -58,6 +59,7 @@ class ItemType(TitleDescriptionModel, TimeStampedModel):
     purchasable_at = models.SmallIntegerField(default=0)
     accessible_at = models.SmallIntegerField(null=True, blank=True)
     unavailability_notice = models.CharField(max_length=20, default="Nicht verfügbar")
+    buy_once = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title
@@ -109,7 +111,7 @@ class Item(TimeStampedModel):
 
     def is_purchasable(self, profile):
         return self.available and profile.amount >= self.type.purchasable_at and \
-            not self.is_accessible(profile)
+            not (self.is_accessible(profile) and self.type.buy_once)
 
     def amount_purchased(self, profile):
         return sum(p.amount for p in profile.purchases.filter(item=self))
@@ -133,20 +135,15 @@ class Item(TimeStampedModel):
 
     def inform_users(self):
         pass
-        # TODO: Send email to users in requests
+        # TODO: Send email to users in requests and create admin button
 
     def add_to_cart(self, profile):
         """Only add a limited product if no purchase of it exists."""
         if self.is_purchasable(profile):
-            if self.amount is None:
-                purchase, created = Purchase.objects.get_or_create(
-                    profile=profile, item=self, defaults={'executed': False})
-                return created
-            else:
-                purchase, created = Purchase.objects.get_or_create(profile=profile, item=self, executed=False)
-                if not created:
-                    purchase.amount += 1
-                    purchase.save()
+            purchase, created = Purchase.objects.get_or_create(profile=profile, item=self, executed=False)
+            if not created:
+                purchase.amount += 1
+                purchase.save()
             return True
 
     def sell(self, amount):
@@ -188,31 +185,32 @@ class Purchase(TimeStampedModel, CommentAble):
     shipped = models.DateField(blank=True, null=True)
     executed = models.BooleanField(default=False)
     free = models.BooleanField(default=False)
+    date = models.DateField(null=True, blank=True)
 
     @property
     def total(self):
-        if self.free:
-            return 0
-        return self.item.price * self.amount if self.item.amount is not None else self.item.price
+        return 0 if self.free else self.item.price * self.amount
 
     @property
     def available(self):
         """Check if required amount is available"""
-        return self.item.available and (self.item.amount is None or self.item.amount >= self.amount)
+        return self.item.available and self.item.amount >= self.amount
 
     def execute(self):
-        if self.profile.spend(self.total):
-            if self.item.sell(self.amount):
-                if self.item.type.shipping:
-                    mail_managers(
-                        f'Bestellung: {self.item.product}',
-                        f'Nutzer {self.profile} hat {self.item.product} im Format {self.item.type} bestellt. '
-                        f'Adresse: {self.profile.address}')
-                self.executed = True
-                self.save()
-                return True
-            else:
-                self.profile.refill(self.total)
+        if self.item.is_purchasable(self.profile):
+            if self.profile.spend(self.total):
+                if self.item.sell(self.amount):
+                    if self.item.type.shipping:
+                        mail_managers(
+                            f'Bestellung: {self.item.product}',
+                            f'Nutzer {self.profile} hat {self.item.product} im Format {self.item.type} bestellt. '
+                            f'Adresse: {self.profile.address}')
+                    self.executed = True
+                    self.date = date.today()
+                    self.save()
+                    return True
+                else:
+                    self.profile.refill(self.total)
         return False
 
     def revert(self):

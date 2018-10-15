@@ -77,6 +77,7 @@ LOCAL_APPS = [
     'library.apps.LibraryConfig',
     'events.apps.EventsConfig',
     'blog.apps.BlogConfig',
+    'studies.apps.StudiesConfig',
     'donations.apps.DonationsConfig',
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -98,7 +99,7 @@ AUTHENTICATION_BACKENDS = [
 # https://docs.djangoproject.com/en/dev/ref/settings/#auth-user-model
 AUTH_USER_MODEL = 'users.User'
 # https://docs.djangoproject.com/en/dev/ref/settings/#login-redirect-url
-LOGIN_REDIRECT_URL = 'users:profile'
+LOGIN_REDIRECT_URL = 'framework:home'
 # https://docs.djangoproject.com/en/dev/ref/settings/#login-url
 LOGIN_URL = 'login'
 

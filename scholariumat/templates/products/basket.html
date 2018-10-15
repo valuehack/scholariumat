@@ -11,7 +11,7 @@
         <tr {% if not purchase.available %}class="negative"{% endif %}>
           <td></td>
           <td class="center aligned">
-            {% if purchase.item.amount != None %}{{ purchase.amount }}{% endif %}
+            {% if purchase.amount > 1 %}{{ purchase.amount }}{% endif %}
           </td>
           <td><div class="ui label">{{ purchase.item }}</div></td>
           <td>

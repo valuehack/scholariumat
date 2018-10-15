@@ -2,17 +2,29 @@
 <table class="ui large table">
   <tbody>
     {% for product in products %}
-    {% items_accessible request product as items %}
       <tr>
         <td>
           <a href="{{ product.type.get_absolute_url }}">{{ product }}</a>
+          {% items_accessible request product.product as items %}
           {% for item in items %}
               <div class="ui label">{{ item.type }}</div>
           {% endfor %}
         </td>
         <td>
-          {% include 'components/download_dropdown.html' with product=product %}
+          {% include 'components/download_dropdown.html' with product=product.product %}
         </td>
+        {% if livestream_btn %}
+          <td>
+            {% with product.livestream as livestream %}
+            {% if livestream %}
+              {% is_accessible request livestream.item as accessible %}
+              {% if accessible %}
+                  <a href="{% url 'events:event' product.slug %}"><button class="ui right floated blue button">Zum Livestream</button>
+              {% endif %}
+            {% endif %}
+            {% endwith %}
+          </td>
+        {% endif %}
       </tr>
     {% endfor %}
   </tbody>

@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-{% load product_tags %}
 
 {% block title %}Bestellungen{% endblock %}
 
@@ -12,7 +11,7 @@
 
     {% if future_events %}
       <h3 class="ui header">Kommende Veranstaltungen</h3>
-      {% include 'components/purchased_product_list.html' with products=future_events %}
+      {% include 'components/purchased_product_list.html' with products=future_events livestream_btn=True %}
     {% endif %}
           
     {% if past_events %}
@@ -22,11 +21,7 @@
           {% include 'components/purchased_product_list.html' with products=past_events %}
         </div>
       </div>
-      <script>
-      $('.ui.accordion')
-        .accordion()
-      ;
-      </script>
+      
     {% endif %}
     
     {% if digital_content %}
@@ -34,25 +29,29 @@
       {% include 'components/purchased_product_list.html' with products=digital_content %}
     {% endif %}
     
-    {% if rest %}
-    <h2 class="ui header">Restliche Käufe</h2>
+    {% if purchases %}
+      <div class="ui styled fluid accordion">
+        <div class="title"><i class="dropdown icon"></i>Alle Käufe</div>
+        <div class="content">
+    
     <table class="ui table">
       <tbody>
-          {% for purchase in rest %}
+          {% for purchase in purchases %}
             <tr>
-              <td></td>
+              <td class="single line">{% if purchase.date %}{{ purchase.date }}{% endif %}</td>
               <td class="center aligned">
-                {% if purchase.item.amount != None %}{{ purchase.amount }}{% endif %}
+                {% if purchase.amount > 1 %}{{ purchase.amount }}{% endif %}
               </td>
               <td><div class="ui label">{{ purchase.item.type }}</div></td>
               <td>
                 {{ purchase.item.product }}
               </td>
-              <td></td>
             </tr>
           {% endfor %}
       </tbody>
     </table>
+  </div>
+</div>
     {% endif %}
 
   {% else %}
@@ -61,4 +60,9 @@
 </div>
 
 </div>
+<script>
+$('.ui.accordion')
+  .accordion()
+;
+</script>
 {% endblock content %}
