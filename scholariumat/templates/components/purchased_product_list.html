@@ -14,12 +14,12 @@
           {% include 'components/download_dropdown.html' with product=product.product %}
         </td>
         {% if livestream_btn %}
-          <td>
+          <td class="single right aligned line compact">
             {% with product.livestream as livestream %}
             {% if livestream %}
               {% is_accessible request livestream.item as accessible %}
               {% if accessible %}
-                  <a href="{% url 'events:event' product.slug %}"><button class="ui right floated blue button">Zum Livestream</button>
+                  <a href="{% url 'events:event' product.slug %}"><button class="ui blue button">Zum Livestream</button>
               {% endif %}
             {% endif %}
             {% endwith %}

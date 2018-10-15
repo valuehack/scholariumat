@@ -1,8 +1,10 @@
-from django.urls import reverse
-from django.http import HttpResponseRedirect
+from datetime import date
 
-from braces.views import OrderableListMixin, LoginRequiredMixin
+from braces.views import OrderableListMixin
 from vanilla import TemplateView
+
+from events.models import Event
+from blog.models import Article
 
 
 class CompatibleOrderableListMixin(OrderableListMixin):
@@ -40,6 +42,16 @@ class CompatibleOrderableListMixin(OrderableListMixin):
 
 class HomeView(TemplateView):
     template_name = 'framework/home.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.user.is_authenticated:
+            context['events'] = Event.objects.filter(
+                date__gte=date.today(), publish_date__lte=date.today()).order_by('date')[:4]
+            articles = Article.objects.filter(publish_date__lte=date.today())[:4]
+            context['feature'] = articles[0]
+            context['articles'] = articles[1:5]
+        return context
 
 
 class FaqView(TemplateView):

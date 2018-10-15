@@ -21,7 +21,7 @@ class EventListView(ListView):
 
     def get_queryset(self):
         qs = super().get_queryset()
-        return qs.filter(type=self.event_type, date__gte=date.today()).order_by('date')
+        return qs.filter(type=self.event_type, date__gte=date.today(), publish_date__lte=date.today()).order_by('date')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
