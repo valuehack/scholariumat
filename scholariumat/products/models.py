@@ -54,6 +54,7 @@ class ItemType(TitleDescriptionModel, TimeStampedModel):
     slug = models.SlugField()
     shipping = models.BooleanField(default=False)
     requestable = models.BooleanField(default=False)
+    default_price = models.SmallIntegerField(null=True, blank=True)
     purchasable_at = models.SmallIntegerField(default=0)
     accessible_at = models.SmallIntegerField(null=True, blank=True)
     unavailability_notice = models.CharField(max_length=20, default="Nicht verfügbar")
@@ -78,10 +79,14 @@ class Item(TimeStampedModel):
     title = models.CharField(max_length=50, blank=True)
     type = models.ForeignKey(ItemType, on_delete=models.CASCADE, verbose_name='Typ')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    price = models.SmallIntegerField('Preis', null=True, blank=True)
+    _price = models.SmallIntegerField('Preis', null=True, blank=True)
     amount = models.IntegerField('Anzahl', null=True, blank=True)
     requests = models.ManyToManyField('users.Profile', related_name='item_requests', blank=True, editable=False)
     files = models.ManyToManyField('products.FileAttachment', blank=True)
+
+    @property
+    def price(self):
+        return self._price or self.type.default_price
 
     @property
     def available(self):

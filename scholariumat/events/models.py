@@ -1,6 +1,7 @@
-from datetime import date
+from datetime import date, datetime, timedelta
 
 from django.db import models
+from django.conf import settings
 from django.urls import reverse
 
 from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel
@@ -12,6 +13,8 @@ from framework.behaviours import PublishAble
 
 class EventType(TitleSlugDescriptionModel):
     section_title = models.CharField(max_length=50, blank=True)
+    default_time_start = models.TimeField(null=True, blank=True)
+    default_time_end = models.TimeField(null=True, blank=True)
 
     def __str__(self):
         return self.title
@@ -27,8 +30,16 @@ class Event(ProductBase, PublishAble):
     date = models.DateField()
     end_date = models.DateField(null=True, blank=True)
     type = models.ForeignKey(EventType, on_delete=models.PROTECT)
-    time_start = models.TimeField(null=True, blank=True)
-    time_end = models.TimeField(null=True, blank=True)
+    _time_start = models.TimeField(null=True, blank=True)
+    _time_end = models.TimeField(null=True, blank=True)
+
+    @property
+    def time_start(self):
+        return self._time_start or self.type.default_time_start
+
+    @property
+    def time_end(self):
+        return self._time_end or self.type.default_time_end
 
     @property
     def livestream(self):
@@ -60,8 +71,12 @@ class Livestream(TimeStampedModel):
     @property
     def show(self):
         event = self.item.product.event
-        if event.date <= date.today():
-            return True
+        if event.time_start:
+            event_start = datetime.combine(event.date, event.time_start)
+            if datetime.now() + timedelta(minutes=settings.SHOW_LIVESTREAM) >= event_start:
+                return True
+        else:
+            return True if event.date <= date.today() else False
 
     def __str__(self):
         return f"Livestream: {self.item.product}"

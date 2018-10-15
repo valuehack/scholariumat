@@ -270,6 +270,9 @@ DONATION_PERIOD = 365  # Days until new donations expire
 # Articles
 ARTICLE_ACCESSIBLE_AT = 75
 
+# Events
+SHOW_LIVESTREAM = 30  # Minutes before an events starts that the livestream is shown
+
 # Library
 LIBRARY_DONATION_AMOUNT = 150
 DEFAULT_FILE_PRICE = 5
