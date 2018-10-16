@@ -24,7 +24,8 @@
     <div class="ui basic segment">
       <h2 class="ui center aligned header">Veranstaltungen</h2>
       {% include 'components/small_product_list.html' with objects=events %}
-      <a href="{% url 'events:type' 'salon' %}"><div class="ui basic right floated blue button">Alle Salons</div></a>
+      <a href="{% url 'events:type' 'seminar' %}"><div class="ui basic right floated blue button">Seminare</div></a>
+      <a href="{% url 'events:type' 'salon' %}"><div class="ui basic right floated blue button">Salons</div></a>
     </div>
   </div>
   </div>
