@@ -13,6 +13,7 @@
   <div class="ui hidden section divider"></div>
   <div class="ui basic segment"></div>
   <div class="ui divided stackable grid">
+    {% if articles %}
     <div class="eight wide column">
     <div class="ui basic segment">
       <h2 class="ui center aligned header">Scholien</h2>
@@ -20,6 +21,8 @@
       <a href="{% url 'blog:list' %}"><div class="ui basic right floated blue button">Alle Scholien</div></a>
     </div>
   </div>
+  {% endif %}
+  {% if events %}
     <div class="eight wide column">
     <div class="ui basic segment">
       <h2 class="ui center aligned header">Veranstaltungen</h2>
@@ -28,6 +31,7 @@
       <a href="{% url 'events:type' 'salon' %}"><div class="ui basic right floated blue button">Salons</div></a>
     </div>
   </div>
+  {% endif %}
   </div>
 {% else %}
   <div class="ui text container">

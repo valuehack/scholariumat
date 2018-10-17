@@ -49,8 +49,10 @@ class HomeView(TemplateView):
             context['events'] = Event.objects.filter(
                 date__gte=date.today(), publish_date__lte=date.today()).order_by('date')[:4]
             articles = Article.objects.filter(publish_date__lte=date.today())[:4]
-            context['feature'] = articles[0]
-            context['articles'] = articles[1:5]
+            if articles:
+                article_list = list(articles)
+                context['feature'] = article_list.pop(0)
+                context['articles'] = article_list
         return context
 
 

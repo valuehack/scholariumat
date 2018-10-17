@@ -152,7 +152,7 @@ class Collection(TitleSlugDescriptionModel, PermalinkAble):
         type_defaults = {
             'shipping': False
         }
-        item_defaults = {'price': settings.DEFAULT_FILE_PRICE}
+        item_defaults = {'_price': settings.DEFAULT_FILE_PRICE}
 
         for child in children:
             try:
