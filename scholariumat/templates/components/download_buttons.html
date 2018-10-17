@@ -1,0 +1,27 @@
+{% load product_tags %}
+{% load donation_tags %}
+{% load static %}
+
+{% items_accessible request product as items %}
+{% if items %}
+  <div class="ui list">
+    {% for item in items %}
+
+      {% for attachment in item.attachments %}
+        <div class="item">
+          <form target="_blank" id="{{ item.pk }}_{{ forloop.counter0 }}_dlform" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="download" value="{{ item.pk }}">
+            <input type="hidden" name="id" value="{{ forloop.counter0 }}">
+          </form>
+          <a onclick='document.forms["{{ item.pk }}_{{ forloop.counter0 }}_dlform"].submit(); return false;' class="ui {% if small %}small {% endif %}blue icon button">
+            <i class="ui download icon"></i>
+            {% if item.title %}{{ item.title }}:{% endif %}
+            {{ attachment.type }}
+          </a>
+        </div>
+      {% endfor %}
+
+    {% endfor %}
+  </div>
+{% endif %}

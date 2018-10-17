@@ -15,6 +15,7 @@
             <div class="ui divider"></div>
           {% endif %}
           <div class="row">
+
             <form id="{{ item.type.title }}_form" method="POST">
               {% csrf_token %}
               <input type="hidden" name="requested_item" value="{{ item.pk }}"/>
@@ -27,14 +28,14 @@
                 {% if item.attachments %}
                     {% for attachment in item.attachments %}
                     <div class="row">
-                      <form target="_blank" id="{{ item.pk }}_{{ forloop.counter0 }}_dlform" method="POST" style="display: inline;">
+                      <form target="_blank" id="{{ item.pk }}_{{ forloop.counter0 }}_dlform" method="POST">
                         {% csrf_token %}
                         <input type="hidden" name="download" value="{{ item.pk }}">
                         <input type="hidden" name="id" value="{{ forloop.counter0 }}">
                       </form>
                       <a onclick='document.forms["{{ item.pk }}_{{ forloop.counter0 }}_dlform"].submit(); return false;' class="ui small blue icon button">
                         <i class="ui download icon"></i>
-                        {{ attachment }}
+                        {{ attachment.type }}
                       </a>
                     </div>
                     {% endfor %}
@@ -86,18 +87,12 @@
               {% endif %}
             
             </div>
+
           </div>
         {% endfor %}
       </div>
     </div>
   </div>
-<script>
-$('.ui.sticky')
-  .sticky({
-    pushing: true
-  })
-;
-</script>
 {% endif %}
 {% else %}
 

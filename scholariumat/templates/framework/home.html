@@ -1,8 +1,38 @@
 {% extends "base.html" %}
 {% load static %}
+{% load markup_tags %}
 
 {% block content %}
 {% if request.user.is_authenticated %}
+  <div class="ui hidden section divider"></div>
+  <div class="ui text container">
+    <h2 class="ui center aligned header">{{ feature.title|apply_markup:"markdown" }}</a></h2>
+    <p>{{ feature.public|safe|truncatewords:64 }}</p>
+    <a href="{{ feature.get_absolute_url }}"><div class="ui basic right floated blue button">Weiterlesen</div></a>
+  </div>
+  <div class="ui hidden section divider"></div>
+  <div class="ui basic segment"></div>
+  <div class="ui divided stackable grid">
+    {% if articles %}
+    <div class="eight wide column">
+    <div class="ui basic segment">
+      <h2 class="ui center aligned header">Scholien</h2>
+      {% include 'components/small_product_list.html' with objects=articles %}
+      <a href="{% url 'blog:list' %}"><div class="ui basic right floated blue button">Alle Scholien</div></a>
+    </div>
+  </div>
+  {% endif %}
+  {% if events %}
+    <div class="eight wide column">
+    <div class="ui basic segment">
+      <h2 class="ui center aligned header">Veranstaltungen</h2>
+      {% include 'components/small_product_list.html' with objects=events %}
+      <a href="{% url 'events:type' 'seminar' %}"><div class="ui basic right floated blue button">Seminare</div></a>
+      <a href="{% url 'events:type' 'salon' %}"><div class="ui basic right floated blue button">Salons</div></a>
+    </div>
+  </div>
+  {% endif %}
+  </div>
 {% else %}
   <div class="ui text container">
     <h1 class="ui centered header">Wilkommen im scholarium</h1>

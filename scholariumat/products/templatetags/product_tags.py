@@ -5,6 +5,13 @@ register = template.Library()
 
 
 @register.simple_tag
+def items_available(request, product):
+    if request.user.is_authenticated:
+        return product.items_available(request.user.profile)
+    return None
+
+
+@register.simple_tag
 def items_accessible(request, product):
     if request.user.is_authenticated:
         return product.items_accessible(request.user.profile)
@@ -12,10 +19,24 @@ def items_accessible(request, product):
 
 
 @register.simple_tag
-def attachments_accessible(request, product):
+def any_attachments_accessible(request, product):
     if request.user.is_authenticated:
-        return product.attachments_accessible(request.user.profile)
+        return product.any_attachments_accessible(request.user.profile)
     return None
+
+
+@register.simple_tag
+def is_requestable(request, item):
+    if request.user.is_authenticated:
+        return item.is_requestable(request.user.profile)
+    return 0
+
+
+@register.simple_tag
+def is_accessible(request, item):
+    if request.user.is_authenticated:
+        return item.is_accessible(request.user.profile)
+    return 0
 
 
 @register.simple_tag

@@ -5,28 +5,26 @@
       <tr>
         <td>
           <a href="{{ product.type.get_absolute_url }}">{{ product }}</a>
-          {% items_accessible request product as items %}
+          {% items_accessible request product.product as items %}
           {% for item in items %}
-            {% if not item.attachment %}
               <div class="ui label">{{ item.type }}</div>
-            {% endif %}
           {% endfor %}
         </td>
-        <td class="right aligned single line">
-          {% for item in items %}
-            {% if item.livestream %}
-              <a href="{% url 'events:event' product.event.slug %}" class="ui small blue button">Zum Livestream</a>
-            {% endif %}
-            {% for attachment in item.attachments %}
-              <form target="_blank" id="{{ attachment.pk }}_dlform" method="POST" style="display: inline;">
-                {% csrf_token %}
-                <input type="hidden" name="download" value="{{ item.pk }}">
-                <input type="hidden" name="id" value="{{ forloop.counter0 }}">
-              </form>
-              <a onclick='document.forms["{{ attachment.pk }}_dlform"].submit(); return false;' class="ui small blue button">{{ attachment.type }}</a>
-            {% endfor %}
-          {% endfor %}
+        <td>
+          {% include 'components/download_dropdown.html' with product=product.product %}
         </td>
+        {% if livestream_btn %}
+          <td class="single right aligned line compact">
+            {% with product.livestream as livestream %}
+            {% if livestream %}
+              {% is_accessible request livestream.item as accessible %}
+              {% if accessible %}
+                  <a href="{% url 'events:event' product.slug %}"><button class="ui blue button">Zum Livestream</button>
+              {% endif %}
+            {% endif %}
+            {% endwith %}
+          </td>
+        {% endif %}
       </tr>
     {% endfor %}
   </tbody>

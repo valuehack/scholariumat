@@ -12,6 +12,7 @@ urlpatterns = [
     path('profil/', include("users.urls")),
     path('spende/', include("donations.urls")),
     path('veranstaltungen/', include("events.urls")),
+    path('studium/', include("studies.urls")),
     path('', include("products.urls")),
     path('', include("framework.urls")),
 ] + static(

@@ -11,12 +11,24 @@
   </h1>
   {% with object.livestream as livestream %}
   {% if livestream %}
-    {% amount_accessible request livestream.item as accessible %}
+    {% is_accessible request livestream.item as accessible %}
     {% if accessible %}
       {% if livestream.show %}
         <div class="ui embed" data-url="{{ livestream.link_embedded }}?autoplay=0&showinfo=0&modestbranding=1&rel=0"></div>
+        <div class="ui basic segment">
+        <div class="ui fluid styled accordion">
+          <div class="title">
+            <i class="ui dropdown icon"></i>
+            Live-Chat
+          </div>
+          <div class="content">
+            <div class="ui embed" style="width:100%" data-url="https://tlk.io/salon-{{ object.slug }}"></div>
+          </div>
+        </div>
+      </div>
         <script>
           $('.ui.embed').embed();
+          $('.ui.accordion').accordion();
         </script>
       {% else %}
         <div class="ui floating message">Der Livestream erscheint kurz bevor Anfang des Salons an dieser Stelle</div>

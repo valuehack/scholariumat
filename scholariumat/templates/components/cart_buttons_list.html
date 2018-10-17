@@ -1,0 +1,60 @@
+{% load product_tags %}
+{% load donation_tags %}
+{% load static %}
+
+{% items_available request product as items %}
+{% if items %}
+    <div class="ui list">
+
+      {% for item in items %}
+
+        <form id="{{ item.pk }}_form" method="POST">
+          {% csrf_token %}
+          <input type="hidden" name="requested_item" value="{{ item.pk }}"/>
+        </form>
+
+        <div class="item">
+
+          {% is_purchasable request item as purchasable %}
+          {% if purchasable %}
+
+            <div class="ui labeled button">
+              <div onclick='document.forms["{{ item.pk }}_form"].submit(); return false;' class="ui animated button">
+                <div class="visible content">
+                  {{ item }}
+                </div>
+                <div class="hidden content">
+                  <i class="cart icon"></i>
+                </div>
+              </div>
+              <div class="ui basic left pointing label">
+                {{ item.price }}&nbsp;&nbsp;
+                <div style="height: 1em;">
+                  <img class="ui image" src="{% static 'images/coin.png' %}" style="height: 1.2em; width: auto; bottom: 0.1em;">
+                </div>
+              </div>
+            </div>
+
+          {% else %}
+            {% is_requestable request item as requestable %}
+
+            <div class="ui labeled button">
+              <div class="ui disabled button">
+                {{ item }}
+              </div>
+              {% if requestable %}
+                <a onclick='document.forms["{{ item.pk }}_form"].submit(); return false;' class="ui grey left pointing label">Anfragen</a>
+              {% elif profile.amount < item.type.purchasable_at %}
+                <a href="{% url 'donations:levels' %}" class="ui grey left pointing label">Verfügbar als
+                  {{ level.title }}</a>
+              {% else %}
+                <div class="ui grey left pointing label">{{ item.type.unavailability_notice }}</div>
+              {% endif %}
+            </div>
+
+          {% endif %}
+  
+        </div>
+      {% endfor %}
+    </div>
+{% endif %}

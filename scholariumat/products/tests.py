@@ -12,7 +12,7 @@ class ProductTest(TestCase):
         Profile.objects.create(user=self.user)
         self.book = ZotItem.objects.create(title='Testbook', slug='testslug')
         self.itemtype = ItemType.objects.create(title='Kauf')
-        self.item = Item.objects.create(type=self.itemtype, price=price, amount=amount, product=self.book.product)
+        self.item = Item.objects.create(type=self.itemtype, _price=price, amount=amount, product=self.book.product)
 
 
 class PurchaseTest(ProductTest):

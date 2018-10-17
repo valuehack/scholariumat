@@ -1,11 +1,64 @@
 {% extends "base.html" %}
+{% load product_tags %}
+{% load markup_tags %}
 
 {% block content %}
   <div class="ui text container">
     <div class="ui basic segment">
       {% block product %}
+        <h1 class="ui header">{{ object.title }}</h1>
+        <p>{{ object.description|apply_markup:"markdown" }}</p>
       {% endblock product %}
-      {% include 'components/cart_buttons.html' with product=object.product %}
+
+      {% if contact %}
+        {% include 'components/contact_form.html' %}
+      {% endif %}
+
+      {%  if request.user.is_authenticated %}
+        {% items_available request object.product as items %}
+        {% if contact and items %}
+          <div class="ui grid">
+            <div class="five wide column"></div>
+            <div class="six wide column">
+              <div class="ui horizontal divider">oder</div>
+            </div>
+            <div class="five wide column"></div>
+          </div>
+          <div class="ui hidden divider"></div>
+        {% endif %}
+        <div class="ui hidden divider"></div>
+          <div class="ui centered cards">
+            {% any_attachments_accessible request object.product as attachments %}
+            {% if attachments %}
+            <div class="ui card">
+              <div class="content">
+                <h2 class="ui header">Downloads</h2>
+                <div class="ui center aligned basic segment">
+                  {% include 'components/download_buttons.html' with product=object.product %}
+                </div>
+              </div>
+            </div>
+            {% endif %}
+            {% if items %}
+              {% if items|length == 1 and not attachments %}
+                <div class="ui center aligned basic segment">
+                  {% include 'components/cart_buttons_list.html' with product=object.product %}
+                </div>
+              {% else %}
+                <div class="ui card">
+                  <div class="content">
+                    <h2 class="ui header">Formate</h2>
+                    <div class="ui center aligned basic segment">
+                      {% include 'components/cart_buttons_list.html' with product=object.product %}
+                    </div>
+                  </div>
+                </div>
+              {% endif %}
+            {% endif %}
+          </div>
+      {% else %}
+        {% include 'components/registration_form.html' %}
+      {% endif %}
+    
     </div>
-  </div>
-{% endblock content %}
+  {% endblock content %}

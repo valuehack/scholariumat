@@ -1,0 +1,19 @@
+
+{% load markup_tags %}
+<table class="ui very basic large table">
+  <tbody>
+    {% for object in objects %}
+      <tr>
+        {% if object.date %}
+          <td class="single line compact right aligned">{{ object.date.day }}.{{ object.date.month }}</td>
+        {% endif %}
+        {% if object.type %}
+          <td class="single line compact center">{{ object.type }}</td>
+        {% endif %}
+        <td class="">
+          <a href="{{ object.get_absolute_url }}">{{ object.title|apply_markup:"markdown" }}</a>
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>

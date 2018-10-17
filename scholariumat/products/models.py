@@ -1,5 +1,6 @@
 import logging
 from slugify import slugify
+from datetime import date
 
 from django.db import models
 from django.db.models import Q
@@ -27,17 +28,20 @@ class Product(models.Model):
             if product_rel.one_to_one and getattr(self, product_rel.name, False):
                 return getattr(self, product_rel.name)
 
-    @property
-    def items_available(self):
-        return self.item_set.filter(Q(price__gt=0), Q(amount__gt=0) | Q(amount__isnull=True))
+    def items_available(self, profile):
+        """Returns unaccessible items that are visible for user"""
+        return self.item_set.exclude(type__buy_once=True, id__in=self.items_accessible(profile))
 
     def items_accessible(self, profile):
-        return [item for item in self.item_set.all() if item.amount_accessible(profile)]
+        """Returns items that can be accessed by user"""
+        return self.item_set.filter(
+            Q(purchase__in=profile.purchases) | Q(type__accessible_at__lt=profile.amount)).distinct()
 
-    def attachments_accessible(self, profile):
-        attachments = []
+    def any_attachments_accessible(self, profile):
+        """Only checks for existence for performance reasons"""
         for item in self.items_accessible(profile):
-            attachments += [attachment for attachment in item.attachments if item.amount_accessible(profile)]
+            if item.attachments:
+                return True
 
     def __str__(self):
         return self.type.__str__()
@@ -51,9 +55,11 @@ class ItemType(TitleDescriptionModel, TimeStampedModel):
     slug = models.SlugField()
     shipping = models.BooleanField(default=False)
     requestable = models.BooleanField(default=False)
+    default_price = models.SmallIntegerField(null=True, blank=True)
     purchasable_at = models.SmallIntegerField(default=0)
     accessible_at = models.SmallIntegerField(null=True, blank=True)
     unavailability_notice = models.CharField(max_length=20, default="Nicht verfügbar")
+    buy_once = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title
@@ -64,13 +70,25 @@ class ItemType(TitleDescriptionModel, TimeStampedModel):
 
 
 class Item(TimeStampedModel):
-    """Purchasable items."""
+    """
+    Items are purchasable can have 3 states in relation to a user:
+    - requestable: Is visible and can be requested.
+    - purchasable: Can be purchased.
+    - accessible: Can be accessed, attachments can be downloaded, etc.
+    If amount is None, the item is unlimited.
+    """
 
+    title = models.CharField(max_length=50, blank=True)
     type = models.ForeignKey(ItemType, on_delete=models.CASCADE, verbose_name='Typ')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    price = models.SmallIntegerField('Preis', null=True, blank=True)
+    _price = models.SmallIntegerField('Preis', null=True, blank=True)
     amount = models.IntegerField('Anzahl', null=True, blank=True)
     requests = models.ManyToManyField('users.Profile', related_name='item_requests', blank=True, editable=False)
+    files = models.ManyToManyField('products.FileAttachment', blank=True)
+
+    @property
+    def price(self):
+        return self._price or self.type.default_price
 
     @property
     def available(self):
@@ -78,25 +96,33 @@ class Item(TimeStampedModel):
 
     @property
     def attachments(self):
-        """Fetches related attachments"""
+        # TODO: Remove? Custom attachments should maybe be handled individually when needed.
+        """Fetches related attachments """
         attachment_list = []
         for item_rel in self._meta.get_fields():
             if item_rel.related_model and issubclass(item_rel.related_model, AttachmentBase)\
                     and getattr(self, item_rel.get_accessor_name(), False):
                 attachment_list += (getattr(self, item_rel.get_accessor_name()).all())
-        return attachment_list
+        return list(self.files.all()) + attachment_list
+
+    def is_requestable(self, profile):
+        return not self.available and profile.amount >= self.type.purchasable_at and \
+            self.type.requestable
 
     def is_purchasable(self, profile):
-        return profile.amount >= self.type.purchasable_at
+        return self.available and profile.amount >= self.type.purchasable_at and \
+            not (self.is_accessible(profile) and self.type.buy_once)
+
+    def amount_purchased(self, profile):
+        return sum(p.amount for p in profile.purchases.filter(item=self))
+
+    def is_accessible(self, profile):
+        return profile.amount >= self.type.accessible_at if self.type.accessible_at is not None else \
+            bool(profile.purchases.filter(item=self))
 
     def amount_accessible(self, profile):
-        access = self.type.accessible_at
-        if access is not None and profile.amount > access:
-            return 1
-        return self.amount_bought(profile)
-
-    def amount_bought(self, profile):
-        return sum(p.amount for p in profile.purchases.filter(item=self))
+        return 1 if self.type.accessible_at is not None and profile.amount >= self.type.accessible_at else \
+            self.amount_purchased(profile)
 
     def request(self, profile):
         if self.type.requestable:
@@ -109,22 +135,16 @@ class Item(TimeStampedModel):
 
     def inform_users(self):
         pass
-        # TODO: Send email to users in requests
+        # TODO: Send email to users in requests and create admin button
 
     def add_to_cart(self, profile):
         """Only add a limited product if no purchase of it exists."""
-        if not self.is_purchasable(profile):
-            return False
-        if self.amount is None:
-            purchase, created = Purchase.objects.get_or_create(profile=profile, item=self, defaults={'executed': False})
-            if not created:
-                return False
-        else:
+        if self.is_purchasable(profile):
             purchase, created = Purchase.objects.get_or_create(profile=profile, item=self, executed=False)
             if not created:
                 purchase.amount += 1
                 purchase.save()
-        return True
+            return True
 
     def sell(self, amount):
         """Given an amount, tries to lower local amount. Ignored if not limited."""
@@ -147,7 +167,9 @@ class Item(TimeStampedModel):
             self.save()
 
     def __str__(self):
-        return '{} für {} Punkte'.format(self.type.__str__(), self.price)
+        if self.title:
+            return f'{self.type.title}: {self.title}'
+        return self.type.title
 
     class Meta:
         verbose_name = 'Item'
@@ -163,31 +185,32 @@ class Purchase(TimeStampedModel, CommentAble):
     shipped = models.DateField(blank=True, null=True)
     executed = models.BooleanField(default=False)
     free = models.BooleanField(default=False)
+    date = models.DateField(null=True, blank=True)
 
     @property
     def total(self):
-        if self.free:
-            return 0
-        return self.item.price * self.amount if self.item.amount is not None else self.item.price
+        return 0 if self.free else self.item.price * self.amount
 
     @property
     def available(self):
         """Check if required amount is available"""
-        return self.item.available and (self.item.amount is None or self.item.amount >= self.amount)
+        return self.item.available and self.item.amount >= self.amount
 
     def execute(self):
-        if self.profile.spend(self.total):
-            if self.item.sell(self.amount):
-                if self.item.type.shipping:
-                    mail_managers(
-                        f'Bestellung: {self.item.product}',
-                        f'Nutzer {self.profile} hat {self.item.product} im Format {self.item.type} bestellt. '
-                        f'Adresse: {self.profile.address}')
-                self.executed = True
-                self.save()
-                return True
-            else:
-                self.profile.refill(self.total)
+        if self.item.is_purchasable(self.profile):
+            if self.profile.spend(self.total):
+                if self.item.sell(self.amount):
+                    if self.item.type.shipping:
+                        mail_managers(
+                            f'Bestellung: {self.item.product}',
+                            f'Nutzer {self.profile} hat {self.item.product} im Format {self.item.type} bestellt. '
+                            f'Adresse: {self.profile.address}')
+                    self.executed = True
+                    self.date = date.today()
+                    self.save()
+                    return True
+                else:
+                    self.profile.refill(self.total)
         return False
 
     def revert(self):
@@ -212,8 +235,9 @@ class AttachmentType(TitleSlugDescriptionModel):
         verbose_name_plural = 'Anhangstypen'
 
 
-class FileAttachment(AttachmentBase):
+class FileAttachment(models.Model):
     file = models.FileField()
+    type = models.ForeignKey('products.AttachmentType', on_delete=models.PROTECT)
 
     def get(self):
         print(self.file)
@@ -221,6 +245,9 @@ class FileAttachment(AttachmentBase):
         response['Content-Disposition'] = f'attachment; \
             filename={slugify(self.item.product)}.{self.type.slug}'
         return response
+
+    def __str__(self):
+        return f'{self.type.__str__()}: {self.file.name}'
 
     class Meta:
         verbose_name = 'Anhang'

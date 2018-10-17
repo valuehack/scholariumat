@@ -1,5 +1,6 @@
 from datetime import date
 from vanilla import DetailView, ListView
+from braces.views import LoginRequiredMixin
 
 from django.db.models import Q
 
@@ -20,7 +21,7 @@ class EventListView(ListView):
 
     def get_queryset(self):
         qs = super().get_queryset()
-        return qs.filter(type=self.event_type, date__gt=date.today()).order_by('date')
+        return qs.filter(type=self.event_type, date__gte=date.today(), publish_date__lte=date.today()).order_by('date')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -34,3 +35,13 @@ class EventListView(ListView):
 class EventView(PurchaseMixin, DownloadMixin, DetailView):
     model = Event
     lookup_field = 'slug'
+
+
+class RecordingsView(LoginRequiredMixin, PurchaseMixin, DownloadMixin, ListView):
+    model = Event
+    paginate_by = 10
+    template_name = 'events/recording_list.html'
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        return qs.filter(date__lt=date.today()).order_by('-date')
