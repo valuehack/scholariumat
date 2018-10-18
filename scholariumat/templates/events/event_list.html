@@ -11,38 +11,42 @@
     {% endif %}
     <div class="ui hidden divider"></div>
 
-    {% for event in object_list %}
-      <div class="ui basic segment">
-        <h2 class="ui centered header">
-          <a href="{% url 'events:event' event.slug %}">{{ event.title }}</a>
-          <div class="sub header">
-            {{ event.date }}
-            {% if event.time_start %},
-              {{ event.time_start }}
-              {% if event.time_end %}
-                -
-                {{ event.time_end }}
+    {% if object_list %}
+      {% for event in object_list %}
+        <div class="ui basic segment">
+          <h2 class="ui centered header">
+            <a href="{% url 'events:event' event.slug %}">{{ event.title }}</a>
+            <div class="sub header">
+              {{ event.date }}
+              {% if event.time_start %},
+                {{ event.time_start }}
+                {% if event.time_end %}
+                  -
+                  {{ event.time_end }}
+                {% endif %}
               {% endif %}
-            {% endif %}
-            {% if event.end_date %}
-              -
-              {{ event.end_date }}
-            {% endif %}
-          </div>
-        </h2>
-        {% if event.description is not None %}
-          {{ event.description|apply_markup:"markdown" }}
+              {% if event.end_date %}
+                -
+                {{ event.end_date }}
+              {% endif %}
+            </div>
+          </h2>
+          {% if event.description is not None %}
+            {{ event.description|apply_markup:"markdown" }}
+          {% endif %}
+        </div>
+        {% if not forloop.last %}
+          <div class="ui section divider"></div>
         {% endif %}
-      </div>
-      {% if not forloop.last %}
-        <div class="ui section divider"></div>
+      {% endfor %}
+      {% if paginator.num_pages > 1 %}
+        <div class="ui hidden section divider"></div>
+        <div class="ui right floated pagination menu">
+          {% include "components/pagination.html" %}
+        </div>
       {% endif %}
-    {% endfor %}
-    {% if paginator.num_pages > 1 %}
-      <div class="ui hidden section divider"></div>
-      <div class="ui right floated pagination menu">
-        {% include "components/pagination.html" %}
-      </div>
+    {% else %}
+      <div class="ui message">Aktuell sind noch keine weiteren {{ section_title }} geplant.</div>
     {% endif %}
 
   </div>
