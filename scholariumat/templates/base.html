@@ -40,7 +40,7 @@
     <script src="{% static 'semantic.min.js' %}"></script>
     {% endblock head %}
   </head>
-  <body>
+  <body class="Site" style="display: flex; min-height: 100vh; flex-direction: column;">
     <header>
       <div class="ui padded grid" style="background-image: url({% static 'images/scholarium_header_cloud_cut.png' %}); background-repeat: no-repeat;  background-position: center; background-size: inherit;">
         <div class="row">
@@ -56,11 +56,37 @@
       {% include 'menus/main.html' %}
     </header>
     <div class="ui hidden divider"></div>
-    <div class="ui container">
+    <div class="ui container" style="flex: 1;">
       {% include 'components/messages.html' %}
       <div class="ui hidden divider"></div>
       {% block content %}{% endblock content %}
+      <div class="ui hidden section divider"></div>
     </div>
-    <div style="display:block; height: 10em;">
+    <footer style="">
+      <div class="ui very padded placeholder segment">
+        <div class="ui container">
+        <div class="ui stackable grid">
+          <div class="ten wide column">
+            <p><b><i>scholarium</i></b> bedeutet Gemeinschaft der Lernenden und ist das, was die Universität hätte sein können, aber nicht sein durfte. Im Gegensatz zum subventionierten Elfenbeinturm der Universitas magistrorum (Gemeinschaft der Intellektuellen) ist das <i>scholarium</i> ein lernendes Unternehmen, in dem bessere Wege werte- und sinnorientierten Schaffens praktisch erkundet und theoretisch reflektiert werden. Wir sind weder lebensfremde Theoretiker auf der Suche nach Macht und Anerkennung, noch unkritische Praktiker auf der Suche nach schnellem Geld und Aufmerksamkeit. Das <i>scholarium</i> bietet eine Orientierungshilfe für kritische Bürger und eine Bildungsalternative für junge Menschen, die der heutigen Blasenwirtschaft, aber auch ideologischen Versprechen misstrauen.</p>
+          </div>
+          <div class="one wide column"></div>
+          <div class="four wide column">
+            <div class="ui large vertical fluid menu">
+              <a class="item" href="{% url 'framework:faq' %}">Häufige Fragen</a>
+              <a class="item" href="{% url 'framework:contact' %}">Kontakt</a>
+            </div>
+            <div class="ui center aligned basic segment">
+              <div class="ui large basic blue buttons">
+                <a href="https://www.facebook.com/scholarium.at" class="ui icon button"><i class="ui facebook icon"></i></a>
+                <a href="https://www.twitter.com/scholarium_at" class="ui icon button"><i class="ui twitter icon"></i></a>
+                <a href="https://www.youtube.com/user/Wertewirtschaft" class="ui icon button"><i class="ui youtube icon"></i></a>
+              </div>
+            </div>
+          </div>
+          <div class="one wide column"></div>
+        </div>
+      </div>
+    </div>
+    </footer>
   </body>
 </html>

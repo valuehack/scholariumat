@@ -46,6 +46,5 @@
   {% if not request.user.is_authenticated %}
     {% include 'components/registration_form.html' %}
     <div class="ui hidden section divider"></div>
-    <img class="ui centered small image" src="{% static 'images/divider.png' %}"></img>
   {% endif %}
 {% endblock content %}

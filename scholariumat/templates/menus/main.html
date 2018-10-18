@@ -4,26 +4,20 @@
       <a href="{% url 'blog:list' %}"  class="item">
         Scholien
       </a>
-      <a href="{% url 'library:list' %}" class="item">
-        Bibliothek
-      </a>
       <a href="{% url 'events:type' 'salon' %}" class="item">
         Salons
       </a>
       <a href="{% url 'events:type' 'seminar' %}" class="item">
         Seminare
       </a>
-      <a href="{% url 'studies:products' %}" class="item">
-        Studium
-      </a>
       <a href="{% url 'events:recordings' %}" class="item">
         Aufzeichnungen
       </a>
-      <a href="{% url 'framework:faq' %}" class="item">
-        Häufige Fragen
+      <a href="{% url 'library:list' %}" class="item">
+        Bibliothek
       </a>
-      <a href="{% url 'framework:contact' %}" class="item">
-        Kontakt
+      <a href="{% url 'studies:products' %}" class="item">
+        Studium
       </a>
     {% else %}
       <a href="{% url 'framework:faq' %}" class="item">
