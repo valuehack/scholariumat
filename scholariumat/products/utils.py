@@ -36,3 +36,18 @@ def download_missing_files():
             logger.debug(f'Uploaded file {attachment.file.name}')
     scp.close()
     ssh.close()
+
+
+def download_old_db():
+    env = environ.Env()
+
+    ssh = SSHClient()
+    ssh.load_system_host_keys()
+    ssh.connect('scholarium.at', username=env('SSH_USER'), password=env('SSH_PASSWORD'))
+
+    scp = SCPClient(ssh.get_transport())
+    scp.get(os.path.join('~/scholarium_staging/db.json'))
+    logger.debug(f'Downloaded db.json')
+
+    scp.close()
+    ssh.close()

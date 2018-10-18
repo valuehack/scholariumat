@@ -360,7 +360,8 @@ def import_from_json():
             'review': donation['fields']['ueberprueft']
         }
 
-        if donation['fields']['zahlung_id']:
+        id = donation['fields']['zahlung_id']
+        if id and not Donation.objects.filter(payment_id=id):
             donation_defaults['payment_id'] = donation['fields']['zahlung_id']
 
         new, created = Donation.objects.update_or_create(

@@ -62,17 +62,16 @@ def import_from_json():
 
         livestream_type, created = ItemType.objects.get_or_create(
             slug='livestream',
-            defaults={'title': 'Livestream'})
+            defaults={'title': 'Livestream', 'default_price': 5})
         recording_type, created = ItemType.objects.get_or_create(
             slug='recording',
-            defaults={'title': 'Aufzeichnung'})
+            defaults={'title': 'Aufzeichnung', 'default_price': 5})
 
         livestream_item = None
 
         if event['fields']['link']:
             livestream_item, created = Item.objects.get_or_create(
-                product=new.product, type=livestream_type,
-                defaults={'price': 5})
+                product=new.product, type=livestream_type)
 
             livestream, created = Livestream.objects.update_or_create(
                 item=livestream_item,
@@ -96,8 +95,7 @@ def import_from_json():
                     file=event['fields']['datei'])
 
             recording_item, created = Item.objects.get_or_create(
-                product=new.product, type=recording_type,
-                defaults={'price': 5})
+                product=new.product, type=recording_type)
 
             recording_item.files.add(recording)
             if livestream_item:
