@@ -41,7 +41,8 @@ def import_from_json():
         event_type = next((i for i in event_types if event['fields']['art_veranstaltung'] == i['pk']), None)
 
         defaults = {
-            'description': pypandoc.convert(event['fields']['beschreibung'], 'md', format='html')
+            'description': pypandoc.convert(event['fields']['beschreibung'], 'md', format='html'),
+            'old_pk': event['pk']
         }
 
         type_name = event_type['fields']['bezeichnung']
@@ -66,6 +67,12 @@ def import_from_json():
         recording_type, created = ItemType.objects.get_or_create(
             slug='recording',
             defaults={'title': 'Aufzeichnung', 'default_price': 5})
+        attendance_type, created = ItemType.objects.get_or_create(
+            slug='attendance',
+            defaults={'title': 'Teilnahme', 'default_price': 15})
+
+        attendance_item, created = Item.objects.get_or_create(
+            product=new.product, type=attendance_type)
 
         livestream_item = None
 

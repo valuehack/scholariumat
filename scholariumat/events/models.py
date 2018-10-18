@@ -32,6 +32,7 @@ class Event(ProductBase, PublishAble):
     type = models.ForeignKey(EventType, on_delete=models.PROTECT)
     _time_start = models.TimeField(null=True, blank=True)
     _time_end = models.TimeField(null=True, blank=True)
+    old_pk = models.SmallIntegerField(null=True, blank=True)
 
     @property
     def time_start(self):

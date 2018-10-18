@@ -312,6 +312,8 @@ def import_from_json():
             elif profile['fields']['anrede'] == 'Frau':
                 profile_defaults['title'] = 'f'
 
+            profile_defaults['old_pk'] = profile['pk']
+
             country = profile['fields']['land']
             if len(country) > 2:
                 country = country.replace('Oe', 'Ö')

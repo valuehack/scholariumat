@@ -1,13 +1,18 @@
 import os
 import logging
 import environ
+import json
 from paramiko import SSHClient
 from scp import SCPClient
 from tempfile import TemporaryDirectory
+from datetime import date
 
 from django.core.files import File
+from django.conf import settings
 
-from .models import FileAttachment
+from .models import FileAttachment, Purchase
+from users.models import Profile
+from events.models import Event
 
 
 logger = logging.getLogger(__name__)
@@ -51,3 +56,41 @@ def download_old_db():
 
     scp.close()
     ssh.close()
+
+
+def import_from_json():
+    database = json.load(open(settings.ROOT_DIR.path('db.json')))
+
+    # Articles
+    logger.info('Importing purchases...')
+
+    purchases = [i for i in database if i['model'] == 'Produkte.kauf']
+
+    for purchase in purchases:
+        profile = Profile.objects.get(old_pk=purchase['fields']['nutzer'])
+        model_name, obj_pk, item = str(purchase['fields']['produkt_pk']).split('+')
+        if model_name == 'veranstaltung':
+            try:
+                event = Event.objects.get(old_pk=obj_pk)
+            except Event.ObjectNotFound:
+                logger.error(f'Event with pk {obj_pk} not found')
+
+            if item == 'aufzeichnung':
+                type_slug = 'recording'
+            elif item == 'teilnahme':
+                type_slug = 'attendance'
+
+                Purchase.objects.update_or_create(
+                    amount=purchase['fields']['menge'],
+                    profile=profile,
+                    item=event.product.item_set.get(type__slug=type_slug),
+                    date=date.fromisoformat(purchase['fields']['zeit'][:10]),
+                    executed=True
+                )
+                logger.debug('done')
+            else:
+                print(item)
+        # else:
+        #     logger.error(f"Could not import {purchase['fields']['produkt_pk']}")
+
+    logger.info('Finished importing purchases')

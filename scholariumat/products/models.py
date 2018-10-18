@@ -85,6 +85,7 @@ class Item(TimeStampedModel):
     amount = models.IntegerField('Anzahl', null=True, blank=True)
     requests = models.ManyToManyField('users.Profile', related_name='item_requests', blank=True, editable=False)
     files = models.ManyToManyField('products.FileAttachment', blank=True)
+    # TODO: expires =
 
     @property
     def price(self):
