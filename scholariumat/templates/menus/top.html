@@ -7,7 +7,7 @@
       <a class="ui {% if not request.user.profile.cart %}disabled {% endif %}icon item" id="basket">
         <i class="shop icon"></i>
         {% if request.user.profile.cart|length %}
-          <div class="ui blue small floating circular label">
+          <div class="ui primary small floating circular label">
             {{ request.user.profile.cart|length }}
           </div>
         {% endif %}
@@ -98,7 +98,7 @@
         <input type="hidden" name="buy">
       </form>
       <a href="{% url 'products:basket' %}" class="ui button">Details</a>
-      <button onclick='document.forms["buy_form"].submit(); return false;' class="ui {% if not request.user.profile.cart_available %}disabled {% endif %} blue right floated button">Kaufen</button>
+      <button onclick='document.forms["buy_form"].submit(); return false;' class="ui {% if not request.user.profile.cart_available %}disabled {% endif %} primary right floated button">Kaufen</button>
     </div>
 
     <div class="ui right floated compact menu" id="profile">
@@ -115,7 +115,7 @@
       <div>
       
       {% if request.user.profile.level %}
-        <a class="ui blue large right ribbon label" href="{% url 'donations:detail' %}">
+        <a class="ui primary large right ribbon label" href="{% url 'donations:detail' %}">
           <i class="university icon"></i>
           {{ request.user.profile.level.title }}
         </a>

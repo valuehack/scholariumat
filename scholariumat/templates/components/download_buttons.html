@@ -14,7 +14,7 @@
             <input type="hidden" name="download" value="{{ item.pk }}">
             <input type="hidden" name="id" value="{{ forloop.counter0 }}">
           </form>
-          <a onclick='document.forms["{{ item.pk }}_{{ forloop.counter0 }}_dlform"].submit(); return false;' class="ui {% if small %}small {% endif %}blue icon button">
+          <a onclick='document.forms["{{ item.pk }}_{{ forloop.counter0 }}_dlform"].submit(); return false;' class="ui {% if small %}small {% endif %}primary icon button">
             <i class="ui download icon"></i>
             {% if item.title %}{{ item.title }}:{% endif %}
             {{ attachment.type }}

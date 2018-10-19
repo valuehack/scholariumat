@@ -10,7 +10,7 @@ from datetime import date
 from django.core.files import File
 from django.conf import settings
 
-from .models import FileAttachment, Purchase
+from .models import FileAttachment, Purchase, Item
 from users.models import Profile
 from events.models import Event
 
@@ -80,16 +80,20 @@ def import_from_json():
             elif item == 'teilnahme':
                 type_slug = 'attendance'
 
-                Purchase.objects.update_or_create(
-                    amount=purchase['fields']['menge'],
-                    profile=profile,
-                    item=event.product.item_set.get(type__slug=type_slug),
-                    date=date.fromisoformat(purchase['fields']['zeit'][:10]),
-                    executed=True
-                )
-                logger.debug('done')
+                try:
+                    Purchase.objects.update_or_create(
+                        amount=purchase['fields']['menge'],
+                        profile=profile,
+                        item=event.product.item_set.get(type__slug=type_slug),
+                        date=date.fromisoformat(purchase['fields']['zeit'][:10]),
+                        executed=True
+                    )
+                    logger.debug('done')
+                except Item.DoesNotExist:
+                    logger.error(f'Event {event} misses type {type_slug}.')
             else:
                 print(item)
+            
         # else:
         #     logger.error(f"Could not import {purchase['fields']['produkt_pk']}")
 

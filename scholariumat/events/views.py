@@ -44,4 +44,4 @@ class RecordingsView(LoginRequiredMixin, PurchaseMixin, DownloadMixin, ListView)
 
     def get_queryset(self):
         qs = super().get_queryset()
-        return qs.filter(date__lt=date.today(), product__item__isnull=False).order_by('-date')
+        return qs.filter(date__lt=date.today()).order_by('-date').distinct()

@@ -38,7 +38,7 @@
       </div>
     </div>
   </div>
-  <a href="{% url 'donations:payment' %}?amount={{ object.level.amount }}" class="ui bottom blue attached button">
+  <a href="{% url 'donations:payment' %}?amount={{ object.level.amount }}" class="ui bottom primary attached button">
     Verlängern
   </a>
 </div>
@@ -72,7 +72,7 @@
               {{ donation.amount }}
             </div>
           </div>
-          <div class="ui right floated blue image label">
+          <div class="ui right floated primary image label">
             {{ donation.date }} - {{ donation.expiration }}
           </div>
         </div>

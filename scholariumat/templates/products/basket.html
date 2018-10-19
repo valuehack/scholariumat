@@ -59,7 +59,7 @@
           </div>
         </th>
         <th class="right aligned single line"><b>{{ request.user.profile.cart_total }}</b></th>
-        <th><button onclick='document.forms["buy_form"].submit(); return false;' class="ui {% if not request.user.profile.cart_available %}disabled {% endif %} blue right floated button">Kaufen</button></th>
+        <th><button onclick='document.forms["buy_form"].submit(); return false;' class="ui {% if not request.user.profile.cart_available %}disabled {% endif %} primary right floated button">Kaufen</button></th>
       </tr>
     </tfoot>
   </table>

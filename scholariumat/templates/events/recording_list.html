@@ -19,7 +19,6 @@
           <th>Art</th>
           <th>Datum</th>
           <th></th>
-          <th></th>
         </tr>
       </thead>
       <tbody>
@@ -28,9 +27,6 @@
           <td><h4 class="ui header"><a href="{% url 'events:event' event.slug %}">{{ event.title }}</a></h3></td>
           <td class="collapsing">{{ event.type }}</td>
           <td class="single line collapsing">{{ event.date }}</td>
-          <td class="collapsing single line">
-            {% include 'components/download_dropdown.html' with product=event.product %}
-          </td>
           <td class="collapsing single line">{% include 'components/cart_buttons_list.html' with product=event.product %}</td>
         </tr>
       {% endfor %}

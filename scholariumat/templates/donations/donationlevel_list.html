@@ -16,14 +16,15 @@
 
   {% for level in object_list %}
   <div class="ui hidden divider"></div>
-  <div class="ui floating blue segment">
+  <div class="ui floating inverted {{ level.color }} segment">
     <h2 class="ui header">
-      {{ level.title }}
-      <div class="sub header">{{ level.amount }} &euro;</div>
+      {{ level.title }}<br>
+      <div class="sub header" style="color: white;">{{ level.amount }} &euro;</div>
     </h2>
     <p>{{ level.description|apply_markup:"markdown" }}</p>
-    <a href="{% url 'donations:payment' %}?amount={{ level.amount }}" class="ui fluid blue button">Werden Sie jetzt {{ level.title }}</a>
+    <a href="{% url 'donations:payment' %}?amount={{ level.amount }}" class="ui basic inverted black fluid button">Werden Sie jetzt {{ level.title }}</a>
   </div>
+  <div class="ui hidden divider"></div>
   {% endfor %}
 </div>
 

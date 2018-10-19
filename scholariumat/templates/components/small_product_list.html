@@ -5,7 +5,7 @@
     {% for object in objects %}
       <tr>
         {% if object.date %}
-          <td class="single line compact right aligned">{{ object.date.day }}.{{ object.date.month }}</td>
+          <td class="single line compact center aligned">{{ object.date.day }}.{{ object.date.month }}</td>
         {% endif %}
         {% if object.type %}
           <td class="single line compact center">{{ object.type }}</td>

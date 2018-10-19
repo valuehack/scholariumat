@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 class DonationLevel(TitleSlugDescriptionModel):
     amount = models.SmallIntegerField(unique=True)
+    color = models.CharField(max_length=15, blank=True)
 
     @classmethod
     def get_level_by_amount(cls, amount):
@@ -42,6 +43,7 @@ class DonationLevel(TitleSlugDescriptionModel):
         return '{}: {}'.format(self.amount, self.title)
 
     class Meta:
+        ordering = ['amount']
         verbose_name = 'Spendenstufe'
         verbose_name_plural = 'Spendenstufen'
 

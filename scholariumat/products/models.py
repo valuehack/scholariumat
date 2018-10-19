@@ -30,7 +30,7 @@ class Product(models.Model):
 
     def items_available(self, profile):
         """Returns unaccessible items that are visible for user"""
-        return self.item_set.exclude(type__buy_once=True, id__in=self.items_accessible(profile))
+        return self.item_set.exclude(expires__lt=date.today())
 
     def items_accessible(self, profile):
         """Returns items that can be accessed by user"""
@@ -85,7 +85,7 @@ class Item(TimeStampedModel):
     amount = models.IntegerField('Anzahl', null=True, blank=True)
     requests = models.ManyToManyField('users.Profile', related_name='item_requests', blank=True, editable=False)
     files = models.ManyToManyField('products.FileAttachment', blank=True)
-    # TODO: expires =
+    expires = models.DateField(null=True, blank=True)
 
     @property
     def price(self):
@@ -93,7 +93,9 @@ class Item(TimeStampedModel):
 
     @property
     def available(self):
-        return self.price and (self.amount is None or self.amount > 0)
+        return self.price and \
+            (self.amount is None or self.amount > 0) and \
+            (self.expires is None or self.expires >= date.today())
 
     @property
     def attachments(self):
@@ -107,7 +109,8 @@ class Item(TimeStampedModel):
         return list(self.files.all()) + attachment_list
 
     def is_requestable(self, profile):
-        return not self.available and profile.amount >= self.type.purchasable_at and \
+        return not self.available and \
+            profile.amount >= self.type.purchasable_at and \
             self.type.requestable
 
     def is_purchasable(self, profile):

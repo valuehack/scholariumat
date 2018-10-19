@@ -32,5 +32,8 @@
 */
 
 @primaryColor    : #2E4A62;
-@blue            : #2E4A62;
 @yellow          : #ffce43;
+@violet          : #608c87;
+@teal            : #205f6b;
+@blue            : #0d314d;
+@brown           : #91a18e;

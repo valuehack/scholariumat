@@ -15,23 +15,20 @@
     {% endif %}
           
     {% if past_events %}
-      <div class="ui styled fluid accordion">
-        <div class="title"><i class="dropdown icon"></i>Vergangene Veranstaltungen</div>
-        <div class="content">
-          {% include 'components/purchased_product_list.html' with products=past_events %}
-        </div>
-      </div>
+      <h3 class="ui header">Vergangene Veranstaltungen</h3>
+        {% include 'components/purchased_product_list.html' with products=past_events %}
       
     {% endif %}
     
     {% if digital_content %}
-      <h2 class="ui header">Digitale Inhalte</h2>
+      <h3 class="ui header">Digitale Inhalte</h3>
       {% include 'components/purchased_product_list.html' with products=digital_content %}
     {% endif %}
     
     {% if purchases %}
+      <h2 class="ui header">Alle Käufe</h2>
       <div class="ui styled fluid accordion">
-        <div class="title"><i class="dropdown icon"></i>Alle Käufe</div>
+        <div class="title"><i class="dropdown icon"></i>Anzeigen</div>
         <div class="content">
     
     <table class="ui table">

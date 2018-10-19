@@ -7,13 +7,38 @@
     <div class="ui list">
 
       {% for item in items %}
+      <div class="item">
+      
+      {% is_accessible request item as accessible %}
+      {% if accessible %}
+        
+        <div class="ui left labeled button">
+          <div class="ui right pointing basic label">
+            {{ item }}
+          </div>
+            {% if item.attachments %}
+            <div class="ui dropdown grey icon button">
+              {% include 'components/download_dropdown2.html' %}
+            </div>
+            {% else %}
+            <div class="ui disabled button">
+              Bereits erworben
+            </div>
+            {% endif %}
+          
+          <script>
+            $('.ui.dropdown').dropdown({
+              'action': 'nothing'
+            })
+          </script>
+        </div>
+        
+      {% else %}
 
         <form id="{{ item.pk }}_form" method="POST">
           {% csrf_token %}
           <input type="hidden" name="requested_item" value="{{ item.pk }}"/>
         </form>
-
-        <div class="item">
 
           {% is_purchasable request item as purchasable %}
           {% if purchasable %}
@@ -53,8 +78,18 @@
             </div>
 
           {% endif %}
+          {% endif %}
   
-        </div>
+          
+          </div>
       {% endfor %}
     </div>
+{% else %}
+  <div class="ui disabled button">
+    {% if product.type.type.slug == 'salon' %}
+    Bald verfügbar
+    {% else %}  
+    Nicht verfügbar
+    {% endif %}
+  </div>
 {% endif %}

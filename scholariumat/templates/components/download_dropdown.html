@@ -1,11 +1,11 @@
 {% load product_tags %}
 
 {% any_attachments_accessible request product as attachments %}
-{% items_accessible request product as items %}
 {% if attachments %}
   <div class="ui dropdown">
     <i class="download icon"></i>
     <div class="menu">
+    {% items_accessible request product as items %}
     {% for item in items %}
       {% for attachment in item.attachments %}
         <div class="item">

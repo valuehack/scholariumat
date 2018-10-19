@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load sorting_tags %}
 {% load semanticui %}
+{% load product_tags %}
 {% autosort zotitems %}
 
 {% block content %}
@@ -41,7 +42,7 @@
         {% for child in children %}
           <a class="four wide column item" href="{% url 'library:collection' child.slug %}">
             &nbsp&nbsp{{ child }}
-            <div class="ui blue label">{{ child.num_items }}</div>
+            <div class="ui primary label">{{ child.num_items }}</div>
           </a>
         {% endfor %}
       </div>
@@ -77,16 +78,11 @@
       </td>
       <td>
         <div class="ui labels">
-        {% for item in zotitem.product.item_set.all %}
-          {% if item.available %}
+        {% items_available request zotitem.product  as available%}
+        {% for item in available %}
             <div class="ui label">
               {{ item.type.title }}
             </div>
-          {% else %}
-            <div class="ui disabled label">
-              {{ item.type.title }}
-            </div>
-          {% endif %}
         {% endfor %}
       </div>
       </td>
