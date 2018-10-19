@@ -28,10 +28,6 @@ class Product(models.Model):
             if product_rel.one_to_one and getattr(self, product_rel.name, False):
                 return getattr(self, product_rel.name)
 
-    def items_available(self, profile):
-        """Returns unaccessible items that are visible for user"""
-        return self.item_set.exclude(expires__lt=date.today())
-
     def items_accessible(self, profile):
         """Returns items that can be accessed by user"""
         return self.item_set.filter(
@@ -92,10 +88,16 @@ class Item(TimeStampedModel):
         return self._price or self.type.default_price
 
     @property
+    def expired(self):
+        return self.expires and self.expires < date.today()
+
+    @property
+    def sold_out(self):
+        return self.amount and self.amount <= 0
+
+    @property
     def available(self):
-        return self.price and \
-            (self.amount is None or self.amount > 0) and \
-            (self.expires is None or self.expires >= date.today())
+        return self.price and not self.expired and not self.sold_out
 
     @property
     def attachments(self):

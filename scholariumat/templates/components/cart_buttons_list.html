@@ -2,7 +2,7 @@
 {% load donation_tags %}
 {% load static %}
 
-{% items_available request product as items %}
+{% with product.item_set.all as items %}
 {% if items %}
     <div class="ui list">
 
@@ -17,9 +17,29 @@
             {{ item }}
           </div>
             {% if item.attachments %}
-            <div class="ui dropdown grey icon button">
-              {% include 'components/download_dropdown2.html' %}
-            </div>
+              <div class="ui grey icon button" id="{{ item.pk }}_open">
+                <i class="download icon"></i>
+                <div class="ui mini modal" id="{{ item_pk }}_dlmodal">
+                  <div class="header">{{ item }}</div>
+                  <div class="content">
+                    <form target="_blank" class="ui form" method="POST">
+                      {% csrf_token %}
+                      <input type="hidden" name="download" value="{{ item.pk }}">
+                      <select name="id" class="ui dropdown">
+                        {% for attachment in item.attachments %}
+                          <option value="{{ forloop.counter0 }}">{{ attachment.type }}</option>
+                        {% endfor %}
+                      </select>
+                      <script>
+                      $('.ui.dropdown')
+                        .dropdown()
+                      ;
+                      </script>
+                      <button class="ui button" type="submit">Download</button>
+                    </form>
+                </div>
+                </div>
+              </div>
             {% else %}
             <div class="ui disabled button">
               Bereits erworben
@@ -27,9 +47,12 @@
             {% endif %}
           
           <script>
-            $('.ui.dropdown').dropdown({
-              'action': 'nothing'
-            })
+            $('#{{ item_pk }}_dlmodal')
+              .modal({
+                'duration': 200
+              })
+              .modal('attach events', '#{{ item.pk }}_open', 'show')
+            ;
           </script>
         </div>
         
@@ -43,37 +66,38 @@
           {% is_purchasable request item as purchasable %}
           {% if purchasable %}
 
-            <div class="ui labeled button">
-              <div onclick='document.forms["{{ item.pk }}_form"].submit(); return false;' class="ui animated button">
-                <div class="visible content">
+            <div class="ui left labeled button">
+              <div class="ui basic right pointing label">
                   {{ item }}
-                </div>
+              </div>
+              <div onclick='document.forms["{{ item.pk }}_form"].submit(); return false;' class="ui animated icon button">
+                <div class="visible content" style="margin-right: 0.8em;">
+                {{ item.price }}&nbsp;
+                <span style="height: 1em;">
+                  <img class="ui image" src="{% static 'images/coin.png' %}" style="display: inline; height: 1.2em; width: auto;">
+                </span>
+              </div>
+                
                 <div class="hidden content">
                   <i class="cart icon"></i>
                 </div>
               </div>
-              <div class="ui basic left pointing label">
-                {{ item.price }}&nbsp;&nbsp;
-                <div style="height: 1em;">
-                  <img class="ui image" src="{% static 'images/coin.png' %}" style="height: 1.2em; width: auto; bottom: 0.1em;">
-                </div>
-              </div>
             </div>
 
-          {% else %}
+          {% elif not item.expired %}
             {% is_requestable request item as requestable %}
 
-            <div class="ui labeled button">
-              <div class="ui disabled button">
+            <div class="ui left labeled button">
+              <div class="ui basic right pointing label">
                 {{ item }}
               </div>
               {% if requestable %}
-                <a onclick='document.forms["{{ item.pk }}_form"].submit(); return false;' class="ui grey left pointing label">Anfragen</a>
+                <a onclick='document.forms["{{ item.pk }}_form"].submit(); return false;' class="ui button">Anfragen</a>
               {% elif profile.amount < item.type.purchasable_at %}
-                <a href="{% url 'donations:levels' %}" class="ui grey left pointing label">Verfügbar als
+                <a href="{% url 'donations:levels' %}" class="ui disabled button">Verfügbar als
                   {{ level.title }}</a>
               {% else %}
-                <div class="ui grey left pointing label">{{ item.type.unavailability_notice }}</div>
+                <div class="ui disabled button">{{ item.type.unavailability_notice }}</div>
               {% endif %}
             </div>
 
@@ -93,3 +117,4 @@
     {% endif %}
   </div>
 {% endif %}
+{% endwith %}

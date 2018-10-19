@@ -5,13 +5,6 @@ register = template.Library()
 
 
 @register.simple_tag
-def items_available(request, product):
-    if request.user.is_authenticated:
-        return product.items_available(request.user.profile)
-    return None
-
-
-@register.simple_tag
 def items_accessible(request, product):
     if request.user.is_authenticated:
         return product.items_accessible(request.user.profile)

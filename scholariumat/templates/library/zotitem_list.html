@@ -78,8 +78,7 @@
       </td>
       <td>
         <div class="ui labels">
-        {% items_available request zotitem.product  as available%}
-        {% for item in available %}
+        {% for item in zotitem.product.item_set.all %}
             <div class="ui label">
               {{ item.type.title }}
             </div>
