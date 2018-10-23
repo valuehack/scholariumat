@@ -1,8 +1,10 @@
 {% load static %}
+{% load analytical %}
 <!DOCTYPE html>
 <html lang="de">
   <head>
     {% block head %}
+    {% analytical_head_top %}
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <title>{% block title %}scholarium.at{% endblock title %}</title>
@@ -38,9 +40,11 @@
       integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
       crossorigin="anonymous"></script>
     <script src="{% static 'semantic.min.js' %}"></script>
+    {% analytical_head_bottom %}
     {% endblock head %}
   </head>
   <body class="Site" style="display: flex; min-height: 100vh; flex-direction: column;">
+  {% analytical_body_top %}
     <header>
       <div class="ui padded grid" style="background-image: url({% static 'images/scholarium_header_cloud_cut.png' %}); background-repeat: no-repeat;  background-position: center; background-size: inherit;">
         <div class="row">
@@ -88,5 +92,6 @@
       </div>
     </div>
     </footer>
+    {% analytical_body_bottom %}
   </body>
 </html>

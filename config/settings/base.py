@@ -68,7 +68,8 @@ THIRD_PARTY_APPS = [
     'django_cron',
     'semanticuiforms',
     'django_markup',
-    'webstack_django_sorting'
+    'webstack_django_sorting',
+    'analytical'
 ]
 LOCAL_APPS = [
     'users.apps.UsersConfig',
@@ -323,3 +324,6 @@ SHIPPING = 5
 
 # Directories
 TMP_DIR = '/tmp'
+
+# Google Analytics
+GOOGLE_ANALYTICS_PROPERTY_ID = env('GOOGLE_ANALYTICS_PROPERTY_ID', default="")
