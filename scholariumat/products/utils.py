@@ -9,7 +9,7 @@ from tempfile import TemporaryDirectory
 from datetime import date
 
 from django.core.files import File
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.conf import settings
 
 from .models import FileAttachment, Purchase, Item
@@ -74,10 +74,12 @@ def import_from_json():
         profile = Profile.objects.get(old_pk=purchase['fields']['nutzer'])
         model_name, obj_pk, item = str(purchase['fields']['produkt_pk']).split('+')
         if model_name == 'veranstaltung':
+            continue
             try:
                 event = Event.objects.get(old_pk=obj_pk)
             except ObjectDoesNotExist:
                 logger.error(f'Event with pk {obj_pk} not found')
+                continue
 
             if item == 'aufzeichnung':
                 type_slug = 'recording'
@@ -102,7 +104,15 @@ def import_from_json():
             title = html.unescape(book['fields']['bezeichnung'].split(' ')[-1])
             try:
                 zotitem = ZotItem.objects.get(title=title)
-                if item in ['pdf', 'epub', 'pdf']:
+            except ObjectDoesNotExist:
+                logger.error(f'ZotItem {title} not found')
+                continue
+            except MultipleObjectsReturned:
+                logger.error(f'Multiple Zotitems found for {title}')
+                continue
+
+            if item in ['pdf', 'epub', 'mobi']:
+                try:
                     Purchase.objects.update_or_create(
                         amount=1,
                         profile=profile,
@@ -110,9 +120,9 @@ def import_from_json():
                         date=date.fromisoformat(purchase['fields']['zeit'][:10]),
                         executed=True
                     )
-                    logger.debug('done')
-            except ObjectDoesNotExist:
-                logger.error(f'Item {title} as {item} not found')
+                    logger.debug(f'Zotitem purchase for {title} successfully imported')
+                except ObjectDoesNotExist:
+                    logger.error(f'Item {title} as {item} not found')
         elif model_name != 'buch':
             logger.error(f"Could not import {purchase['fields']['produkt_pk']}")
 
