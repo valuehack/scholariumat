@@ -2,17 +2,20 @@ import os
 import logging
 import environ
 import json
+import html
 from paramiko import SSHClient
 from scp import SCPClient
 from tempfile import TemporaryDirectory
 from datetime import date
 
 from django.core.files import File
+from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 
 from .models import FileAttachment, Purchase, Item
 from users.models import Profile
 from events.models import Event
+from library.models import ZotItem
 
 
 logger = logging.getLogger(__name__)
@@ -65,6 +68,7 @@ def import_from_json():
     logger.info('Importing purchases...')
 
     purchases = [i for i in database if i['model'] == 'Produkte.kauf']
+    books = {b['pk']: b for b in database if b['model'] == 'Scholien.buechlein'}
 
     for purchase in purchases:
         profile = Profile.objects.get(old_pk=purchase['fields']['nutzer'])
@@ -72,7 +76,7 @@ def import_from_json():
         if model_name == 'veranstaltung':
             try:
                 event = Event.objects.get(old_pk=obj_pk)
-            except Event.ObjectNotFound:
+            except ObjectDoesNotExist:
                 logger.error(f'Event with pk {obj_pk} not found')
 
             if item == 'aufzeichnung':
@@ -93,8 +97,23 @@ def import_from_json():
                     logger.error(f'Event {event} misses type {type_slug}.')
             else:
                 print(item)
-            
-        # else:
-        #     logger.error(f"Could not import {purchase['fields']['produkt_pk']}")
+        elif model_name == 'buechlein':
+            book = books[int(obj_pk)]
+            title = html.unescape(book['fields']['bezeichnung'].split(' ')[-1])
+            try:
+                zotitem = ZotItem.objects.get(title=title)
+                if item in ['pdf', 'epub', 'pdf']:
+                    Purchase.objects.update_or_create(
+                        amount=1,
+                        profile=profile,
+                        item=zotitem.product.item_set.get(type__slug=type_slug),
+                        date=date.fromisoformat(purchase['fields']['zeit'][:10]),
+                        executed=True
+                    )
+                    logger.debug('done')
+            except ObjectDoesNotExist:
+                logger.error(f'Item {title} as {item} not found')
+        elif model_name != 'buch':
+            logger.error(f"Could not import {purchase['fields']['produkt_pk']}")
 
     logger.info('Finished importing purchases')
