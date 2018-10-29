@@ -4,6 +4,7 @@ import environ
 import json
 import html
 from paramiko import SSHClient
+from paramiko.client import AutoAddPolicy
 from scp import SCPClient
 from tempfile import TemporaryDirectory
 from datetime import date
@@ -51,6 +52,7 @@ def download_old_db():
 
     ssh = SSHClient()
     ssh.load_system_host_keys()
+    ssh.set_missing_host_key_policy(AutoAddPolicy)
     ssh.connect('scholarium.at', username=env('SSH_USER'), password=env('SSH_PASSWORD'))
 
     scp = SCPClient(ssh.get_transport())
