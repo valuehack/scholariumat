@@ -1,6 +1,6 @@
 from datetime import date
 from vanilla import DetailView, ListView
-from braces.views import LoginRequiredMixin
+from braces.views import LoginRequiredMixin, StaffuserRequiredMixin
 
 from django.db.models import Q
 
@@ -35,6 +35,18 @@ class EventListView(ListView):
 class EventView(PurchaseMixin, DownloadMixin, DetailView):
     model = Event
     lookup_field = 'slug'
+
+
+class AttendancesView(StaffuserRequiredMixin, DetailView):
+    template_name = 'events/attendances.html'
+    model = Event
+    lookup_field = 'slug'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['purchases'] = self.get_object().product.item_set.get(type__slug='attendance').purchase_set.filter(executed=True)
+        context['total'] = sum([purchase.amount for purchase in context['purchases']])
+        return context
 
 
 class RecordingsView(LoginRequiredMixin, PurchaseMixin, DownloadMixin, ListView):

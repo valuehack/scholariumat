@@ -9,6 +9,9 @@
   <h1 class="ui header">{{ object.title }}
     <div class="ui sub header">{{ object.type }}</div>
   </h1>
+  {% if request.user.is_staff %}
+    <a href="{% url 'events:attendances' object.slug %}" class="ui blue button">Teilnehmerliste</a>
+  {% endif %}
   {% with object.livestream as livestream %}
   {% if livestream %}
     {% is_accessible request livestream.item as accessible %}

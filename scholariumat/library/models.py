@@ -42,7 +42,6 @@ class ZotAttachment(AttachmentBase):
             try:
                 file = zot.file(self.key)
             except zotero_errors.ResourceNotFound:
-                # TODO: Inform scholarium that file is missing
                 logger.exception(f'Zotero: File at {self.key} is missing!')
                 return False
             response = HttpResponse(file, content_type=f'application/{self.type.slug}')

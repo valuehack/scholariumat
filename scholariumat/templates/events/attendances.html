@@ -1,0 +1,16 @@
+<h1>Teilnehmer für {{ object }}</h1>
+<table style="text-align: left;">
+  <tr>
+    <th>Name</th>
+    <th>Anzahl</th>
+    <th>Email</th>
+  </tr>
+  {% for purchase in purchases %}
+  <tr>
+    <td>{{ purchase.profile.name }}</td>
+    <td>{{ purchase.amount }}</td>
+    <td>{{ purchase.profile.user.email }}</td>
+  </tr>
+  {% endfor %}
+</table>
+<p>{{ total }} Teilnehmer</p>

@@ -141,7 +141,7 @@ class Item(TimeStampedModel):
 
     def inform_users(self):
         pass
-        # TODO: Send email to users in requests and create admin button
+        # TODO: Send email to users in requests when saved and available
 
     def add_to_cart(self, profile):
         """Only add a limited product if no purchase of it exists."""

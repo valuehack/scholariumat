@@ -10,13 +10,12 @@
       <div class="item">
       
       {% is_accessible request item as accessible %}
-      {% if accessible %}
+      {% if accessible and item.attachments %}
         
         <div class="ui left labeled button">
           <div class="ui right pointing basic label">
             {{ item }}
           </div>
-            {% if item.attachments %}
               <div class="ui grey icon button" id="{{ item.pk }}_open">
                 <i class="download icon"></i>
                 <div class="ui mini modal" id="{{ item_pk }}_dlmodal">
@@ -40,12 +39,7 @@
                 </div>
                 </div>
               </div>
-            {% else %}
-            <div class="ui disabled button">
-              Bereits erworben
-            </div>
-            {% endif %}
-          
+            
           <script>
             $('#{{ item_pk }}_dlmodal')
               .modal({
@@ -56,7 +50,7 @@
           </script>
         </div>
         
-      {% else %}
+      {% endif %}
 
         <form id="{{ item.pk }}_form" method="POST">
           {% csrf_token %}
@@ -93,6 +87,8 @@
               </div>
               {% if requestable %}
                 <a onclick='document.forms["{{ item.pk }}_form"].submit(); return false;' class="ui button">Anfragen</a>
+              {% elif item.type.buy_once and accessible %}
+                Bereits erworben
               {% elif profile.amount < item.type.purchasable_at %}
                 <a href="{% url 'donations:levels' %}" class="ui disabled button">Verfügbar als
                   {{ level.title }}</a>
@@ -101,7 +97,6 @@
               {% endif %}
             </div>
 
-          {% endif %}
           {% endif %}
   
           

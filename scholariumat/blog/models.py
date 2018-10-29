@@ -88,7 +88,7 @@ class Article(TitleSlugDescriptionModel, PublishAble):
     @classmethod
     def sync_articles(cls):
         """
-        Updates local articles from Zotero. DEPRECATED, NOT IN USE!
+        Updates local articles from Zotero. NOT IN USE! ARTICLES ARE STILL SAVED LOCALLY.
         """
         zot = zotero.Zotero(settings.ZOTERO_USER_ID, settings.ZOTERO_LIBRARY_TYPE, settings.ZOTERO_API_KEY)
         articles = zot.everything(zot.items(tag='Scholie', sort='date', direction='desc'))
