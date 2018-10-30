@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 def import_from_json():
+    # TODO: Check for bibliography
     database = json.load(open(settings.ROOT_DIR.path('db.json')))
 
     # Articles
