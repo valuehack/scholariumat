@@ -37,6 +37,8 @@ def import_from_json():
                 slug='vortrag',
                 defaults={'title': 'Vortrag', 'section_title': 'Vorträge'})
 
+    recording_item_type, created = ItemType.objects.get_or_create(slug='recording', defaults={'default_price': 5})
+
     for event in events:
         event_type = next((i for i in event_types if event['fields']['art_veranstaltung'] == i['pk']), None)
 
@@ -75,11 +77,18 @@ def import_from_json():
 
         local_event.get_or_create_attendance()
 
+        livestream_item = None
         if event['fields']['link']:
-            local_event.update_or_create_livestream(link=event['fields']['link'])
+            livestream_item = local_event.update_or_create_livestream(link=event['fields']['link'])
 
         if event['fields']['datei']:
             # Downloaded files have a changed name
             file_name = os.path.split(event['fields']['datei'])[1]
-            if not FileAttachment.objects.filter(type=attachment_type, file=file_name):
+            existing_file = FileAttachment.objects.filter(type=attachment_type, file=file_name)
+            if existing_file:
+                item, created = local_event.product.item_set.get_or_create(type=recording_item_type)
+                item.files.add(existing_file.get())
+                if livestream_item:
+                    livestream_item.files.add(existing_file.get())
+            else:
                 local_event.get_or_create_recording(event['fields']['datei'])
