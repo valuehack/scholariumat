@@ -1,0 +1,11 @@
+{{ object.date }}
+{% if object.time_start %},
+  {{ object.time_start }}
+  {% if object.time_end %}
+    bis
+    {% if object.date_end %}
+      {% object.date_end %}, 
+    {% endif %}
+    {{ object.time_end }}
+  {% endif %}
+{% endif %}

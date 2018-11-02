@@ -43,23 +43,7 @@
     <div class="item">
       <i class="calendar icon"></i>
       <div class="content">
-        {{ object.date }}
-        {% if object.end_date %}
-          -
-          {{ object.end_date }}
-        {% endif %}
-      </div>
-    </div>
-    {% if object.time_start %}
-      <div class="item">
-        <i class="clock icon"></i>
-        <div class="content">
-          {{ object.time_start }}
-          {% if object.time_end %}
-            -
-            {{ object.time_end }}
-          {% endif %}
-        </div>
+        {% include "components/event_date.html" with object=object %}
       </div>
     {% endif %}
   </div>
