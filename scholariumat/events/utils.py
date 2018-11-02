@@ -7,7 +7,6 @@ from django.conf import settings
 
 from products.models import ItemType, FileAttachment, AttachmentType
 from .models import Event, EventType
-from .forms import LivestreamForm
 
 
 logger = logging.getLogger(__name__)
