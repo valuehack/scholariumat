@@ -4,8 +4,8 @@
   {{ object.time_start | naturaltime }}
   {% if object.time_end %}
     bis
-    {% if object.date_end %}
-      {% object.date_end | naturalday %}, 
+    {% if object.end_date %}
+      {{ object.end_date | naturalday }}, 
     {% endif %}
     {{ object.time_end | naturaltime }}
   {% endif %}
