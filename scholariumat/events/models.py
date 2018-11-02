@@ -1,4 +1,5 @@
 from datetime import date, datetime, timedelta
+import logging
 
 from django.db import models
 from django.conf import settings
@@ -6,9 +7,12 @@ from django.urls import reverse
 
 from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel
 
-from products.models import Item
+from products.models import Item, ItemType, AttachmentType, FileAttachment
 from products.behaviours import ProductBase
 from framework.behaviours import PublishAble
+
+
+logger = logging.getLogger(__name__)
 
 
 class EventType(TitleSlugDescriptionModel):
@@ -44,7 +48,37 @@ class Event(ProductBase, PublishAble):
 
     @property
     def livestream(self):
-        return Livestream.objects.get(item__product__event=self)
+        livestreams = Livestream.objects.filter(item__product__event=self)
+        return livestreams[0] if livestreams else None
+
+    def update_or_create_livestream(self, link):
+        item_type = ItemType.objects.get(slug='livestream')
+        item, created = self.product.item_set.get_or_create(type=item_type)
+        livestream, created = Livestream.objects.update_or_create(item=item, defaults={'link': link})
+        logger.debug(f'Livestream for {self} saved.')
+        return item
+
+    def get_or_create_attendance(self):
+        item_type = ItemType.objects.get(slug='attendance')
+        item, created = self.product.item_set.get_or_create(type=item_type)
+        logger.debug(f'Attendance item for {self} saved.')
+        return item
+
+    def get_or_create_recording(self, recording):
+        item_type = ItemType.objects.get(slug='recording')
+        attachment_type = AttachmentType.objects.get(slug='mp3')
+        item, created = self.product.item_set.get_or_create(type=item_type)
+        attachment, created = FileAttachment.objects.get_or_create(type=attachment_type, file=recording)
+        item.files.add(attachment)
+        livestream = self.livestream
+        if livestream:
+            livestream.item.files.add(attachment)
+        logger.debug(f'Attachment for {self} saved.')
+        return item
+
+    def publish(self):
+        self.create_attendance_item()
+        super().publish()
 
     def get_absolute_url(self):
         return reverse('events:event', kwargs={'slug': self.slug})

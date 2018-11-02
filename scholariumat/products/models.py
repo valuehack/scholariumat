@@ -15,7 +15,7 @@ from framework.behaviours import CommentAble
 from .behaviours import AttachmentBase
 
 
-logger = logging.getLogger('__name__')
+logger = logging.getLogger(__name__)
 
 
 class Product(models.Model):
@@ -56,6 +56,7 @@ class ItemType(TitleDescriptionModel, TimeStampedModel):
     accessible_at = models.SmallIntegerField(null=True, blank=True)
     unavailability_notice = models.CharField(max_length=20, default="Nicht verfügbar")
     buy_once = models.BooleanField(default=False)
+    expires_on_product_date = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title
@@ -81,7 +82,13 @@ class Item(TimeStampedModel):
     amount = models.IntegerField('Anzahl', null=True, blank=True)
     requests = models.ManyToManyField('users.Profile', related_name='item_requests', blank=True, editable=False)
     files = models.ManyToManyField('products.FileAttachment', blank=True)
-    expires = models.DateField(null=True, blank=True)
+    _expires = models.DateField(null=True, blank=True)
+
+    @property
+    def expires(self):
+        if self.type.expires_on_product_date:
+            return getattr(self.product.type, 'date', None)
+        return self._expires
 
     @property
     def price(self):

@@ -5,8 +5,9 @@ import pypandoc
 
 from django.conf import settings
 
-from products.models import Item, ItemType, FileAttachment, AttachmentType
-from .models import Event, Livestream, EventType
+from products.models import ItemType, FileAttachment, AttachmentType
+from .models import Event, EventType
+from .forms import LivestreamForm
 
 
 logger = logging.getLogger(__name__)
@@ -53,13 +54,13 @@ def import_from_json():
         elif type_name == 'Vorlesung' or type_name == 'Vortrag':
             type = EventType.objects.get(slug='vortrag')
 
-        new, created = Event.objects.update_or_create(
+        local_event, created = Event.objects.update_or_create(
             title=pypandoc.convert(event['fields']['bezeichnung'], 'md', format='html'),
             date=event['fields']['datum'],
             type=type,
             defaults=defaults)
         if created:
-            logging.debug(f'Created event {new.title}')
+            logging.debug(f'Created event {local_event.title}')
 
         livestream_type, created = ItemType.objects.get_or_create(
             slug='livestream',
@@ -70,43 +71,16 @@ def import_from_json():
         attendance_type, created = ItemType.objects.get_or_create(
             slug='attendance',
             defaults={'title': 'Teilnahme', 'default_price': 15})
+        attachment_type, created = AttachmentType.objects.get_or_create(
+            slug='mp3', defaults={'title': 'MP3'})
 
-        attendance_item, created = Item.objects.get_or_create(
-            product=new.product, type=attendance_type)
-
-        livestream_item = None
+        local_event.get_or_create_attendance()
 
         if event['fields']['link']:
-            livestream_item, created = Item.objects.get_or_create(
-                product=new.product, type=livestream_type)
-
-            livestream, created = Livestream.objects.update_or_create(
-                item=livestream_item,
-                defaults={'link': event['fields']['link']})
-            if created:
-                logging.debug(f'Created livestream for {new.title}')
+            local_event.update_or_create_livestream(link=event['fields']['link'])
 
         if event['fields']['datei']:
-            attachment_type, created = AttachmentType.objects.get_or_create(
-                slug='mp3', defaults={'title': 'MP3'})
-
+            # Downloaded files have a changed name
             file_name = os.path.split(event['fields']['datei'])[1]
-            downloaded = FileAttachment.objects.filter(
-                type=attachment_type,
-                file=file_name)
-            if downloaded:
-                recording = downloaded.get()
-            else:
-                recording, created = FileAttachment.objects.get_or_create(
-                    type=attachment_type,
-                    file=event['fields']['datei'])
-
-            recording_item, created = Item.objects.get_or_create(
-                product=new.product, type=recording_type)
-
-            recording_item.files.add(recording)
-            if livestream_item:
-                livestream_item.files.add(recording)
-
-            if created:
-                logging.debug(f'Created recording for {new.title}')
+            if not FileAttachment.objects.filter(type=attachment_type, file=file_name):
+                local_event.get_or_create_recording(event['fields']['datei'])
