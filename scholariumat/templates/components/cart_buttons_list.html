@@ -7,11 +7,11 @@
     <div class="ui list">
 
       {% for item in items %}
-      <div class="item">
       
       {% is_accessible request item as accessible %}
       {% if accessible and item.attachments %}
-        
+      
+      <div class="item">
         <div class="ui left labeled button">
           <div class="ui right pointing basic label">
             {{ item }}
@@ -49,6 +49,7 @@
             ;
           </script>
         </div>
+      </div>
         
       {% endif %}
 
@@ -59,7 +60,8 @@
 
           {% is_purchasable request item as purchasable %}
           {% if purchasable %}
-
+          
+          <div class="item">
             <div class="ui left labeled button">
               <div class="ui basic right pointing label">
                   {{ item }}
@@ -77,30 +79,55 @@
                 </div>
               </div>
             </div>
+          </div>
 
           {% elif not item.expired %}
             {% is_requestable request item as requestable %}
-
-            <div class="ui left labeled button">
-              <div class="ui basic right pointing label">
-                {{ item }}
-              </div>
+            
+            
               {% if requestable %}
+              <div class="item">
+              <div class="ui left labeled button">
+                <div class="ui basic right pointing label">
+                  {{ item }}
+                </div>
                 <a onclick='document.forms["{{ item.pk }}_form"].submit(); return false;' class="ui button">Anfragen</a>
-              {% elif item.type.buy_once and accessible %}
-                Bereits erworben
-              {% elif profile.amount < item.type.purchasable_at %}
-                <a href="{% url 'donations:levels' %}" class="ui disabled button">Verfügbar als
-                  {{ level.title }}</a>
-              {% else %}
-                <div class="ui disabled button">{{ item.type.unavailability_notice }}</div>
-              {% endif %}
+              </div>
             </div>
+              {% elif item.type.buy_once and accessible %}
+               {% if item.attachments %}
+               {% else %}
+               <div class="item">
+               <div class="ui left labeled button">
+                 <div class="ui basic right pointing label">
+                   {{ item }}
+                 </div>
+                  <div class="ui disabled button">Bereits erworben</div>
+                </div>
+              </div>
+              {% endif %}
+              {% elif profile.amount < item.type.purchasable_at %}
+              <div class="item">
+              <div class="ui left labeled button">
+                <div class="ui basic right pointing label">
+                  {{ item }}
+                </div>
+                <a href="{% url 'donations:levels' %}" class="ui disabled button">Verfügbar als {{ level.title }}</a>
+                </div>
+              </div>
+              {% else %}
+              <div class="item">
+              <div class="ui left labeled button">
+                <div class="ui basic right pointing label">
+                  {{ item }}
+                </div>
+                <div class="ui disabled button">{{ item.type.unavailability_notice }}</div>
+              </div>
+            </div>
+              {% endif %}
 
           {% endif %}
   
-          
-          </div>
       {% endfor %}
     </div>
 {% else %}
