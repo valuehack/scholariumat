@@ -1,11 +1,12 @@
-{{ object.date }}
+{% load humanize %}
+{{ object.date | naturalday }}
 {% if object.time_start %},
-  {{ object.time_start }}
+  {{ object.time_start | naturaltime }}
   {% if object.time_end %}
     bis
     {% if object.date_end %}
-      {% object.date_end %}, 
+      {% object.date_end | naturalday %}, 
     {% endif %}
-    {{ object.time_end }}
+    {{ object.time_end | naturaltime }}
   {% endif %}
 {% endif %}
