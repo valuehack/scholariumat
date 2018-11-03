@@ -130,13 +130,5 @@
   
       {% endfor %}
     </div>
-{% else %}
-  <div class="ui disabled button">
-    {% if product.type.type.slug == 'salon' %}
-    Bald verfügbar
-    {% else %}  
-    Nicht verfügbar
-    {% endif %}
-  </div>
 {% endif %}
 {% endwith %}
