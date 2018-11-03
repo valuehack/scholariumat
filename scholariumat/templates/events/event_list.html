@@ -17,18 +17,7 @@
           <h2 class="ui centered header">
             <a href="{% url 'events:event' event.slug %}">{{ event.title }}</a>
             <div class="sub header">
-              {{ event.date }}
-              {% if event.time_start %},
-                {{ event.time_start }}
-                {% if event.time_end %}
-                  -
-                  {{ event.time_end }}
-                {% endif %}
-              {% endif %}
-              {% if event.end_date %}
-                -
-                {{ event.end_date }}
-              {% endif %}
+                {% include "components/event_date.html" with object=event %}
             </div>
           </h2>
           {% if event.description is not None %}
