@@ -7,6 +7,9 @@ from django.urls import reverse
 from django.conf import settings
 from django.contrib.sites.models import Site
 
+from .managers import PublishedManager
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -20,7 +23,9 @@ class CommentAble(models.Model):
 class PublishAble(models.Model):
     """Makes a model publishable by manipulating publish_date."""
 
-    publish_date = models.DateField(null=True, blank=True)
+    objects = PublishedManager()
+
+    publish_date = models.DateField(null=True, blank=True, default=date.today)
     publish_priority = models.PositiveSmallIntegerField(default=0)
 
     def publish(self):
@@ -46,11 +51,11 @@ class PublishAble(models.Model):
     def cron_publish(cls):
         """Publishes an instance after RELEASE_PERIOD, sorted by priority."""
 
-        published = cls.objects.filter(publish_date__isnull=False)
+        published = cls.objects.filter(publish_date__isnull=False).order_by('-publish_date')
         time_passed = (date.today() - published[0].publish_date).days if published else None
 
         if time_passed >= settings.RELEASE_PERIOD:
-            unpublished = cls.objects.filter(publish_date__isnull=True)
+            unpublished = cls.objects.filter(publish_date__isnull=True).order_by('-publish_priority')
             if unpublished:
                 article = unpublished[0]
                 article.publish()

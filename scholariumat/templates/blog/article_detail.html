@@ -9,7 +9,11 @@
   <div class="ui text container">
     <h1 class="ui centered header">{{ object.title|apply_markup:"markdown" }}
       <div class="sub header">
-        {{ object.publish_date }}
+        {% if object.publish_date %}
+          {{ object.publish_date }}
+        {% else %}
+          Unveröffentlicht
+        {% endif %}
       </div>
     </h1>
     <div class="ui hidden divider"></div>

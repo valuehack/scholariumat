@@ -10,6 +10,7 @@ from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionMo
 from products.models import Item, ItemType, AttachmentType, FileAttachment
 from products.behaviours import ProductBase
 from framework.behaviours import PublishAble
+from framework.managers import PublishedManager
 
 
 logger = logging.getLogger(__name__)
@@ -30,6 +31,8 @@ class EventType(TitleSlugDescriptionModel):
 
 class Event(ProductBase, PublishAble):
     """Events are not directly purchasable products."""
+
+    objects = PublishedManager()
 
     date = models.DateField()
     end_date = models.DateField(null=True, blank=True)

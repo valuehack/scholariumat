@@ -20,8 +20,7 @@ class EventListView(ListView):
         return super().dispatch(*args, **kwargs)
 
     def get_queryset(self):
-        qs = super().get_queryset()
-        return qs.filter(type=self.event_type, date__gte=date.today()).exclude(publish_date__gt=date.today()).order_by('date')
+        return Event.objects.published().filter(type=self.event_type, date__gte=date.today()).order_by('date')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -55,5 +54,4 @@ class RecordingsView(LoginRequiredMixin, PurchaseMixin, DownloadMixin, ListView)
     template_name = 'events/recording_list.html'
 
     def get_queryset(self):
-        qs = super().get_queryset()
-        return qs.filter(date__lt=date.today()).exclude(publish_date__gt=date.today()).order_by('-date').distinct()
+        return Event.objects.published().filter(date__lt=date.today()).order_by('-date').distinct()

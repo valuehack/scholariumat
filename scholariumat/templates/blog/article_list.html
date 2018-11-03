@@ -6,9 +6,43 @@
   <div class="ui text container">
     <h1 class="ui centered header">{% block title %}Scholien{% endblock %}</h1>
     <div class="ui hidden divider"></div>
-
-    {% if user.is_authenticated %}
-
+    {% if page_obj.number is 1 %}
+    {% if request.user.is_staff and unpublished %}
+      <h2 class="ui centered header">Unveröffentlichte Scholien</h2>
+      {% for article in unpublished %}
+        <div class="ui basic segment">
+          <h2 class="ui centered header">
+            <a href="{% url 'blog:article' article.slug %}">{{ article.title|apply_markup:"markdown" }}</a>
+            <div class="sub header">
+              {% if article.publish_date %}
+                {{ article.publish_date }}
+              {% else %}
+                Unveröffentlicht
+              {% endif %}
+            </div>
+          </h2>
+          {{ article.public|safe|truncatewords:64 }}
+        </div>
+        {% if not forloop.last %}
+          <div class="ui section divider"></div>
+        {% endif %}
+      {% endfor %}
+      <div class="ui hidden divider"></div>
+      <h2 class="ui centered header">Veröffentlichte Scholien</h2>
+    {% elif not request.user.is_authenticated %}
+    <p>
+      Mit Scholion bezeichnete man ursprünglich eine Randnotiz, die Gelehrte in den Büchern anbrachten, die ihre ständigen Wegbegleiter waren. Heute sind die Scholien die Randnotizen von Rahim Taghizadegan, die Erkenntnisgewinne im Rahmen des
+      <i>scholarium</i>
+      dokumentieren: der tiefgehenden Reflexion und praktischen Überprüfung der Möglichkeiten, unter erschwerten Bedingungen noch Werte zu schaffen, Realität von Illusion zu unterscheiden und Sinn zu finden. Um alle Scholien in voller Länge lesen zu
+      können,
+      <a href="{% url 'donations:levels' %}">
+        beehren Sie uns bitte als Gast</a>.
+    </p>
+      {% include 'components/registration_form.html' %}
+      <div class="ui hidden section divider"></div>
+    {% endif %}
+    {% endif %}
+    
       {% for article in object_list %}
         <div class="ui basic segment">
           <h2 class="ui centered header">
@@ -32,21 +66,6 @@
         <div class="ui hidden divider"></div>
       {% endif %}
 
-    {% else %}
-
-      <p>
-        Mit Scholion bezeichnete man ursprünglich eine Randnotiz, die Gelehrte in den Büchern anbrachten, die ihre ständigen Wegbegleiter waren. Heute sind die Scholien die Randnotizen von Rahim Taghizadegan, die Erkenntnisgewinne im Rahmen des
-        <i>scholarium</i>
-        dokumentieren: der tiefgehenden Reflexion und praktischen Überprüfung der Möglichkeiten, unter erschwerten Bedingungen noch Werte zu schaffen, Realität von Illusion zu unterscheiden und Sinn zu finden. Um alle Scholien in voller Länge lesen zu
-        können,
-        <a href="{% url 'donations:levels' %}">
-          beehren Sie uns bitte als Gast</a>.
-      </p>
-    {% endif %}
   </div>
 
-  {% if not request.user.is_authenticated %}
-    {% include 'components/registration_form.html' %}
-    <div class="ui hidden section divider"></div>
-  {% endif %}
 {% endblock content %}

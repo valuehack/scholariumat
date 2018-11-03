@@ -46,9 +46,8 @@ class HomeView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if self.request.user.is_authenticated:
-            context['events'] = Event.objects.filter(
-                date__gte=date.today()).exclude(publish_date__gt=date.today()).order_by('date')[:4]
-            articles = Article.objects.filter(publish_date__lte=date.today())[:4]
+            context['events'] = Event.objects.published().filter(date__gte=date.today()).order_by('date')[:4]
+            articles = Article.objects.published()[:4]
             if articles:
                 article_list = list(articles)
                 context['feature'] = article_list.pop(0)
