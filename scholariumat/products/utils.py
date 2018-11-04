@@ -72,8 +72,52 @@ def import_from_json():
     purchases = [i for i in database if i['model'] == 'Produkte.kauf']
     books = {b['pk']: b for b in database if b['model'] == 'Scholien.buechlein'}
 
+    scholien_ids = {
+        "256": "MCR3ZQU3",
+        "257": "USD2L6KA",
+        "258": "8NBLK5G8",
+        "259": "WXDF6D3G",
+        "260": "CESGVT8M",
+        "261": "2N3SEHPE",
+        "262": "GJ5EIUBE",
+        "263": "IPWGSJFZ",
+        "264": "NQTPG7DC",
+        "265": "H4LFJT2E",
+        "266": "BSEL4CAC",
+        "267": "C5887VAP",
+        "268": "VBU924RU",
+        "269": "HST3NRRM",
+        "270": "7NPPGS4M",
+        "271": "HZQBV3DX",
+        "272": "YQLB4G6A",
+        "273": "4JC55JHN",
+        "274": "DZITPEXQ",
+        "275": "LWQVYW4W",
+        "276": "I6MP6WN4",
+        "277": "P9W42ZH4",
+        "278": "MVP4B5N9",
+        "279": "RG6S5Q4S",
+        "280": "V4GSELBB",
+        "281": "TIL9PMDX",
+        "282": "YEDIDSES",
+        "283": "2E6UXPDE",
+        "284": "JXSBIBMG",
+        "285": "Q55ZFFFP",
+        "286": "8SLANL6H",
+        "287": "3CZEGPUE",
+        "288": "XYVJA64Q",
+        "253": "PDMBTCI5",
+        "254": "BASKFMJG",
+        "255": "U96XFM9H"
+    }
+
     for purchase in purchases:
-        profile = Profile.objects.get(old_pk=purchase['fields']['nutzer'])
+        try:
+            profile = Profile.objects.get(old_pk=purchase['fields']['nutzer'])
+        except MultipleObjectsReturned:
+            logger.error('Multiple profiles returned:')
+            logger.error(Profile.objects.filter(old_pk=purchase['fields']['nutzer']))
+            continue
         model_name, obj_pk, item = str(purchase['fields']['produkt_pk']).split('+')
         if model_name == 'veranstaltung':
             continue
@@ -104,13 +148,11 @@ def import_from_json():
         elif model_name == 'buechlein':
             book = books[int(obj_pk)]
             title = html.unescape(book['fields']['bezeichnung'].split(' ')[-1])
+            zotero_id = scholien_ids[obj_pk]
             try:
-                zotitem = ZotItem.objects.get(title=title)
+                zotitem = ZotItem.objects.get(slug=zotero_id)
             except ObjectDoesNotExist:
-                logger.error(f'ZotItem {title} not found')
-                continue
-            except MultipleObjectsReturned:
-                logger.error(f'Multiple Zotitems found for {title}')
+                logger.error(f'No object found for {title} with id {zotero_id}, pk {obj_pk}')
                 continue
 
             if item in ['pdf', 'epub', 'mobi']:
@@ -118,14 +160,14 @@ def import_from_json():
                     Purchase.objects.update_or_create(
                         amount=1,
                         profile=profile,
-                        item=zotitem.product.item_set.get(type__slug=type_slug),
+                        item=zotitem.product.item_set.get(type__slug=item),
                         date=date.fromisoformat(purchase['fields']['zeit'][:10]),
                         executed=True
                     )
                     logger.debug(f'Zotitem purchase for {title} successfully imported')
                 except ObjectDoesNotExist:
                     logger.error(f'Item {title} as {item} not found')
-        elif model_name != 'buch':
+        elif model_name not in ['buch', 'studiumdings']:
             logger.error(f"Could not import {purchase['fields']['produkt_pk']}")
 
     logger.info('Finished importing purchases')
