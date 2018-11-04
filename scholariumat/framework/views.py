@@ -3,6 +3,8 @@ from datetime import date
 from braces.views import OrderableListMixin
 from vanilla import TemplateView
 
+from django.db.models import F
+
 from events.models import Event
 from blog.models import Article
 
@@ -31,13 +33,14 @@ class CompatibleOrderableListMixin(OrderableListMixin):
 
         self.order_by = order_by
         self.ordering = self.get_ordering_default()
-
+        
         if order_by and self.request.GET.get(
                 self.direction_param, self.ordering) == "desc":
-            order_by = "-" + order_by
-        self.ordering = self.request.GET.get(self.direction_param, self.ordering)
-
-        return queryset.order_by(order_by)
+            self.ordering = self.request.GET.get(self.direction_param, self.ordering)
+            return queryset.order_by(F(order_by).desc(nulls_last=True))
+        else:
+            self.ordering = self.request.GET.get(self.direction_param, self.ordering)
+            return queryset.order_by(F(order_by).asc(nulls_last=True))
 
 
 class HomeView(TemplateView):
