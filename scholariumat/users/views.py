@@ -46,7 +46,7 @@ class UpdateOrCreateRequiredMixin(MessageMixin):
                 redirect_url = reverse('users:update')
                 self.messages.info('Bitte bestätigen Sie Ihre Profilinformationen')
             else:
-                reverse('users:create')
+                redirect_url = reverse('users:create')
             return HttpResponseRedirect('{}?next={}'.format(redirect_url, request.path_info))
 
         # Pop url params and add to GET
