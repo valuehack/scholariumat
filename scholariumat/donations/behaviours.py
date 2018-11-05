@@ -114,6 +114,7 @@ class Payment(CommentAble):
 
     def init(self):
         """Sets approval url. Creates payment if necessary."""
+        logger.debug('Initiating payment...')
         if self.method:
             if self.method.slug == 'paypal':
                 return self._create_paypal()

@@ -52,10 +52,12 @@ class PaymentView(UpdateOrCreateRequiredMixin, MessageMixin, FormView):
         profile = self.get_profile()
         profile.clean_donations()  # Clean up old initiated donations
         donation = profile.donation_set.create(amount=amount, method=method)
+        logger.debug(f'Created donation {donation}')
         if donation.init():
-            logger.debug(f'Created and initiated donation {donation}')
+            logger.debug(f'Initiated donation {donation}. Redirecting to {donation.approval_url}')
             return HttpResponseRedirect(donation.approval_url)
         else:
+            logger.error(f'Failed to intiate donation {donation}')
             self.messages.error(settings.MESSAGE_UNEXPECTED_ERROR)
             return self.form_invalid(form)
 
