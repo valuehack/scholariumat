@@ -85,15 +85,15 @@ def import_from_json():
         "265": "H4LFJT2E",
         "266": "BSEL4CAC",
         "267": "C5887VAP",
-        "268": "VBU924RU",
+        "268": "WBT88SYW",
         "269": "HST3NRRM",
-        "270": "7NPPGS4M",
-        "271": "HZQBV3DX",
+        "270": "N462K266",
+        "271": "4SJATDE8",
         "272": "YQLB4G6A",
-        "273": "4JC55JHN",
-        "274": "DZITPEXQ",
+        "273": "L8WQWXFY",
+        "274": "WQVN6XVK",
         "275": "LWQVYW4W",
-        "276": "I6MP6WN4",
+        "276": "P5EVRZIP",
         "277": "P9W42ZH4",
         "278": "MVP4B5N9",
         "279": "RG6S5Q4S",
@@ -104,7 +104,7 @@ def import_from_json():
         "284": "JXSBIBMG",
         "285": "Q55ZFFFP",
         "286": "8SLANL6H",
-        "287": "3CZEGPUE",
+        "287": "NHLDRB6E",
         "288": "XYVJA64Q",
         "253": "PDMBTCI5",
         "254": "BASKFMJG",
@@ -112,6 +112,10 @@ def import_from_json():
     }
 
     for purchase in purchases:
+
+        if purchase['fields']['nutzer'] is None:
+            continue
+
         try:
             profile = Profile.objects.get(old_pk=purchase['fields']['nutzer'])
         except MultipleObjectsReturned:
@@ -160,7 +164,7 @@ def import_from_json():
                     Purchase.objects.update_or_create(
                         amount=1,
                         profile=profile,
-                        item=zotitem.product.item_set.get(type__slug=item),
+                        item=zotitem.product.item_set.get(type__slug='pdf'),
                         date=date.fromisoformat(purchase['fields']['zeit'][:10]),
                         executed=True
                     )
