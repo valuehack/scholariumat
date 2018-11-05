@@ -141,7 +141,7 @@ def import_from_json():
                         amount=purchase['fields']['menge'],
                         profile=profile,
                         item=event.product.item_set.get(type__slug=type_slug),
-                        date=date.fromisoformat(purchase['fields']['zeit'][:10]),
+                        date=date(*map(int, purchase['fields']['zeit'][:10].split('-'))),
                         executed=True
                     )
                     logger.debug('done')
@@ -165,7 +165,7 @@ def import_from_json():
                         amount=1,
                         profile=profile,
                         item=zotitem.product.item_set.get(type__slug='pdf'),
-                        date=date.fromisoformat(purchase['fields']['zeit'][:10]),
+                        date=date(*map(int, purchase['fields']['zeit'][:10].split('-'))),
                         executed=True
                     )
                     logger.debug(f'Zotitem purchase for {title} successfully imported')
