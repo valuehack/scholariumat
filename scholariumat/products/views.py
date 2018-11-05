@@ -97,7 +97,7 @@ class PurchaseView(LoginRequiredMixin, DownloadMixin, TemplateView):
     template_name = 'products/purchases.html'
 
     def get_context_data(self, **kwargs):
-        purchases = self.request.user.profile.purchases
+        purchases = self.request.user.profile.purchases.order_by('-date')
         products = self.request.user.profile.products_bought
 
         context = {
