@@ -36,7 +36,7 @@ def download_missing_files():
         try:
             attachment.file.open()
             attachment.file.close()
-        except FileNotFoundError:
+        except (FileNotFoundError, OSError):
             local_path = os.path.join(local_dir.name, os.path.split(attachment.file.name)[1])
 
             scp.get(os.path.join('~/scholarium_daten/', attachment.file.name), local_path=local_dir.name)
