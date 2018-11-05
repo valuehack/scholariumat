@@ -30,7 +30,7 @@ class RedirectMixin:
         return self.request.GET.get('next') or super().get_success_url()
 
 
-class UpdateOrCreateRequiredMixin:
+class UpdateOrCreateRequiredMixin(MessageMixin):
     """
     Saves (and restores) GET parameters to session and returns view to create or update profile before continuing.
     Resets after first retrieve of user.
@@ -42,7 +42,11 @@ class UpdateOrCreateRequiredMixin:
             # Save params to session
             request.session['get_params'] = request.GET.dict()
 
-            redirect_url = reverse('users:update') if request.user.is_authenticated else reverse('users:create')
+            if request.user.is_authenticated:
+                redirect_url = reverse('users:update')
+                self.messages.info('Bitte bestätigen Sie Ihre Profilinformationen')
+            else:
+                reverse('users:create')
             return HttpResponseRedirect('{}?next={}'.format(redirect_url, request.path_info))
 
         # Pop url params and add to GET
