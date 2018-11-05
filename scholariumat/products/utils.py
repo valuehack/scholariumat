@@ -28,6 +28,7 @@ def download_missing_files():
 
     ssh = SSHClient()
     ssh.load_system_host_keys()
+    ssh.set_missing_host_key_policy(AutoAddPolicy)
     ssh.connect('scholarium.at', username=env('SSH_USER'), password=env('SSH_PASSWORD'))
 
     scp = SCPClient(ssh.get_transport())
