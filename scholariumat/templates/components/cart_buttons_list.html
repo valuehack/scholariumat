@@ -95,18 +95,18 @@
               </div>
             </div>
               {% elif item.type.buy_once and accessible %}
-               {% if item.attachments %}
-               {% else %}
-               <div class="item">
-               <div class="ui left labeled button">
-                 <div class="ui basic right pointing label">
-                   {{ item }}
-                 </div>
-                  <div class="ui disabled button">Bereits erworben</div>
+                 {% if item.attachments %}
+                 {% else %}
+                 <div class="item">
+                 <div class="ui left labeled button">
+                   <div class="ui basic right pointing label">
+                     {{ item }}
+                   </div>
+                    <div class="ui disabled button">Bereits erworben</div>
+                  </div>
                 </div>
-              </div>
-              {% endif %}
-              {% elif profile.amount < item.type.purchasable_at %}
+                {% endif %}
+              {% elif request.user.profile.amount < item.type.purchasable_at %}
               <div class="item">
               <div class="ui left labeled button">
                 <div class="ui basic right pointing label">
@@ -116,14 +116,14 @@
                 </div>
               </div>
               {% else %}
-              <div class="item">
-              <div class="ui left labeled button">
-                <div class="ui basic right pointing label">
-                  {{ item }}
+                <div class="item">
+                <div class="ui left labeled button">
+                  <div class="ui basic right pointing label">
+                    {{ item }}
+                  </div>
+                  <div class="ui disabled button">{{ item.type.unavailability_notice }}</div>
                 </div>
-                <div class="ui disabled button">{{ item.type.unavailability_notice }}</div>
               </div>
-            </div>
               {% endif %}
 
           {% endif %}

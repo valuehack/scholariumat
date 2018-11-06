@@ -75,7 +75,7 @@ class ApprovalView(MessageMixin, FormView):
         try:
             self.donation = Donation.objects.get(slug=self.kwargs.get('slug'))
         except ObjectDoesNotExist:
-            return HttpResponseNotFound()  # Cancel if non-existent payment is  referenced
+            return HttpResponseNotFound()  # Cancel if non-existent payment is referenced
 
         if self.donation.executed:  # Cancel if payment already executed
             self.messages.info('Zahlung bereits erfolgreich durchgeführt.')
