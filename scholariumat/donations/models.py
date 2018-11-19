@@ -68,7 +68,7 @@ class Donation(Payment, TimeStampedModel):
 
     profile = models.ForeignKey('users.Profile', on_delete=models.CASCADE)
     amount = models.SmallIntegerField()
-    date = models.DateField(auto_now_add=True)
+    date = models.DateField(default=datetime.date.today)
     expiration = models.DateField(default=_default_expiration.__func__)
 
     @property

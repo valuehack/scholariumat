@@ -1,5 +1,7 @@
 import json
 import logging
+import datetime
+from datetime import date
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -15,6 +17,24 @@ logger = logging.getLogger(__name__)
 
 def import_from_json():
     database = json.load(open(settings.ROOT_DIR.path('db.json')))
+
+    # DonationLevels
+    logger.info('Importing donationlevels...')
+
+    levels = [i for i in database if i['model'] == 'Produkte.spendenstufe']
+
+    donationlevel_pks = {}
+
+    for level in levels:
+        new, created = DonationLevel.objects.update_or_create(
+            amount=level['fields']['spendenbeitrag'],
+            defaults={
+                'title': level['fields']['bezeichnung'],
+                'description': level['fields']['beschreibung']})
+        donationlevel_pks[level['pk']] = new
+
+        if created:
+            logger.debug(f'Created level {new.title}')
 
     # Users, Profiles
     logger.info('Importing users and profiles...')
@@ -332,23 +352,18 @@ def import_from_json():
             new, created = Profile.objects.update_or_create(user=user_new, defaults=profile_defaults)
             profile_pks[profile['pk']] = new
 
-    # DonationLevels
-    logger.info('Importing donationlevels...')
-
-    levels = [i for i in database if i['model'] == 'Produkte.spendenstufe']
-
-    donationlevel_pks = {}
-
-    for level in levels:
-        new, created = DonationLevel.objects.update_or_create(
-            amount=level['fields']['spendenbeitrag'],
-            defaults={
-                'title': level['fields']['bezeichnung'],
-                'description': level['fields']['beschreibung']})
-        donationlevel_pks[level['pk']] = new
-
-        if created:
-            logger.debug(f'Created level {new.title}')
+            # Create donations for old donators
+            last_payment = profile['fields']['letzte_zahlung']
+            if last_payment:
+                pdate = date(*map(int, profile['fields']['letzte_zahlung'].split('-')))
+                if pdate >= date(1900, 1, 1) and pdate <= date(2015, 8, 3):
+                    donation, created = Donation.objects.update_or_create(
+                        profile=new,
+                        date=pdate,
+                        expiration=(pdate + datetime.timedelta(days=365)),
+                        amount=donationlevel_pks[profile['fields']['stufe'] or 1].amount)
+                    logger.debug(f'Found old donation for {new}')
+                    donation.execute()
 
     # Donations
     logger.info('Importing donations...')
@@ -366,10 +381,12 @@ def import_from_json():
         if id and not Donation.objects.filter(payment_id=id):
             donation_defaults['payment_id'] = donation['fields']['zahlung_id']
 
+        donation_date = date(*map(int, donation['fields']['datum'].split('-')))
         new, created = Donation.objects.update_or_create(
             profile=profile,
             amount=donationlevel_pks[donation['fields']['stufe']].amount,
-            date=donation['fields']['datum'],
+            date=donation_date,
+            expiration=(donation_date + datetime.timedelta(days=365)),
             defaults=donation_defaults)
 
         if created:
@@ -377,4 +394,5 @@ def import_from_json():
 
         new.execute()
 
-    logger.info('Import finished')
+    users_with_donation = len(Profile.objects.filter(donation__isnull=False).distinct())
+    logger.info(f'Import finished. Users that donated at some point: {users_with_donation}')
