@@ -4,10 +4,11 @@ from datetime import date
 
 from django.db import models
 from django.db.models import Q
-from django.core.mail import mail_managers
+from django.core.mail import mail_managers, send_mail
 from django.urls import reverse_lazy
 from django.conf import settings
 from django.http import HttpResponse
+from django.template.loader import render_to_string
 
 from django_extensions.db.models import TimeStampedModel, TitleDescriptionModel, TitleSlugDescriptionModel
 
@@ -149,8 +150,17 @@ class Item(TimeStampedModel):
                 f'Das Item kann unter folgender URL editiert werden: {settings.DEFAULT_DOMAIN}{edit_url}')
 
     def inform_users(self):
-        pass
-        # TODO: Send email to users in requests when saved and available
+        user_addresses = [profile.user.email for profile in self.requests.all()]
+        send_mail(
+            f'Verfügbarkeit: {self.product}',
+            render_to_string('products/emails/availability_email.txt', {'item': self}),
+            settings.DEFAULT_FROM_EMAIL,
+            user_addresses,
+            fail_silently=False,
+            html_message=render_to_string('products/emails/availability_email.html', {'item': self})
+        )
+        logger.debug(f'Informed users {self.requests.all()} of availability of {self.product} as {self}')
+        self.requests.clear()
 
     def add_to_cart(self, profile):
         """Only add a limited product if no purchase of it exists."""

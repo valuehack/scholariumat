@@ -1,0 +1,4 @@
+Wir möchten Sie gerne informieren, dass das von Ihnen angefragte Produkt: {{ item.product }} im Format {{ item }} nun verfügbar ist.
+
+Mit freundlichen Grüßen,
+Ihr scholarium
