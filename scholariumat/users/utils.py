@@ -320,7 +320,8 @@ def import_from_json():
                 ('street', 'strasse'),
                 ('postcode', 'plz'),
                 ('city', 'ort'),
-                ('phone', 'tel')
+                ('phone', 'tel'),
+                ('note', 'alt_notiz')
             ]
 
             for field in fields:
