@@ -1,3 +1,4 @@
+import os
 from datetime import date, timedelta
 
 from django.test import TestCase
@@ -12,6 +13,7 @@ from donations.models import DonationLevel, Donation, PaymentMethod
 
 class RequestDonationTest(TestCase):
     def setUp(self):
+        os.environ['RECAPTCHA_TESTING'] = 'True'
         self.client = Client()
         DonationLevel.objects.create(amount=75, title='Level 1')
         PaymentMethod.objects.create(title='Bar')
@@ -21,6 +23,7 @@ class RequestDonationTest(TestCase):
         self.assertEqual(response.status_code, 302)
         post_data = {
             'email': 'a.b@c.de',
+            'g-recaptcha-response': 'PASSED',
             'title': 'm',
             'name': '',
             'organization': '',
@@ -45,6 +48,9 @@ class RequestDonationTest(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(profile.level.amount, 75)
         self.assertTrue(Donation.objects.get(profile=profile).executed)
+
+    def tearDown(self):
+        del os.environ['RECAPTCHA_TESTING']
 
 
 class DonationTest(TestCase):
