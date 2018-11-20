@@ -218,3 +218,7 @@ GLOBEE_SANDBOX = env.bool('GLOBEE_SANDBOX', default=False)
 CRON_CLASSES = [
     "library.cron.ZoteroSync",
 ]
+
+# ReCaptcha
+RECAPTCHA_PUBLIC_KEY = env('RECAPTCHA_PUBLIC_KEY')
+RECAPTCHA_PRIVATE_KEY = env('RECAPTCHA_PRIVATE_KEY')

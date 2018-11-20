@@ -1,4 +1,5 @@
 import logging
+from captcha.fields import ReCaptchaField
 
 from django import forms
 from django.contrib.auth import get_user_model
@@ -10,6 +11,8 @@ logger = logging.getLogger(__name__)
 
 
 class UserForm(forms.ModelForm):
+    captcha = ReCaptchaField(attrs={'_no_label': True, '_no_errors': True})
+
     class Meta:
         model = get_user_model()
         fields = ['email']

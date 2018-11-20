@@ -69,7 +69,8 @@ THIRD_PARTY_APPS = [
     'semanticuiforms',
     'django_markup',
     'webstack_django_sorting',
-    'analytical'
+    'analytical',
+    'captcha'
 ]
 LOCAL_APPS = [
     'users.apps.UsersConfig',
@@ -327,3 +328,6 @@ TMP_DIR = '/tmp'
 
 # Google Analytics
 GOOGLE_ANALYTICS_PROPERTY_ID = env('GOOGLE_ANALYTICS_PROPERTY_ID', default="")
+
+# ReCaptcha
+NOCAPTCHA = True
