@@ -5,7 +5,7 @@ import json
 import html
 from paramiko import SSHClient
 from paramiko.client import AutoAddPolicy
-from scp import SCPClient
+from scp import SCPClient, SCPException
 from tempfile import TemporaryDirectory
 from datetime import date
 
@@ -39,7 +39,16 @@ def download_missing_files():
         except (FileNotFoundError, OSError):
             local_path = os.path.join(local_dir.name, os.path.split(attachment.file.name)[1])
 
-            scp.get(os.path.join('~/scholarium_daten/', attachment.file.name), local_path=local_dir.name)
+            try:
+                scp.get(os.path.join('~/scholarium_daten/', attachment.file.name), local_path=local_dir.name)
+            except SCPException:
+                # File doesn't exist, delete item, attachment
+                logger.error(f'Could not find file {attachment.file.name}. Deleting attachment.')
+                for item in attachment.item_set.all():
+                    if len(item.files) == 1:
+                        logger.info(f'Deleted item {item}, as attachment is missing.')
+                        item.delete()
+                attachment.delete()
             with open(local_path, 'rb') as local_file:
                 attachment.file = File(local_file, name=os.path.split(attachment.file.name)[1])
                 attachment.save()
