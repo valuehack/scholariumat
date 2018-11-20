@@ -51,6 +51,7 @@ class ItemType(TitleDescriptionModel, TimeStampedModel):
     slug = models.SlugField()
     shipping = models.BooleanField(default=False)
     requestable = models.BooleanField(default=False)
+    additional_supply = models.BooleanField(default=False)  # Can also be requested when empty if true
     default_price = models.SmallIntegerField(null=True, blank=True)
     purchasable_at = models.SmallIntegerField(default=0)
     accessible_at = models.SmallIntegerField(null=True, blank=True)
@@ -120,7 +121,8 @@ class Item(TimeStampedModel):
     def is_requestable(self, profile):
         return not self.available and \
             profile.amount >= self.type.purchasable_at and \
-            self.type.requestable
+            self.type.requestable and \
+            self.amount > 0 or self.type.additional_supply
 
     def is_purchasable(self, profile):
         return self.available and profile.amount >= self.type.purchasable_at and \
