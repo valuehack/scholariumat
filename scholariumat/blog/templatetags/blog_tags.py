@@ -6,4 +6,6 @@ register = template.Library()
 
 @register.simple_tag
 def content_accessible(request, article):
-    return request.user.profile.amount >= settings.ARTICLE_ACCESSIBLE_AT
+    if request.user.is_authenticated:
+        return request.user.profile.amount >= settings.ARTICLE_ACCESSIBLE_AT
+    return False

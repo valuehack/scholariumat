@@ -5,7 +5,7 @@ from braces.views import LoginRequiredMixin
 from .models import Article
 
 
-class ArticleDetailView(LoginRequiredMixin, DetailView):
+class ArticleDetailView(DetailView):
     model = Article
 
 
