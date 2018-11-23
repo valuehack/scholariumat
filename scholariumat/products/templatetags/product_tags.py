@@ -4,6 +4,12 @@ from django import template
 register = template.Library()
 
 
+# TODO: Use request instead of object
+
+# @register.simple_tag
+# def get_state(request, item):
+#     pass
+
 @register.simple_tag
 def items_accessible(request, product):
     if request.user.is_authenticated:

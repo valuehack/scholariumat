@@ -50,15 +50,16 @@ class Product(models.Model):
 
 class ItemType(TitleDescriptionModel, TimeStampedModel):
     slug = models.SlugField()
-    shipping = models.BooleanField(default=False)
-    requestable = models.BooleanField(default=False)
-    additional_supply = models.BooleanField(default=False)  # Can also be requested when empty if true
+    shipping = models.BooleanField(default=False)  # Calculate shipping at checkout
+    request_price = models.BooleanField(default=False)  # Can be requested when item has no price
+    additional_supply = models.BooleanField(default=False)  # Can be requested when item is sold out
     default_price = models.SmallIntegerField(null=True, blank=True)
-    purchasable_at = models.SmallIntegerField(default=0)
-    accessible_at = models.SmallIntegerField(null=True, blank=True)
-    unavailability_notice = models.CharField(max_length=20, default="Nicht verfügbar")
-    buy_once = models.BooleanField(default=False)
-    expires_on_product_date = models.BooleanField(default=False)
+    purchasable_at = models.SmallIntegerField(default=0)  # Donation amount at with item can be purchased
+    accessible_at = models.SmallIntegerField(null=True, blank=True)  # Donation amount at with item can be accessed
+    unavailability_notice = models.CharField(max_length=20, default="Nicht verfügbar")  # TODO: Remove?
+    buy_once = models.BooleanField(default=False)  # If True, item can only be purchased once
+    expires_on_product_date = models.BooleanField(default=False)  # Item is only visible/purchasable until product.date
+    buy_unauthenticated = models.BooleanField(default=False)  # Item is visible/purchasable for unauthenticated users
 
     def __str__(self):
         return self.title
@@ -105,7 +106,7 @@ class Item(TimeStampedModel):
         return self.amount and self.amount <= 0
 
     @property
-    def available(self):
+    def available(self):  # TODO: Remove
         return self.price and not self.expired and not self.sold_out
 
     @property
@@ -119,24 +120,101 @@ class Item(TimeStampedModel):
                 attachment_list += (getattr(self, item_rel.get_accessor_name()).all())
         return list(self.files.all()) + attachment_list
 
-    def is_requestable(self, profile):
+    def get_state(self, user):
+        state = {
+            'accessible': self.is_accessible(user),
+            'purchasability': self.get_purchasability(user),
+            'visible': self.is_visible(user)
+        }
+        return state
+
+    def get_purchasability(self, user):
+        """
+        Returns purchaseability state if an item.
+        This is unrelated to the visibility or accessibility of the item.
+        """
+
+        states = [
+            'purchasable',
+            'level required',
+            'purchased',
+            'accessible',
+            'requestable',
+            'sold out',
+            'unavailable'
+        ]
+
+        # if self.is_purchasable(user):
+        #     return 'purchasable'
+        # elif self.is_requestable(user):
+        #     return 'requestable'
+        # elif self.is_purchased(user) and self.type.buy_once:
+        #     return 'purchased'
+        # elif self.sold_out:
+        #     return 'sold out'
+        # elif profile.get('amount', 0) < self.type.purchasable_at:
+        #     return 'level required'
+        # elif self.expired:
+        #     return 'unavailable'
+
+        profile = user.get('profile', {})
+        if self.expired:
+            return states[6]
+        elif self.is_purchased(user) and self.buy_once:
+            return states[2]
+        elif profile.get('amount', 0) < self.type.accessible_at:
+            return states[3]
+        elif self.sold_out:
+            if self.type.additional_supply and user.is_authenticated:
+                return states[4]
+            else:
+                return states[5]
+        elif not self.price:
+            if self.type.request_price and user.is_authenticated:
+                return states[4]
+            else:
+                return states[6]
+        elif profile.get('amount', 0) < self.type.purchasable_at:
+            return states[1]
+        else:
+            return states[0]
+
+    def is_purchased(self, user):
+        if user.is_authenticated:
+            return bool(user.profile.purchases.filter(item=self))
+        return False
+
+    def is_accessible(self, user):
+        if user.is_authenticated:
+            return user.profile.amount >= self.type.accessible_at if self.type.accessible_at is not None else \
+                self.is_authenticated(user)
+        return False
+
+    def is_visible(self, user):
+        if self.expired:
+            return None
+        return user.is_authenticated or self.type.buy_unauthenticated
+
+    def is_requestable(self, user):  # TODO: Remove
         return not self.available and \
             profile.amount >= self.type.purchasable_at and \
             self.type.requestable and \
             self.amount > 0 or self.type.additional_supply
 
-    def is_purchasable(self, profile):
-        return self.available and profile.amount >= self.type.purchasable_at and \
-            not (self.is_accessible(profile) and self.type.buy_once)
+    def is_purchasable(self, user):  # TODO: Remove
+        if user.is_authenticated:
+            return self.available and user.profile.amount >= self.type.purchasable_at and \
+                not (self.is_accessible(user.profile) and self.type.buy_once)
+        else:
+            return self.available and self.type.buy_unauthenticated \
+                and self.type.purchasable_at == 0
 
-    def amount_purchased(self, profile):
-        return sum(p.amount for p in profile.purchases.filter(item=self))
+    def amount_purchased(self, user):
+        if user.is_authenticated:
+            return sum(p.amount for p in user.profile.purchases.filter(item=self))
+        return 0
 
-    def is_accessible(self, profile):
-        return profile.amount >= self.type.accessible_at if self.type.accessible_at is not None else \
-            bool(profile.purchases.filter(item=self))
-
-    def amount_accessible(self, profile):
+    def amount_accessible(self, user):  # TODO: Remove?
         return 1 if self.type.accessible_at is not None and profile.amount >= self.type.accessible_at else \
             self.amount_purchased(profile)
 

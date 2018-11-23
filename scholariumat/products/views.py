@@ -22,11 +22,14 @@ class PurchaseMixin():
         if 'requested_item' in request.POST:
             item = Item.objects.get(pk=request.POST['requested_item'])
             if item.available:
-                if item.add_to_cart(request.user.profile):
-                    messages.info(request, settings.MESSAGE_CART_ADDED)
-            else:
-                item.request(request.user.profile)
-                messages.info(request, settings.MESSAGE_REQUEST_SEND)
+                if request.user.is_authenticated:
+                    if item.add_to_cart(request.user.profile):
+                        messages.info(request, settings.MESSAGE_CART_ADDED)
+                else:
+                    request.session['buy'] = item.pk
+            # else:
+            #     item.request(request.user.profile)
+            #     messages.info(request, settings.MESSAGE_REQUEST_SEND)
         if hasattr(super(), 'post'):
             return super().post(request, *args, **kwargs)
         else:

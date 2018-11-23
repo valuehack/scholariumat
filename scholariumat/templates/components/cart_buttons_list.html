@@ -4,13 +4,14 @@
 
 {% with product.item_set.all as items %}
 {% if items %}
+  {% if request.user.is_authenticated %}
     <div class="ui list">
 
       {% for item in items %}
-      
+
       {% is_accessible request item as accessible %}
       {% if accessible and item.attachments %}
-      
+
       <div class="item">
         <div class="ui left labeled button">
           <div class="ui right pointing basic label">
@@ -39,7 +40,7 @@
                 </div>
                 </div>
               </div>
-            
+
           <script>
             $('#{{ item_pk }}_dlmodal')
               .modal({
@@ -50,7 +51,7 @@
           </script>
         </div>
       </div>
-        
+
       {% endif %}
 
         <form id="{{ item.pk }}_form" method="POST">
@@ -60,7 +61,7 @@
 
           {% is_purchasable request item as purchasable %}
           {% if purchasable %}
-          
+
           <div class="item">
             <div class="ui left labeled button">
               <div class="ui basic right pointing label">
@@ -73,7 +74,7 @@
                   <img class="ui image" src="{% static 'images/coin.png' %}" style="display: inline; height: 1.2em; width: auto;">
                 </span>
               </div>
-                
+
                 <div class="hidden content">
                   <i class="cart icon"></i>
                 </div>
@@ -83,8 +84,8 @@
 
           {% elif not item.expired %}
             {% is_requestable request item as requestable %}
-            
-            
+
+
               {% if requestable %}
               <div class="item">
               <div class="ui left labeled button">
@@ -128,8 +129,44 @@
               {% endif %}
 
           {% endif %}
-  
+
       {% endfor %}
     </div>
+  {% else %}
+    {% for item in items %}
+      {% if item.type.buy_unauthenticated %}
+        {% if item.available %}
+          <form id="{{ item.pk }}_form" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="requested_item" value="{{ item.pk }}"/>
+          </form>
+          <div class="item">
+            <div class="ui left labeled button">
+              <div class="ui basic right pointing label">
+                  {{ item }}
+              </div>
+              <div onclick='document.forms["{{ item.pk }}_form"].submit(); return false;' class="ui animated icon button">
+                <div class="visible content" style="margin-right: 0.8em;">
+                {{ item.eur_price }}€&nbsp;
+              </div>
+
+                <div class="hidden content">
+                  <i class="cart icon"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% else %}
+          <div class="item">
+          <div class="ui left labeled button">
+            <div class="ui basic right pointing label">
+              {{ item }}
+            </div>
+            <div class="ui disabled button">{{ item.type.unavailability_notice }}</div>
+          </div>
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
 {% endif %}
 {% endwith %}
