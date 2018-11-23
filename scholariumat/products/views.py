@@ -13,6 +13,7 @@ from braces.views import LoginRequiredMixin, MessageMixin
 from .models import Item, Purchase
 from events.models import Event
 from library.models import ZotItem
+from donations.models import DonationLevel
 
 
 class PurchaseMixin():
@@ -27,9 +28,11 @@ class PurchaseMixin():
                         messages.info(request, settings.MESSAGE_CART_ADDED)
                 else:
                     request.session['buy'] = item.pk
-            # else:
-            #     item.request(request.user.profile)
-            #     messages.info(request, settings.MESSAGE_REQUEST_SEND)
+                    amount = DonationLevel.get_necessary_level(item.price).amount
+                    return HttpResponseRedirect(f"{reverse('donations:payment')}?amount={amount}")
+            else:
+                item.request(request.user)
+                messages.info(request, settings.MESSAGE_REQUEST_SEND)
         if hasattr(super(), 'post'):
             return super().post(request, *args, **kwargs)
         else:
@@ -48,7 +51,7 @@ class DownloadMixin():
 
         if 'download' in request.POST:
             item = Item.objects.get(pk=request.POST['download'])
-            if item.amount_accessible(request.user.profile):
+            if item.is_accessible(request.user):
                 attachment = item.attachments[int(request.POST.get('id', '0'))]
                 try:
                     download = attachment.get()

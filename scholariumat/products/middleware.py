@@ -10,10 +10,10 @@ class AddToCartMiddleware:
         item_pk = request.session.get('buy')
         if item_pk and request.user.is_authenticated:
             profile = request.user.profile
-            try:
-                item = Item.objects.get(pk=item_pk)
-                profile.purchase_set.create(item=item, executed=False)
-                return BasketView
-            except Item.ObjectNotFound:
-                pass
+            # try:
+            item = Item.objects.get(pk=item_pk)
+            profile.purchase_set.create(item=item, executed=False)
+            return BasketView.as_view()(request)
+            # except Item.ObjectNotFound:
+            #     pass
         return self.get_response(request)
