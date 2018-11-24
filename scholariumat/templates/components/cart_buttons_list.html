@@ -4,132 +4,132 @@
 
 {% with product.item_set.all as items %}
 {% if items %}
-    <div class="ui list">
-
-      {% for item in items %}
-      
-      {% is_accessible request item as accessible %}
-      {% if accessible and item.attachments %}
-      
-      <div class="item">
-        <div class="ui left labeled button">
-          <div class="ui right pointing basic label">
-            {{ item }}
-          </div>
-              <div class="ui grey icon button" id="{{ item.pk }}_open">
-                <i class="download icon"></i>
-                <div class="ui mini modal" id="{{ item_pk }}_dlmodal">
-                  <div class="header">{{ item }}</div>
-                  <div class="content">
-                    <form target="_blank" class="ui form" method="POST">
-                      {% csrf_token %}
-                      <input type="hidden" name="download" value="{{ item.pk }}">
-                      <select name="id" class="ui dropdown">
-                        {% for attachment in item.attachments %}
-                          <option value="{{ forloop.counter0 }}">{{ attachment.type }}</option>
-                        {% endfor %}
-                      </select>
-                      <script>
-                      $('.ui.dropdown')
-                        .dropdown()
-                      ;
-                      </script>
-                      <button class="ui button" type="submit">Download</button>
-                    </form>
-                </div>
-                </div>
+  <div class="ui list">
+    {% for item in items %}
+      {% item_status request item as status %}
+    
+      {% if status.accessible and item.attachments %}
+        <div class="item">
+          <div class="ui left labeled button">
+            <div class="ui right pointing basic label">
+              {{ item }}
+            </div>
+            <div class="ui grey icon button" id="{{ item.pk }}_open">
+              <i class="download icon"></i>
+              <div class="ui mini modal" id="{{ item_pk }}_dlmodal">
+                <div class="header">{{ item }}</div>
+                <div class="content">
+                  <form target="_blank" class="ui form" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="download" value="{{ item.pk }}">
+                    <select name="id" class="ui dropdown">
+                      {% for attachment in item.attachments %}
+                        <option value="{{ forloop.counter0 }}">{{ attachment.type }}</option>
+                      {% endfor %}
+                    </select>
+                    <script>
+                    $('.ui.dropdown')
+                      .dropdown()
+                    ;
+                    </script>
+                    <button class="ui button" type="submit">Download</button>
+                  </form>
               </div>
-            
-          <script>
-            $('#{{ item_pk }}_dlmodal')
-              .modal({
-                'duration': 200
-              })
-              .modal('attach events', '#{{ item.pk }}_open', 'show')
-            ;
-          </script>
+              </div>
+            </div>
+            <script>
+              $('#{{ item_pk }}_dlmodal')
+                .modal({
+                  'duration': 200
+                })
+                .modal('attach events', '#{{ item.pk }}_open', 'show')
+              ;
+            </script>
+          </div>
         </div>
-      </div>
-        
       {% endif %}
-
-        <form id="{{ item.pk }}_form" method="POST">
-          {% csrf_token %}
-          <input type="hidden" name="requested_item" value="{{ item.pk }}"/>
-        </form>
-
-          {% is_purchasable request item as purchasable %}
-          {% if purchasable %}
-          
+      
+      {% if status.visible %}
+        {% if status.purchasability == 'purchasable' %}
+          <form id="{{ item.pk }}_form" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="requested_item" value="{{ item.pk }}"/>
+          </form>
           <div class="item">
             <div class="ui left labeled button">
               <div class="ui basic right pointing label">
                   {{ item }}
               </div>
-              <div onclick='document.forms["{{ item.pk }}_form"].submit(); return false;' class="ui animated icon button">
-                <div class="visible content" style="margin-right: 0.8em;">
-                {{ item.price }}&nbsp;
-                <span style="height: 1em;">
-                  <img class="ui image" src="{% static 'images/coin.png' %}" style="display: inline; height: 1.2em; width: auto;">
-                </span>
-              </div>
-                
-                <div class="hidden content">
-                  <i class="cart icon"></i>
+              {% if request.user.is_authenticated %}
+                <div onclick='document.forms["{{ item.pk }}_form"].submit(); return false;' class="ui animated icon button">
+                  <div class="visible content" style="margin-right: 0.8em;">
+                    {{ item.price }}&nbsp;
+                    <span style="height: 1em;">
+                      <img class="ui image" src="{% static 'images/coin.png' %}" style="display: inline; height: 1.2em; width: auto;">
+                    </span>
+                  </div>
+                  <div class="hidden content">
+                    <i class="cart icon"></i>
+                  </div>
                 </div>
-              </div>
+              {% else %}
+                {% necessary_level item.price as level %}
+                <div onclick='document.forms["{{ item.pk }}_form"].submit(); return false;' class="ui animated button">
+                  <div class="visible content">
+                    {{ level.amount }} €
+                  </div>
+                  <div class="hidden content">
+                    <i class="cart icon"></i>
+                  </div>
+                </div>
+              {% endif %}
             </div>
           </div>
-
-          {% elif not item.expired %}
-            {% is_requestable request item as requestable %}
-            
-            
-              {% if requestable %}
-              <div class="item">
-              <div class="ui left labeled button">
-                <div class="ui basic right pointing label">
-                  {{ item }}
-                </div>
-                <a onclick='document.forms["{{ item.pk }}_form"].submit(); return false;' class="ui button">Anfragen</a>
+        
+        {% elif status.purchasability == 'requestable' %}
+          <form id="{{ item.pk }}_form" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="requested_item" value="{{ item.pk }}"/>
+          </form>
+          <div class="item">
+            <div class="ui left labeled button">
+              <div class="ui basic right pointing label">
+                {{ item }}
               </div>
+              <a onclick='document.forms["{{ item.pk }}_form"].submit(); return false;' class="ui button">Anfragen</a>
             </div>
-              {% elif item.type.buy_once and accessible %}
-                 {% if item.attachments %}
-                 {% else %}
-                 <div class="item">
-                 <div class="ui left labeled button">
-                   <div class="ui basic right pointing label">
-                     {{ item }}
-                   </div>
-                    <div class="ui disabled button">Bereits erworben</div>
-                  </div>
-                </div>
-                {% endif %}
-              {% elif request.user.profile.amount < item.type.purchasable_at %}
+          </div>
+        
+        {% else %}
+          <div class="item">
+          <div class="ui left labeled button">
+            <div class="ui basic right pointing label">
+              {{ item }}
+            </div>
+        
+              {% if status.purchasability == 'level required' %}
                 {% necessary_level item.type.purchasable_at as level %}
-              <div class="item">
-              <div class="ui left labeled button">
-                <div class="ui basic right pointing label">
-                  {{ item }}
-                </div>
                 <a href="{% url 'donations:levels' %}" class="ui disabled button">Verfügbar als {{ level.title }}</a>
-                </div>
-              </div>
-              {% else %}
-                <div class="item">
-                <div class="ui left labeled button">
-                  <div class="ui basic right pointing label">
-                    {{ item }}
-                  </div>
-                  <div class="ui disabled button">{{ item.type.unavailability_notice }}</div>
-                </div>
-              </div>
-              {% endif %}
+              
+              {% elif status.purchasability == 'purchased' %}
+                <div class="ui disabled button">Bereits erworben</div>
+              
+              {% elif status.purchasability == 'accessible' %}
+                <div class="ui disabled button">Bereits verfügbar</div>
+              
+              {% elif status.purchasability == 'sold out' %}
+                <div class="ui disabled button">Ausverkauft</div>
+              
+              {% elif status.purchasability == 'unavailable' %}
+                <div class="ui disabled button">Nicht verfügbar</div>
 
-          {% endif %}
+              {% endif %}
+            </div>
+          </div>
   
-      {% endfor %}
-    </div>
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+  </div>
 {% endif %}
 {% endwith %}

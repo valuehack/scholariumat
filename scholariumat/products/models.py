@@ -50,15 +50,15 @@ class Product(models.Model):
 
 class ItemType(TitleDescriptionModel, TimeStampedModel):
     slug = models.SlugField()
-    shipping = models.BooleanField(default=False)
-    requestable = models.BooleanField(default=False)
-    additional_supply = models.BooleanField(default=False)  # Can also be requested when empty if true
+    shipping = models.BooleanField(default=False)  # Calculate shipping at checkout
+    request_price = models.BooleanField(default=False)  # Can be requested when item has no price
+    additional_supply = models.BooleanField(default=False)  # Can be requested when item is sold out
     default_price = models.SmallIntegerField(null=True, blank=True)
-    purchasable_at = models.SmallIntegerField(default=0)
-    accessible_at = models.SmallIntegerField(null=True, blank=True)
-    unavailability_notice = models.CharField(max_length=20, default="Nicht verfügbar")
-    buy_once = models.BooleanField(default=False)
-    expires_on_product_date = models.BooleanField(default=False)
+    purchasable_at = models.SmallIntegerField(default=0)  # Donation amount at with item can be purchased
+    accessible_at = models.SmallIntegerField(null=True, blank=True)  # Donation amount at with item can be accessed
+    buy_once = models.BooleanField(default=False)  # If True, item can only be purchased once
+    expires_on_product_date = models.BooleanField(default=False)  # Item is only visible/purchasable until product.date
+    buy_unauthenticated = models.BooleanField(default=False)  # Item is visible/purchasable for unauthenticated users
 
     def __str__(self):
         return self.title
@@ -70,27 +70,34 @@ class ItemType(TitleDescriptionModel, TimeStampedModel):
 
 class Item(TimeStampedModel):
     """
-    Items are purchasable can have 3 states in relation to a user:
-    - requestable: Is visible and can be requested.
-    - purchasable: Can be purchased.
-    - accessible: Can be accessed, attachments can be downloaded, etc.
-    If amount is None, the item is unlimited.
+    Items have 3 independent states in relation to a user:
+    - accessability: Can be accessed, attachments can be downloaded, etc.
+    - purchasability: One of
+        - purchasable
+        - level required
+        - purchased
+        - accessible
+        - requestable
+        - sold out
+        - unavailable
+    - visibility (of purchasability state)
     """
 
     title = models.CharField(max_length=50, blank=True)
     type = models.ForeignKey(ItemType, on_delete=models.CASCADE, verbose_name='Typ')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     _price = models.SmallIntegerField('Preis', null=True, blank=True)
-    amount = models.IntegerField('Anzahl', null=True, blank=True)
+    amount = models.IntegerField('Anzahl', null=True, blank=True)  # Unlimited if None
     requests = models.ManyToManyField('users.Profile', related_name='item_requests', blank=True, editable=False)
     files = models.ManyToManyField('products.FileAttachment', blank=True)
     _expires = models.DateField(null=True, blank=True)
 
     @property
     def expires(self):
+        if self._expires:
+            return self._expires
         if self.type.expires_on_product_date:
             return getattr(self.product.type, 'date', None)
-        return self._expires
 
     @property
     def price(self):
@@ -102,7 +109,7 @@ class Item(TimeStampedModel):
 
     @property
     def sold_out(self):
-        return self.amount and self.amount <= 0
+        return self.amount is not None and self.amount <= 0
 
     @property
     def available(self):
@@ -119,35 +126,97 @@ class Item(TimeStampedModel):
                 attachment_list += (getattr(self, item_rel.get_accessor_name()).all())
         return list(self.files.all()) + attachment_list
 
-    def is_requestable(self, profile):
-        return not self.available and \
-            profile.amount >= self.type.purchasable_at and \
-            self.type.requestable and \
-            self.amount > 0 or self.type.additional_supply
+    def get_status(self, user):
+        state = {
+            'accessible': self.is_accessible(user),
+            'purchasability': self.get_purchasability(user),
+            'visible': self.is_visible(user)
+        }
+        return state
 
-    def is_purchasable(self, profile):
-        return self.available and profile.amount >= self.type.purchasable_at and \
-            not (self.is_accessible(profile) and self.type.buy_once)
+    def get_purchasability(self, user):
+        """
+        Returns purchaseability state if an item.
+        This is unrelated to the visibility or accessibility of the item.
+        """
 
-    def amount_purchased(self, profile):
-        return sum(p.amount for p in profile.purchases.filter(item=self))
+        states = [
+            'purchasable',
+            'level required',
+            'purchased',
+            'accessible',
+            'requestable',
+            'sold out',
+            'unavailable'
+        ]
 
-    def is_accessible(self, profile):
-        return profile.amount >= self.type.accessible_at if self.type.accessible_at is not None else \
-            bool(profile.purchases.filter(item=self))
+        if self.expired:
+            return states[6]
+        elif self.is_purchased(user) and self.type.buy_once:
+            return states[2]
+        elif self.donationlevel_accessible(user):
+            return states[3]
+        elif self.sold_out:
+            if self.type.additional_supply and user.is_authenticated:
+                return states[4]
+            else:
+                return states[5]
+        elif not self.price:
+            if self.type.request_price and user.is_authenticated:
+                return states[4]
+            else:
+                return states[6]
+        elif not self.donationlevel_purchasable(user):
+            return states[1]
+        else:
+            return states[0]
 
-    def amount_accessible(self, profile):
-        return 1 if self.type.accessible_at is not None and profile.amount >= self.type.accessible_at else \
-            self.amount_purchased(profile)
+    def donationlevel_purchasable(self, user):
+        if user.is_authenticated:
+            return user.profile.amount >= self.type.purchasable_at
+        return 0 >= self.type.purchasable_at
 
-    def request(self, profile):
-        if self.type.requestable:
-            self.requests.add(profile)
-            edit_url = reverse_lazy('admin:products_item_change', args=[self.pk])
-            mail_managers(
-                f'Anfrage: {self.product}',
-                f'Nutzer {profile} hat {self.product} im Format {self.type} angefragt. '
-                f'Das Item kann unter folgender URL editiert werden: {settings.DEFAULT_DOMAIN}{edit_url}')
+    def donationlevel_accessible(self, user):
+        if self.type.accessible_at:
+            if user.is_authenticated:
+                return user.profile.amount >= self.type.accessible_at
+            else:
+                return 0 >= self.type.accessible_at
+        return False
+
+    def is_visible(self, user):
+        if self.expired:
+            return False
+        if user.is_authenticated:
+            return not (self.is_accessible(user) and self.attachments)
+        else:
+            return self.type.buy_unauthenticated
+
+    def is_purchased(self, user):
+        if user.is_authenticated:
+            return bool(user.profile.purchases.filter(item=self))
+        return False
+
+    def amount_purchased(self, user):
+        if user.is_authenticated:
+            return sum(p.amount for p in user.profile.purchases.filter(item=self))
+        return 0
+
+    def is_accessible(self, user):
+        return self.donationlevel_accessible(user) or self.is_purchased(user)
+
+    def request(self, user):
+        if user.is_authenticated:
+            if self.type.request_price or self.type.additional_supply:
+                self.requests.add(user.profile)
+                edit_url = reverse_lazy('admin:products_item_change', args=[self.pk])
+                mail_managers(
+                    f'Anfrage: {self.product}',
+                    f'Nutzer {user.profile} hat {self.product} im Format {self.type} angefragt. '
+                    f'Das Item kann unter folgender URL editiert werden: {settings.DEFAULT_DOMAIN}{edit_url}')
+                logger.debug(f'User {user.profile} requested item {self} of {self.product}')
+        else:
+            raise NotImplementedError()
 
     def inform_users(self):
         user_addresses = [profile.user.email for profile in self.requests.all()]
@@ -164,7 +233,7 @@ class Item(TimeStampedModel):
 
     def add_to_cart(self, profile):
         """Only add a limited product if no purchase of it exists."""
-        if self.is_purchasable(profile):
+        if self.get_purchasability(profile.user) == 'purchasable':
             purchase, created = Purchase.objects.get_or_create(profile=profile, item=self, executed=False)
             if not created:
                 purchase.amount += 1
@@ -222,7 +291,8 @@ class Purchase(TimeStampedModel, CommentAble):
         return self.item.available and self.item.amount >= self.amount
 
     def execute(self):
-        if self.item.is_purchasable(self.profile):
+        state = self.item.get_purchasability(self.profile.user)
+        if state == 'purchasable':
             if self.profile.spend(self.total):
                 if self.item.sell(self.amount):
                     if self.item.type.shipping:
@@ -236,7 +306,9 @@ class Purchase(TimeStampedModel, CommentAble):
                     return True
                 else:
                     self.profile.refill(self.total)
-        return False
+        else:
+            logger.warning(f'Cannot execute purchase: item state: {state}')
+            return False
 
     def revert(self):
         self.profile.refill(self.total)

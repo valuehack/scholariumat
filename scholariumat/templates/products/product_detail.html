@@ -14,7 +14,7 @@
         {% include 'components/contact_form.html' %}
       {% endif %}
 
-      {%  if request.user.is_authenticated %}
+      {% if request.user.is_authenticated %}
         {% with object.product.item_set.all as items %}
         {% if contact and items %}
           <div class="ui grid">
@@ -45,9 +45,13 @@
             {% endif %}
           {% endwith %}
       {% else %}
+          <div class="ui hidden divider"></div>
+          <div class="ui center aligned basic segment">
+            {% include 'components/cart_buttons_list.html' with product=object.product %}
+          </div>
         {% include 'components/registration_form.html' %}
       {% endif %}
-    
+
     </div>
   </div>
   {% endblock content %}
