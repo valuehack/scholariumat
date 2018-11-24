@@ -71,7 +71,7 @@ class ItemType(TitleDescriptionModel, TimeStampedModel):
 class Item(TimeStampedModel):
     """
     Items have 3 independent states in relation to a user:
-    - availability: Can be accessed, attachments can be downloaded, etc.
+    - accessability: Can be accessed, attachments can be downloaded, etc.
     - purchasability: One of
         - purchasable
         - level required
@@ -80,7 +80,7 @@ class Item(TimeStampedModel):
         - requestable
         - sold out
         - unavailable
-    - visibility
+    - visibility (of purchasability state)
     """
 
     title = models.CharField(max_length=50, blank=True)
