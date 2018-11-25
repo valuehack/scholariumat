@@ -53,7 +53,8 @@ class Profile(CartMixin, DonationMixin, LendingMixin, BalanceMixin, TimeStampedM
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     title = models.CharField('Anrede', max_length=1, choices=TITLE_CHOICES, null=True)
-    name = models.CharField(max_length=200, blank=True)
+    first_name = models.CharField('Vorname', max_length=200, blank=True)
+    last_name = models.CharField('Nachname', max_length=200, blank=True)
     organization = models.CharField('Firma', max_length=70, blank=True)
     street = models.CharField('Straße', max_length=50, blank=True)
     postcode = models.CharField('PLZ', max_length=10, blank=True)
@@ -62,6 +63,10 @@ class Profile(CartMixin, DonationMixin, LendingMixin, BalanceMixin, TimeStampedM
     phone = models.CharField('Telefonnummer', max_length=40, blank=True)
     old_pk = models.SmallIntegerField(null=True, blank=True, editable=False)
     note = models.TextField(blank=True)
+
+    @property
+    def name(self):
+        return f'{self.first_name} {self.last_name}'
 
     @property
     def address(self):

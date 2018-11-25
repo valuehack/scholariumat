@@ -309,7 +309,8 @@ def import_from_json():
             logger.debug(f'Created user {user_new.email}')
 
         profile_defaults = {
-            'name': '{} {}'.format(user['fields']['first_name'], user['fields']['last_name'])
+            'first_name': user['fields']['first_name'],
+            'last_name': user['fields']['last_name']
         }
         profile = next((profile for profile in profiles if profile['fields']['user'] == user['pk']), None)
 

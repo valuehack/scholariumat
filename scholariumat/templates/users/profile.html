@@ -23,7 +23,8 @@
       {% csrf_token %}
       <div class="fields">
         {% render_field form.title _field_class='six wide' %}
-        {% render_field form.name _field_class='twelve wide' %}
+        {% render_field form.first_name _field_class='six wide' %}
+        {% render_field form.last_name _field_class='six wide' %}
       </div>
       {% render_field form.organization %}
       <div class="fields">
