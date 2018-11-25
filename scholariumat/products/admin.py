@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
+from django.http import HttpResponseRedirect
 
 from .models import Item, ItemType, Product, Purchase, FileAttachment
 
@@ -35,8 +36,16 @@ class PurchaseAdmin(admin.ModelAdmin):
 
 
 class ItemAdmin(admin.ModelAdmin):
+    change_form_template = "admin/item_changeform.html"
     raw_id_fields = ['product', 'files']
     list_display = ['type', 'price', 'product']
+
+    def response_change(self, request, obj):
+        if "_inform-users" in request.POST:
+            obj.inform_users()
+            self.message_user(request, "Die Anfragen wurden beantwortet.")
+            return HttpResponseRedirect(".")
+        return super().response_change(request, obj)
 
 
 class AttachmentAdmin(admin.ModelAdmin):
