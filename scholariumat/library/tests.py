@@ -103,7 +103,7 @@ class SyncTest(TestCase):
         # Test author creation
         self.assertTrue(testitem.authors.filter(name='John Smith'))
         # Test if purchase item and itemtype got created
-        self.assertTrue(testitem.product.item_set.filter(type__slug='purchase'))
+        self.assertTrue(testitem.product.item_set.filter(type__slug__contains='purchase'))
         # Test if purchase item with attachment and got created
         pdf_item = testitem.product.item_set.get(type__slug='pdf')
         self.assertEqual(pdf_item.attachments[0].key, items[1]['data']['key'])
