@@ -307,7 +307,9 @@ ZOTERO_OWNER_TAGS = [
     'Baader',
     'schuetz',
     'schütz',
-    'Schütz',
+    'Schütz'
+]
+ZOTERO_PUBLISHER_TAGS = [
     'Taghizadegan'
 ]
 

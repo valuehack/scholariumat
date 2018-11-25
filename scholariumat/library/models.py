@@ -1,5 +1,4 @@
 import logging
-import pypandoc
 from pyzotero import zotero, zotero_errors
 from slugify import slugify
 from dateutil.parser import parse
@@ -88,12 +87,6 @@ class Collection(TitleSlugDescriptionModel, PermalinkAble):
 
         logger.info('updating items...')
 
-        type_defaults = {
-            'title': 'Verkauf',
-            'shipping': True
-        }
-        item_defaults = {'amount': 1}
-
         for item in parents:
             try:
                 item_data = {
@@ -110,18 +103,36 @@ class Collection(TitleSlugDescriptionModel, PermalinkAble):
                 logger.exception(e)
                 continue
 
+            tags = [tag['tag'] for tag in item['data']['tags']]
+            if any([tag in tags for tag in settings.ZOTERO_PUBLISHER_TAGS]):
+                item_data['scholarium'] = True
+
             zot_item, created = ZotItem.objects.update_or_create(slug=item['data']['key'], defaults=item_data)
             zot_item.collection.add(self)
 
             if created:
                 logger.debug('Created item {}'.format(zot_item.title))
 
-            tags = [tag['tag'] for tag in item['data']['tags']]
-
             # Create (Product)Item if ZotItem is physically present
             if any([tag in tags for tag in settings.ZOTERO_OWNER_TAGS]):
-                zot_item.update_or_create_item(type='purchase', type_defaults=type_defaults,
-                                               item_defaults=item_defaults)
+                zot_item.update_or_create_item(
+                    type='library_purchase',
+                    type_defaults={
+                        'title': 'Kaufen',
+                        'shipping': True,
+                        'request_price': True,
+                        'default_amount': 1
+                    })
+            elif any([tag in tags for tag in settings.ZOTERO_PUBLISHER_TAGS]):
+                zot_item.update_or_create_item(
+                    type='scholarium_purchase',
+                    type_defaults={
+                        'title': 'Kaufen',
+                        'shipping': True,
+                        'additional_supply': True,
+                        'default_amount': 0,
+                        'default_price': 15
+                    })
             else:  # Delete item if tag has been removed
                 item_exists = zot_item.product.item_set.filter(type__slug='purchase')
                 if item_exists:
@@ -151,12 +162,15 @@ class Collection(TitleSlugDescriptionModel, PermalinkAble):
 
         logger.info('updating attachments/notes...')
 
-        type_defaults = {
-            'shipping': False
-        }
-        item_defaults = {'_price': settings.DEFAULT_FILE_PRICE}
-
         for child in children:
+            type_defaults = {
+                'shipping': False,
+                'buy_once': True,
+                'accessible_at': 300,
+                'purchasable_at': 300,
+                'default_price': settings.DEFAULT_FILE_PRICE
+            }
+
             try:
                 zot_item = ZotItem.objects.get(slug=child['data']['parentItem'])
             except ObjectDoesNotExist:
@@ -164,10 +178,17 @@ class Collection(TitleSlugDescriptionModel, PermalinkAble):
 
             if child['data']['itemType'] == 'attachment' and 'filename' in child['data']:
                 type = child['data']['filename'].split('.')[-1]  # Get file type
+
                 if type in settings.DOWNLOAD_FORMATS:
                     type_defaults['title'] = type.upper()
                 else:
                     continue
+
+                if zot_item.scholarium:
+                    type_defaults['accessible_at'] = None
+                    type_defaults['purchasable_at'] = 0
+                    type = f'scholarium_{type}'
+
             elif child['data']['itemType'] == 'note':
                 type = 'note'
                 type_defaults['title'] = 'Exzerpt'
@@ -178,7 +199,6 @@ class Collection(TitleSlugDescriptionModel, PermalinkAble):
             zot_item.update_or_create_item(
                 type=type,
                 type_defaults=type_defaults,
-                item_defaults=item_defaults,
                 file_key=child['data']['key'])
 
         # Remove deleted attachments/notes
@@ -268,6 +288,7 @@ class ZotItem(ProductBase):
     authors = models.ManyToManyField(Author)
     published = models.DateField(blank=True, null=True)
     collection = models.ManyToManyField(Collection)
+    scholarium = models.BooleanField(default=False)
 
     @property
     def lendings_active(self):

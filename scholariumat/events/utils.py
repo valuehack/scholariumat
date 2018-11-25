@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import pypandoc
+from datetime import date
 
 from django.conf import settings
 
@@ -37,7 +38,50 @@ def import_from_json():
                 slug='vortrag',
                 defaults={'title': 'Vortrag', 'section_title': 'Vorträge'})
 
-    recording_item_type, created = ItemType.objects.get_or_create(slug='recording', defaults={'default_price': 5})
+    # Initiate item types
+    salon_recording_type, created = ItemType.objects.get_or_create(
+        slug='salon_recording',
+        defaults={
+            'title': 'Aufzeichnung',
+            'default_price': 5,
+            'buy_once': True})
+    seminar_recording_type, created = ItemType.objects.get_or_create(
+        slug='seminar_recording',
+        defaults={
+            'title': 'Aufzeichnung',
+            'default_price': 50,
+            'buy_once': True})
+    vortrag_recording_type, created = ItemType.objects.get_or_create(
+        slug='vortrag_recording',
+        defaults={
+            'title': 'Aufzeichnung',
+            'default_price': 10,
+            'buy_once': True})
+    livestream_type, created = ItemType.objects.get_or_create(
+        slug='livestream',
+        defaults={
+            'title': 'Livestream',
+            'default_price': 5,
+            'buy_once': True,
+            'expires_on_product_date': True})
+    salon_attendance_type, created = ItemType.objects.get_or_create(
+        slug='salon_attendance',
+        defaults={
+            'title': 'Teilnahme',
+            'default_price': 15,
+            'expires_on_product_date': True,
+            'default_amount': 30})
+    seminar_attendance_type, created = ItemType.objects.get_or_create(
+        slug='seminar_attendance',
+        defaults={
+            'title': 'Teilnahme',
+            'default_price': 125,
+            'expires_on_product_date': True,
+            'buy_unauthenticated': True,
+            'default_amount': 15})
+
+    attachment_type, created = AttachmentType.objects.get_or_create(
+        slug='mp3', defaults={'title': 'MP3'})
 
     for event in events:
         event_type = next((i for i in event_types if event['fields']['art_veranstaltung'] == i['pk']), None)
@@ -63,30 +107,23 @@ def import_from_json():
         if created:
             logging.debug(f'Created event {local_event.title}')
 
-        livestream_type, created = ItemType.objects.get_or_create(
-            slug='livestream',
-            defaults={'title': 'Livestream', 'default_price': 5})
-        recording_type, created = ItemType.objects.get_or_create(
-            slug='recording',
-            defaults={'title': 'Aufzeichnung', 'default_price': 5})
-        attendance_type, created = ItemType.objects.get_or_create(
-            slug='attendance',
-            defaults={'title': 'Teilnahme', 'default_price': 15})
-        attachment_type, created = AttachmentType.objects.get_or_create(
-            slug='mp3', defaults={'title': 'MP3'})
-
-        local_event.get_or_create_attendance()
+        if type.slug in ['salon', 'seminar']:
+            local_event.get_or_create_attendance()
 
         livestream_item = None
         if event['fields']['link']:
             livestream_item = local_event.update_or_create_livestream(link=event['fields']['link'])
+        elif type.slug == 'salon' and local_event.date >= date.today():
+            local_event.product.item_set.get_or_create(type=livestream_type)
+            logger.debug(f'Livestream for {local_event} saved.')
 
         if event['fields']['datei']:
             # Downloaded files have a changed name
             file_name = os.path.split(event['fields']['datei'])[1]
             existing_file = FileAttachment.objects.filter(type=attachment_type, file=file_name)
             if existing_file:
-                item, created = local_event.product.item_set.get_or_create(type=recording_item_type)
+                item_type = ItemType.objects.get(slug=f'{type.slug}_recording')
+                item, created = local_event.product.item_set.get_or_create(type=item_type)
                 item.files.add(existing_file.get())
                 if livestream_item:
                     livestream_item.files.add(existing_file.get())

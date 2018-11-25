@@ -54,6 +54,7 @@ class ItemType(TitleDescriptionModel, TimeStampedModel):
     request_price = models.BooleanField(default=False)  # Can be requested when item has no price
     additional_supply = models.BooleanField(default=False)  # Can be requested when item is sold out
     default_price = models.SmallIntegerField(null=True, blank=True)
+    default_amount = models.SmallIntegerField(null=True, blank=True)
     purchasable_at = models.SmallIntegerField(default=0)  # Donation amount at with item can be purchased
     accessible_at = models.SmallIntegerField(null=True, blank=True)  # Donation amount at with item can be accessed
     buy_once = models.BooleanField(default=False)  # If True, item can only be purchased once
@@ -264,6 +265,11 @@ class Item(TimeStampedModel):
         if self.title:
             return f'{self.type.title}: {self.title}'
         return self.type.title
+
+    def save(self, *args, **kwargs):
+        if not (self.pk or self.amount):
+            self.amount = self.type.default_amount
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = 'Item'

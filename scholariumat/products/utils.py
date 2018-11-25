@@ -12,7 +12,6 @@ from datetime import date
 from django.core.files import File
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.conf import settings
-
 from .models import FileAttachment, Purchase, Item
 from users.models import Profile
 from events.models import Event
@@ -134,7 +133,6 @@ def import_from_json():
             continue
         model_name, obj_pk, item = str(purchase['fields']['produkt_pk']).split('+')
         if model_name == 'veranstaltung':
-            continue
             try:
                 event = Event.objects.get(old_pk=obj_pk)
             except ObjectDoesNotExist:
@@ -145,20 +143,24 @@ def import_from_json():
                 type_slug = 'recording'
             elif item == 'teilnahme':
                 type_slug = 'attendance'
-
-                try:
-                    Purchase.objects.update_or_create(
-                        amount=purchase['fields']['menge'],
-                        profile=profile,
-                        item=event.product.item_set.get(type__slug=type_slug),
-                        date=date(*map(int, purchase['fields']['zeit'][:10].split('-'))),
-                        executed=True
-                    )
-                    logger.debug('done')
-                except Item.DoesNotExist:
-                    logger.error(f'Event {event} misses type {type_slug}.')
+            elif item == 'livestream':
+                type_slug = 'livestream'
             else:
-                print(item)
+                logger.error(item)
+
+            try:
+                local_purchase, created = Purchase.objects.update_or_create(
+                    amount=purchase['fields']['menge'],
+                    profile=profile,
+                    item=event.product.item_set.get(type__slug__contains=type_slug),
+                    date=date(*map(int, purchase['fields']['zeit'][:10].split('-'))),
+                    executed=True
+                )
+                if created:
+                    local_purchase.item.sell(local_purchase.amount)
+                logger.debug(f'{local_purchase.item} purchase successfully imported')
+            except Item.DoesNotExist:
+                logger.error(f'Event {event} misses type {type_slug}.')
         elif model_name == 'buechlein':
             book = books[int(obj_pk)]
             title = html.unescape(book['fields']['bezeichnung'].split(' ')[-1])
@@ -174,7 +176,7 @@ def import_from_json():
                     Purchase.objects.update_or_create(
                         amount=1,
                         profile=profile,
-                        item=zotitem.product.item_set.get(type__slug='pdf'),
+                        item=zotitem.product.item_set.get(type__slug__contains='pdf'),
                         date=date(*map(int, purchase['fields']['zeit'][:10].split('-'))),
                         executed=True
                     )

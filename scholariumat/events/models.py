@@ -62,13 +62,13 @@ class Event(ProductBase, PublishAble):
         return item
 
     def get_or_create_attendance(self):
-        item_type = ItemType.objects.get(slug='attendance')
+        item_type = ItemType.objects.get(slug=f'{self.type.slug}_attendance')
         item, created = self.product.item_set.get_or_create(type=item_type)
         logger.debug(f'Attendance item for {self} saved.')
         return item
 
     def get_or_create_recording(self, recording):
-        item_type = ItemType.objects.get(slug='recording')
+        item_type = ItemType.objects.get(slug=f'{self.type.slug}_recording')
         attachment_type = AttachmentType.objects.get(slug='mp3')
         item, created = self.product.item_set.get_or_create(type=item_type)
         attachment, created = FileAttachment.objects.get_or_create(type=attachment_type, file=recording)
