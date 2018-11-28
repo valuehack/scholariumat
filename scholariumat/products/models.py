@@ -343,10 +343,10 @@ class FileAttachment(models.Model):
     type = models.ForeignKey('products.AttachmentType', on_delete=models.PROTECT)
 
     def get(self):
-        print(self.file)
+        product = next(i.product for i in self.item_set.all() if i.product.type)
         response = HttpResponse(self.file, content_type=f'application/{self.type.slug}')
         response['Content-Disposition'] = f'attachment; \
-            filename={slugify(self.item.product)}.{self.type.slug}'
+            filename={slugify(product)}.{self.type.slug}'
         return response
 
     def __str__(self):
