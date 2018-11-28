@@ -44,7 +44,7 @@ def download_missing_files():
                 # File doesn't exist, delete item, attachment
                 logger.error(f'Could not find file {attachment.file.name}. Deleting attachment.')
                 for item in attachment.item_set.all():
-                    if len(item.files) == 1:
+                    if len(item.files.all()) == 1:
                         logger.info(f'Deleted item {item}, as attachment is missing.')
                         item.delete()
                 attachment.delete()
