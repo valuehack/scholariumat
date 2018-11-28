@@ -7,7 +7,7 @@ from products.admin import ProductBaseAdmin, AttachmentAdmin
 class ZotItemAdmin(ProductBaseAdmin):
     raw_id_fields = ['authors']
     search_fields = ['description', 'title']
-    list_display = ['title', 'get_authors', 'get_product', 'published']
+    list_display = ['title', 'get_authors', 'published']
     list_filter = ['published']
 
     def get_authors(self, obj):  # TODO: Move to detail view, big list becomes unresponsive.

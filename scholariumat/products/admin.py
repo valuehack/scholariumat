@@ -1,6 +1,5 @@
 from django.contrib import admin
 from django.urls import reverse
-from django.utils.html import format_html
 from django.http import HttpResponseRedirect
 
 from .models import Item, ItemType, Product, Purchase, FileAttachment
@@ -8,12 +7,15 @@ from .models import Item, ItemType, Product, Purchase, FileAttachment
 
 class ProductBaseAdmin(admin.ModelAdmin):
     search_fields = ['description', 'title']
-    list_display = ['title', 'get_product']
+    list_display = ['title']
+    change_form_template = "admin/productbase_changeform.html"
 
-    def get_product(self, obj):
-        product = obj.product
-        url = reverse('admin:%s_%s_change' % (product._meta.app_label, product._meta.model_name), args=[product.pk])
-        return format_html('<a href="%s">%s</a>' % (url, product.__str__()))
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+        product = self.get_object(request, object_id).product
+        extra_context['product'] = reverse(
+            'admin:%s_%s_change' % (product._meta.app_label, product._meta.model_name), args=[product.pk])
+        return super().change_view(request, object_id, form_url='', extra_context=extra_context)
 
 
 class ItemInline(admin.TabularInline):
@@ -24,6 +26,15 @@ class ItemInline(admin.TabularInline):
 
 class ProductAdmin(admin.ModelAdmin):
     inlines = [ItemInline]
+    change_form_template = "admin/product_changeform.html"
+
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+        product_type = self.get_object(request, object_id).type
+        extra_context['type'] = reverse(
+            'admin:%s_%s_change' % (product_type._meta.app_label, product_type._meta.model_name),
+            args=[product_type.pk])
+        return super().change_view(request, object_id, form_url='', extra_context=extra_context)
 
     def get_search_fields(self, request):
         """Searches realted one_to_one fields (actual products)"""
