@@ -43,7 +43,8 @@ class AttendancesView(StaffuserRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['purchases'] = self.get_object().product.item_set.get(type__slug='attendance').purchase_set.filter(executed=True)
+        context['purchases'] = self.get_object().product.item_set.get(
+            type__slug='attendance').purchase_set.filter(executed=True)
         context['total'] = sum([purchase.amount for purchase in context['purchases']])
         return context
 

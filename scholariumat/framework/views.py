@@ -33,7 +33,7 @@ class CompatibleOrderableListMixin(OrderableListMixin):
 
         self.order_by = order_by
         self.ordering = self.get_ordering_default()
-        
+
         if order_by and self.request.GET.get(
                 self.direction_param, self.ordering) == "desc":
             self.ordering = self.request.GET.get(self.direction_param, self.ordering)

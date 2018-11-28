@@ -1,7 +1,7 @@
 from django.contrib import admin
 
-from .models import ZotItem, Author, Collection, ZotAttachment, Lending
-from products.admin import ProductBaseAdmin, AttachmentAdmin
+from .models import ZotItem, Author, Collection
+from products.admin import ProductBaseAdmin
 
 
 class ZotItemAdmin(ProductBaseAdmin):
