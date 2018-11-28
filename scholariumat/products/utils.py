@@ -48,6 +48,7 @@ def download_missing_files():
                         logger.info(f'Deleted item {item}, as attachment is missing.')
                         item.delete()
                 attachment.delete()
+                continue
             with open(local_path, 'rb') as local_file:
                 attachment.file = File(local_file, name=os.path.split(attachment.file.name)[1])
                 attachment.save()
