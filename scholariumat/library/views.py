@@ -6,14 +6,12 @@ from braces.views import LoginRequiredMixin
 from pyzotero import zotero
 
 from .models import ZotItem, Collection
-from users.views import DonationRequiredMixin
 from framework.views import CompatibleOrderableListMixin
 from products.views import PurchaseMixin, DownloadMixin
 
 
-class ZotItemListView(LoginRequiredMixin, DonationRequiredMixin, CompatibleOrderableListMixin, ListView):
+class ZotItemListView(LoginRequiredMixin, CompatibleOrderableListMixin, ListView):
     model = ZotItem
-    donation_amount = settings.LIBRARY_DONATION_AMOUNT
     paginate_by = 10
     orderable_columns = ['title', 'published', 'authors']
     orderable_columns_default = 'published'
@@ -46,10 +44,9 @@ class ZotItemListView(LoginRequiredMixin, DonationRequiredMixin, CompatibleOrder
         return self.get_ordered_queryset(queryset=items)
 
 
-class ZotItemDetailView(LoginRequiredMixin, DonationRequiredMixin, PurchaseMixin, DownloadMixin, DetailView):
+class ZotItemDetailView(LoginRequiredMixin, PurchaseMixin, DownloadMixin, DetailView):
     model = ZotItem
     lookup_field = 'slug'
-    donation_amount = settings.LIBRARY_DONATION_AMOUNT
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
