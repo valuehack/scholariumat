@@ -39,10 +39,11 @@
         beehren Sie uns bitte als Gast</a>.
     </p>
       {% include 'components/registration_form.html' %}
-      <div class="ui hidden section divider"></div>
+      <div class="ui hidden divider"></div>
+      <div class="ui section divider"></div>
     {% endif %}
     {% endif %}
-    
+
       {% for article in object_list %}
         <div class="ui basic segment">
           <h2 class="ui centered header">
