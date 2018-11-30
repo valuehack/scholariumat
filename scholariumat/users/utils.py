@@ -301,7 +301,9 @@ def import_from_json():
 
     for user in users:
         user_defaults = {
-            'password': user['fields']['password']
+            'password': user['fields']['password'],
+            'date_joined': user['fields']['date_joined'],
+            'is_active': user['fields']['is_active']
         }
         user_new, created = get_user_model().objects.update_or_create(
             email=user['fields']['email'], defaults=user_defaults)
