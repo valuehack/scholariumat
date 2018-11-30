@@ -346,7 +346,7 @@ class FileAttachment(models.Model):
         product = next(i.product for i in self.item_set.all() if i.product.type)
         response = HttpResponse(self.file, content_type=f'application/{self.type.slug}')
         response['Content-Disposition'] = f'attachment; \
-            filename={slugify(product)}.{self.type.slug}'
+            filename={slugify(product.type.title)}.{self.type.slug}'
         return response
 
     def __str__(self):
