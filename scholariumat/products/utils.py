@@ -66,7 +66,7 @@ def download_old_db():
     ssh.connect('scholarium.at', username=env('SSH_USER'), password=env('SSH_PASSWORD'))
 
     scp = SCPClient(ssh.get_transport())
-    scp.get(os.path.join('~/scholarium_staging/db.json'))
+    scp.get(os.path.join('~/db.json'))
     logger.debug(f'Downloaded db.json')
 
     scp.close()
