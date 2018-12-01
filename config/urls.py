@@ -13,6 +13,7 @@ urlpatterns = [
     path('spende/', include("donations.urls")),
     path('veranstaltungen/', include("events.urls")),
     path('studium/', include("studies.urls")),
+    path('s3upload/', include('s3upload.urls')),
     path('', include("products.urls")),
     path('', include("framework.urls")),
 ] + static(
