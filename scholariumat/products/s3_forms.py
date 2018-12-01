@@ -8,3 +8,4 @@ class S3UploadForm(forms.ModelForm):
 
     class Meta:
         model = FileAttachment
+        exclude = []
