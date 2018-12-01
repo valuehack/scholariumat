@@ -40,7 +40,9 @@ def download_missing_files():
             local_path = os.path.join(local_dir.name, os.path.split(attachment.file.name)[1])
 
             try:
-                scp.get(os.path.join('~/scholarium_daten/', attachment.file.name), local_path=local_dir.name)
+                scp.get(
+                    os.path.join('/home/scholarium/scholarium_daten/', attachment.file.name),
+                    local_path=local_dir.name)
             except SCPException as e:
                 logger.error(e)
                 # File doesn't exist, delete item, attachment
