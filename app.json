@@ -4,7 +4,7 @@
   "scripts": {
   },
   "env": {
-    "DANJGO_DEBUG": {
+    "DJANGO_DEBUG": {
       "required": true
     },
     "DJANGO_ADMIN_URL": {
@@ -68,6 +68,24 @@
       "required": true
     },
     "BUFFER_SITE_IDS": {
+      "required": true
+    },
+    "SENDGRID_API_KEY": {
+      "required": true
+    },
+    "PAYPAL_CLIENT_ID": {
+      "required": true
+    },
+    "PAYPAL_CLIENT_SECRET": {
+      "required": true
+    },
+    "GLOBEE_API_KEY": {
+      "required": true
+    },
+    "RECAPTCHA_PUBLIC_KEY": {
+      "required": true
+    },
+    "RECAPTCHA_PRIVATE_KEY": {
       "required": true
     }
   },

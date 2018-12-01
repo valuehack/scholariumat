@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import reverse
 from django.http import HttpResponseRedirect
 
-from .models import Item, ItemType, Product, Purchase, FileAttachment
+from .models import Item, ItemType, Product, Purchase, FileAttachment, AttachmentType
 
 
 class ProductBaseAdmin(admin.ModelAdmin):
@@ -68,3 +68,4 @@ admin.site.register(ItemType)
 admin.site.register(Purchase, PurchaseAdmin)
 admin.site.register(Item, ItemAdmin)
 admin.site.register(FileAttachment)
+admin.site.register(AttachmentType)
