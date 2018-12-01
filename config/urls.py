@@ -18,7 +18,7 @@ urlpatterns = [
 )
 
 if 's3upload' in settings.INSTALLED_APPS:
-    urlpatterns.Aappend(path('s3upload/', include('s3upload.urls')))
+    urlpatterns.append(path('s3upload/', include('s3upload.urls')))
 
 urlpatterns += [
     path('', include("products.urls")),
