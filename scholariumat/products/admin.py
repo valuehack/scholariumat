@@ -1,12 +1,11 @@
 try:
-    from s3upload.widgets import S3UploadWidget
+    from .s3_forms import S3UploadForm
 except ModuleNotFoundError:
     pass
 
 from django.contrib import admin
 from django.urls import reverse
 from django.http import HttpResponseRedirect
-from django.db import models
 from django.conf import settings
 
 from .models import Item, ItemType, Product, Purchase, FileAttachment, AttachmentType
@@ -68,9 +67,7 @@ class ItemAdmin(admin.ModelAdmin):
 
 class AttachmentAdmin(admin.ModelAdmin):
     if 's3upload' in settings.INSTALLED_APPS:
-        formfield_overrides = {
-            models.FileField: {'widget': S3UploadWidget(dest='default')},
-        }
+        form = S3UploadForm
 
 
 admin.site.register(Product, ProductAdmin)
