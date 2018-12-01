@@ -69,7 +69,7 @@ class ItemAdmin(admin.ModelAdmin):
 class AttachmentAdmin(admin.ModelAdmin):
     if 's3upload' in settings.INSTALLED_APPS:
         formfield_overrides = {
-            models.FileField: {'widget': S3UploadWidget},
+            models.FileField: {'widget': S3UploadWidget(dest='default')},
         }
 
 
