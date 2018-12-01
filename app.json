@@ -4,7 +4,7 @@
   "scripts": {
   },
   "env": {
-    "DANJGO_DEBUG": {
+    "DJANGO_DEBUG": {
       "required": true
     },
     "DJANGO_ADMIN_URL": {
