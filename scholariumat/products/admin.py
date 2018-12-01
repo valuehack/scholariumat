@@ -9,7 +9,7 @@ from django.http import HttpResponseRedirect
 from django.db import models
 from django.conf import settings
 
-from .models import Item, ItemType, Product, Purchase, FileAttachment
+from .models import Item, ItemType, Product, Purchase, FileAttachment, AttachmentType
 
 
 class ProductBaseAdmin(admin.ModelAdmin):
@@ -78,3 +78,4 @@ admin.site.register(ItemType)
 admin.site.register(Purchase, PurchaseAdmin)
 admin.site.register(Item, ItemAdmin)
 admin.site.register(FileAttachment, AttachmentAdmin)
+admin.site.register(AttachmentType)

@@ -12,13 +12,18 @@ urlpatterns = [
     path('profil/', include("users.urls")),
     path('spende/', include("donations.urls")),
     path('veranstaltungen/', include("events.urls")),
-    path('studium/', include("studies.urls")),
-    path('s3upload/', include('s3upload.urls')),
-    path('', include("products.urls")),
-    path('', include("framework.urls")),
+    path('studium/', include("studies.urls"))
 ] + static(
     settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
 )
+
+if 's3upload' in settings.INSTALLED_APPS:
+    urlpatterns.Aappend(path('s3upload/', include('s3upload.urls')))
+
+urlpatterns += [
+    path('', include("products.urls")),
+    path('', include("framework.urls")),
+]
 
 if settings.DEBUG:
     # This allows the error pages to be debugged during development, just visit
