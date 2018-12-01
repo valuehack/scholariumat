@@ -107,6 +107,7 @@ def import_from_json():
         if created:
             logging.debug(f'Created event {local_event.title}')
 
+        local_event = Event.objects.get(pk=local_event.pk)  # Django Bug: date stays string otherwise
         if type.slug in ['salon', 'seminar']:
             local_event.get_or_create_attendance()
 
