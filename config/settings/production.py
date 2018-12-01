@@ -79,6 +79,20 @@ AWS_S3_OBJECT_PARAMETERS = {
     'CacheControl': f'max-age={_AWS_EXPIRY}, s-maxage={_AWS_EXPIRY}, must-revalidate',
 }
 
+# S3 Upload
+INSTALLED_APPS += ['s3upload']  # noqa F405
+S3UPLOAD_DESTINATIONS = {
+    'default': {
+        # REQUIRED
+        'key': '/',
+
+        # OPTIONAL
+        'auth': lambda u: u.is_staff,
+        'acl': 'private',
+        'cache_control': 'max-age=2592000',
+    }
+}
+
 # STATIC
 # ------------------------
 # STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
