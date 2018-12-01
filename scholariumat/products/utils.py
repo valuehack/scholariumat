@@ -31,6 +31,7 @@ def download_missing_files():
     ssh.connect('scholarium.at', username=env('SSH_USER'), password=env('SSH_PASSWORD'))
 
     scp = SCPClient(ssh.get_transport())
+    failed = []
     for attachment in FileAttachment.objects.all():
         try:
             attachment.file.open()
@@ -44,6 +45,7 @@ def download_missing_files():
                 logger.error(e)
                 # File doesn't exist, delete item, attachment
                 logger.error(f'Could not find file {attachment.file.name}. Deleting attachment.')
+                failed.append(attachment.file.name)
                 for item in attachment.item_set.all():
                     if len(item.files.all()) == 1:
                         logger.info(f'Deleted item {item}, as attachment is missing.')
@@ -56,6 +58,8 @@ def download_missing_files():
             logger.debug(f'Uploaded file {attachment.file.name}')
     scp.close()
     ssh.close()
+    logger.debug(f'Failed attachments: {len(failed)}')
+    logger.debug('\n'.join(failed))
 
 
 def download_old_db():
