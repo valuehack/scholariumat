@@ -365,9 +365,9 @@ def import_from_json():
                         profile=new,
                         date=pdate,
                         expiration=(pdate + datetime.timedelta(days=365)),
-                        amount=donationlevel_pks[profile['fields']['stufe'] or 1].amount)
+                        amount=donationlevel_pks[profile['fields']['stufe'] or 1].amount,
+                        defaults={'executed': True})
                     logger.debug(f'Found old donation for {new}')
-                    donation.execute()
 
     # Donations
     logger.info('Importing donations...')
@@ -378,7 +378,8 @@ def import_from_json():
         profile = profile_pks[donation['fields']['profil']]
 
         donation_defaults = {
-            'review': donation['fields']['ueberprueft']
+            'review': donation['fields']['ueberprueft'],
+            'executed': True
         }
 
         id = donation['fields']['zahlung_id']
@@ -395,8 +396,6 @@ def import_from_json():
 
         if created:
             logger.debug(f'Created donation from {profile.name}')
-
-        new.execute()
 
     users_with_donation = len(Profile.objects.filter(donation__isnull=False).distinct())
     logger.info(f'Import finished. Users that donated at some point: {users_with_donation}')
