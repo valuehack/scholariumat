@@ -60,6 +60,7 @@ class ItemType(TitleDescriptionModel, TimeStampedModel):
     buy_once = models.BooleanField(default=False)  # If True, item can only be purchased once
     expires_on_product_date = models.BooleanField(default=False)  # Item is only visible/purchasable until product.date
     buy_unauthenticated = models.BooleanField(default=False)  # Item is visible/purchasable for unauthenticated users
+    inform_staff = models.BooleanField(default=False)  # Inform staff if item is bought
 
     def __str__(self):
         return self.title
@@ -301,9 +302,13 @@ class Purchase(TimeStampedModel, CommentAble):
         if state == 'purchasable':
             if self.profile.spend(self.total):
                 if self.item.sell(self.amount):
+                    if self.item.type.inform_staff:
+                        mail_managers(
+                            f'Neuer Kauf: {self.item.product}',
+                            f'Nutzer {self.profile} hat {self.item.product} ({self.item.type}) gekauft.')
                     if self.item.type.shipping:
                         mail_managers(
-                            f'Bestellung: {self.item.product}',
+                            f'Versand notwendig: {self.item.product}',
                             f'Nutzer {self.profile} hat {self.item.product} im Format {self.item.type} bestellt. '
                             f'Adresse: {self.profile.address}')
                     self.executed = True
