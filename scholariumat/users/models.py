@@ -66,7 +66,8 @@ class Profile(CartMixin, DonationMixin, LendingMixin, BalanceMixin, TimeStampedM
 
     @property
     def name(self):
-        return f'{self.first_name} {self.last_name}'
+        if self.first_name or self.last_name:
+            return f'{self.first_name} {self.last_name}'
 
     @property
     def address(self):

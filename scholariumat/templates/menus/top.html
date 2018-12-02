@@ -2,7 +2,7 @@
 
 <div class="ui container">
 
-  {% if request.user.is_authenticated %}  
+  {% if request.user.is_authenticated %}
     <div class="ui right floated compact menu">
       <a class="ui {% if not request.user.profile.cart %}disabled {% endif %}icon item" id="basket">
         <i class="shop icon"></i>
@@ -26,11 +26,11 @@
         </a>
       </div>
     </div>
-    
-    <div class="ui popup" id="basket_popup">
-      
 
-      
+    <div class="ui popup" id="basket_popup">
+
+
+
           <div class="content">
             <table class="ui very basic collapsing single line unstackable table">
               <tbody>
@@ -113,24 +113,22 @@
     </div>
     <div class="ui popup">
       <div>
-      
+
       {% if request.user.profile.level %}
         <a class="ui primary large right ribbon label" href="{% url 'donations:detail' %}">
           <i class="university icon"></i>
           {{ request.user.profile.level.title }}
         </a>
       {% endif %}
-      
+
       <!-- <span class="ui item"> -->
           <h3 class="ui center aligned header">
             <div class="content">
               {% if request.user.profile.name %}
                 {{ request.user.profile.name }}
-                {% if request.user.profile.organization %}
-                  <div class="sub header">
-                    {{ request.user.email }}
-                  </div>
-                {% endif %}
+                <div class="sub header">
+                  {{ request.user.email }}
+                </div>
               {% else %}
                 {{ request.user.email }}
               {% endif %}
@@ -138,7 +136,7 @@
           </h3>
       </div>
       <div class="ui hidden divider"></div>
-  
+
       <div class="ui vertical fluid menu" style="min-width: 20em;">
         <a class="item" href="{% url 'users:profile' %}">Profil bearbeiten</a>
         <a class="item" href="{% url 'users:update_email' %}">Email-Adresse ändern</a>
