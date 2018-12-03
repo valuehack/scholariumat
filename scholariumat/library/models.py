@@ -134,7 +134,7 @@ class Collection(TitleSlugDescriptionModel, PermalinkAble):
                         'default_price': 15
                     })
             else:  # Delete item if tag has been removed
-                item_exists = zot_item.product.item_set.filter(type__slug='purchase')
+                item_exists = zot_item.product.item_set.filter(type__slug__contains='purchase', purchase__isnull=True)
                 if item_exists:
                     item_exists.get().delete()
 
