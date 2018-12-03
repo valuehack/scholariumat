@@ -158,18 +158,18 @@ class Item(TimeStampedModel):
             return states[2]
         elif self.donationlevel_accessible(user):
             return states[3]
+        elif not self.donationlevel_purchasable(user):
+            return states[1]
         elif self.sold_out:
             if self.type.additional_supply and user.is_authenticated:
                 return states[4]
             else:
                 return states[5]
-        elif not self.price:
+        elif self.price is None:
             if self.type.request_price and user.is_authenticated:
                 return states[4]
             else:
                 return states[6]
-        elif not self.donationlevel_purchasable(user):
-            return states[1]
         else:
             return states[0]
 
