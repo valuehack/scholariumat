@@ -63,7 +63,7 @@ class ItemType(TitleDescriptionModel, TimeStampedModel):
     inform_staff = models.BooleanField(default=False)  # Inform staff if item is bought
 
     def __str__(self):
-        return self.title
+        return f'{self.title} ({self.slug})'
 
     class Meta:
         verbose_name = 'Item Typ'
