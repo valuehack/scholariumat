@@ -4,6 +4,10 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.views import defaults as default_views
 
+
+handler404 = 'framework.views.page_not_found_view'
+handler500 = 'framework.views.server_error_view'
+
 urlpatterns = [
     path(settings.ADMIN_URL, admin.site.urls),
     path("account/", include("authtools.urls")),

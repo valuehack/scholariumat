@@ -4,6 +4,10 @@ from braces.views import OrderableListMixin
 from vanilla import TemplateView
 
 from django.db.models import F
+from django.contrib import messages
+from django.http import HttpResponseRedirect
+from django.urls import reverse
+from django.conf import settings
 
 from events.models import Event
 from blog.models import Article
@@ -64,3 +68,13 @@ class FaqView(TemplateView):
 
 class ContactView(TemplateView):
     template_name = 'framework/contact.html'
+
+
+def page_not_found_view(request, exception, template_name='404.html'):
+    messages.add_message(request, messages.ERROR, 'Inhalt nicht gefunden.')
+    return HttpResponseRedirect(reverse('framework:home'))
+
+
+def server_error_view(request, template_name='500.html'):
+    messages.add_message(request, messages.ERROR, settings.MESSAGE_UNEXPECTED_ERROR)
+    return HttpResponseRedirect(reverse('framework:home'))
