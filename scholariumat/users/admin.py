@@ -12,7 +12,7 @@ from .models import Profile
 
 class ProfileAdmin(admin.ModelAdmin):
     list_display = ['user', 'organization', 'level', 'balance', 'expiration']
-    search_fields = ['user__email', 'name']
+    search_fields = ['user__email', 'first_name', 'last_name']
     raw_id_fields = ['user']
     list_filter = [LevelFilter]
     inlines = [DonationInline]
