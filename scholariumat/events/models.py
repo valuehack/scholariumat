@@ -21,6 +21,10 @@ class EventType(TitleSlugDescriptionModel):
     default_time_start = models.TimeField(null=True, blank=True)
     default_time_end = models.TimeField(null=True, blank=True)
 
+    @property
+    def header(self):
+        return self.section_title or self.title
+
     def __str__(self):
         return self.title
 

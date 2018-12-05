@@ -5,13 +5,13 @@
         Scholien
       </a>
       <a href="{% url 'events:type' 'salon' %}" class="item">
-        Salons
+        Salon
       </a>
       <a href="{% url 'events:type' 'seminar' %}" class="item">
         Seminare
       </a>
-      <a href="{% url 'events:recordings' %}" class="item">
-        Aufzeichnungen
+      <a href="{% url 'events:type' 'vortrag' %}" class="item">
+        Vortrag
       </a>
       <a href="{% url 'library:list' %}" class="item">
         Bibliothek
@@ -27,10 +27,13 @@
         Scholien
       </a>
       <a href="{% url 'events:type' 'salon' %}" class="item">
-        Salons
+        Salon
       </a>
       <a href="{% url 'events:type' 'seminar' %}" class="item">
         Seminare
+      </a>
+      <a href="{% url 'events:type' 'vortrag' %}" class="item">
+        Vortrag
       </a>
       <a href="{% url 'studies:products' %}" class="item">
         Studium

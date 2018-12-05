@@ -11,7 +11,7 @@ from .models import Event, EventType
 
 class EventListView(ListView):
     model = Event
-    paginate_by = 5
+    paginate_by = 10
     event_type = None
 
     def dispatch(self, *args, **kwargs):
@@ -24,14 +24,14 @@ class EventListView(ListView):
         return super().dispatch(*args, **kwargs)
 
     def get_queryset(self):
-        return Event.objects.published().filter(type=self.event_type, date__gte=date.today()).order_by('date')
+        return Event.objects.published().filter(
+            type=self.event_type, date__lt=date.today()).order_by('-date').distinct()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        if self.event_type:
-            context['section_title'] = self.event_type.section_title or self.event_type.title
-        else:
-            context['section_title'] = 'Veranstaltungen'
+        context['type'] = self.event_type
+        context['future_events'] = Event.objects.published().filter(
+            type=self.event_type, date__gte=date.today()).order_by('date')
         return context
 
 
