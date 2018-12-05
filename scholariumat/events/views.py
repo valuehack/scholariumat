@@ -3,6 +3,7 @@ from vanilla import DetailView, ListView
 from braces.views import LoginRequiredMixin, StaffuserRequiredMixin
 
 from django.db.models import Q
+from django.http import Http404
 
 from products.views import PurchaseMixin, DownloadMixin
 from .models import Event, EventType
@@ -16,7 +17,10 @@ class EventListView(ListView):
     def dispatch(self, *args, **kwargs):
         event_type = self.kwargs.get('event_type')
         if event_type:
-            self.event_type = EventType.objects.get(Q(section_title=event_type) | Q(slug=event_type))
+            try:
+                self.event_type = EventType.objects.get(Q(section_title=event_type) | Q(slug=event_type))
+            except EventType.DoesNotExist:
+                raise Http404('test')
         return super().dispatch(*args, **kwargs)
 
     def get_queryset(self):
