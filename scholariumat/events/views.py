@@ -9,7 +9,7 @@ from products.views import PurchaseMixin, DownloadMixin
 from .models import Event, EventType
 
 
-class EventListView(ListView):
+class EventListView(LoginRequiredMixin, PurchaseMixin, DownloadMixin, ListView):
     model = Event
     paginate_by = 10
     event_type = None
