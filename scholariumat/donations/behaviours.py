@@ -6,6 +6,7 @@ import datetime
 from django.db import models
 from django.conf import settings
 from django.urls import reverse_lazy
+from django.core.mail import mail_managers
 
 import paypalrestsdk as paypal
 
@@ -216,6 +217,9 @@ class Payment(CommentAble):
                 self.save()
                 self.profile.refill(self.amount)
                 logger.info("{} donated {} and is now level {}".format(self.profile, self.amount, self.profile.level))
+                mail_managers(
+                    f'Neue Unterstützung: {self.level.title}',
+                    f'Nutzer {self.profile} hat {self.amount} Euro per {self.method} unterstützt. ')
                 return True
 
     def _execute_paypal(self, request):
