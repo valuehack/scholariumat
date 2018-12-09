@@ -1,5 +1,5 @@
 .. image:: https://drive.google.com/uc?id=0B58q9z1XmLXIUDdDMXpoZFEyZDQ
-Source code for https://scholarium.at/
+   :target: https://scholarium.at/
 
 .. image:: https://img.shields.io/badge/built%20with-Cookiecutter%20Django-ff69b4.svg
      :target: https://github.com/pydanny/cookiecutter-django/
