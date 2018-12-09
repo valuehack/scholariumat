@@ -15,12 +15,12 @@ class EventListView(PurchaseMixin, DownloadMixin, ListView):
     event_type = None
 
     def dispatch(self, *args, **kwargs):
-        event_type = self.kwargs.get('event_type')
+        event_type = self.kwargs.get('event_type') or self.event_type
         if event_type:
             try:
                 self.event_type = EventType.objects.get(Q(section_title=event_type) | Q(slug=event_type))
             except EventType.DoesNotExist:
-                raise Http404('test')
+                raise Http404()
         return super().dispatch(*args, **kwargs)
 
     def get_queryset(self):

@@ -30,7 +30,7 @@ TEMPLATES[0]['OPTIONS']['debug'] = DEBUG  # noqa F405
 # EMAIL
 # ------------------------------------------------------------------------------
 EMAIL_BACKEND = 'sendgrid_backend.SendgridBackend'
-SENDGRID_API_KEY = env('SENDGRID_API_KEY')
+SENDGRID_API_KEY = env('SENDGRID_API_KEY', default='')
 SENDGRID_SANDBOX_MODE_IN_DEBUG = env.bool('SENDGRID_SANDBOX_MODE_IN_DEBUG', default=True)
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-host

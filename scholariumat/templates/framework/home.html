@@ -32,8 +32,8 @@
         {% include 'components/small_product_list.html' with objects=events %}
     </div>
     <div style="position: absolute; bottom:0; right: 1em;">
-        <a href="{% url 'events:type' 'seminar' %}"><div class="ui basic right floated primary button" >Seminare</div></a>
-        <a href="{% url 'events:type' 'salon' %}"><div class="ui basic right floated primary button">Salons</div></a>
+        <a href="{% url 'events:seminars' %}"><div class="ui basic right floated primary button" >Seminare</div></a>
+        <a href="{% url 'events:salons' %}"><div class="ui basic right floated primary button">Salons</div></a>
     </div>
   </div>
   {% endif %}
