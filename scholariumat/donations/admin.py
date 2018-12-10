@@ -1,5 +1,8 @@
+from datetime import date
+
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
+from django.db.models import OuterRef, Subquery
 
 from .models import Donation, DonationLevel, PaymentMethod
 
@@ -18,7 +21,14 @@ class LevelFilter(SimpleListFilter):
         return [(level.amount, level) for level in DonationLevel.objects.all()]
 
     def queryset(self, request, queryset):
-        return queryset.filter(donation__amount__gte=self.value()).distinct() if self.value() else queryset.all()
+        value = self.value()
+
+        if value:
+            donations = Donation.objects.filter(
+                profile=OuterRef('pk'), expiration__gte=date.today()).order_by('-amount')
+            return queryset.annotate(
+                active_donation=Subquery(donations.values('amount')[:1])).filter(active_donation__gte=value)
+        return queryset.all()
 
 
 admin.site.register(DonationLevel)
