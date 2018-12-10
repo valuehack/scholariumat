@@ -3,11 +3,14 @@ from pyzotero import zotero, zotero_errors
 from slugify import slugify
 from dateutil.parser import parse
 from weasyprint import HTML
+import re
 
 from django.db import models
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 from django.http import HttpResponse
+from django.core.mail import mail_managers
+from django.urls import reverse_lazy
 
 from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel
 
@@ -88,67 +91,8 @@ class Collection(TitleSlugDescriptionModel, PermalinkAble):
         logger.info('updating items...')
 
         for item in parents:
-            try:
-                item_data = {
-                    'title': item['data'].get('title') or item['data']['subject'],  # Sometimes title is missing
-                }
-
-                if 'date' in item['data']:
-                    try:
-                        item_data['published'] = parse(item['data']['date'])
-                    except ValueError:
-                        pass
-
-            except KeyError as e:
-                logger.exception(e)
-                continue
-
-            tags = [tag['tag'] for tag in item['data']['tags']]
-            if any([tag in tags for tag in settings.ZOTERO_PUBLISHER_TAGS]):
-                item_data['scholarium'] = True
-
-            zot_item, created = ZotItem.objects.update_or_create(slug=item['data']['key'], defaults=item_data)
+            zot_item = ZotItem.update_or_create_from_data(item['key'], item['data'])
             zot_item.collection.add(self)
-
-            if created:
-                logger.debug('Created item {}'.format(zot_item.title))
-
-            # Create (Product)Item if ZotItem is physically present
-            if any([tag in tags for tag in settings.ZOTERO_OWNER_TAGS]):
-                zot_item.update_or_create_item(
-                    type='library_purchase',
-                    type_defaults={
-                        'title': 'Kaufen',
-                        'shipping': True,
-                        'request_price': True,
-                        'default_amount': 1
-                    })
-            elif any([tag in tags for tag in settings.ZOTERO_PUBLISHER_TAGS]):
-                zot_item.update_or_create_item(
-                    type='scholarium_purchase',
-                    type_defaults={
-                        'title': 'Kaufen',
-                        'shipping': True,
-                        'additional_supply': True,
-                        'default_amount': 0,
-                        'default_price': 15
-                    })
-            else:  # Delete item if tag has been removed
-                item_exists = zot_item.product.item_set.filter(type__slug__contains='purchase', purchase__isnull=True)
-                if item_exists:
-                    item_exists.get().delete()
-
-            # Set authors
-            name_list = []
-            for creator in item['data'].get('creators', []):
-                names = list(filter(None, [creator.get(name_key) for name_key in ['firstName', 'name', 'lastName']]))
-                full_name = ' '.join(names)
-                zot_item.get_or_create_author(full_name)
-                name_list.append(full_name)
-
-            # Remove deleted authors
-            for author in zot_item.authors.filter(~models.Q(name__in=name_list)):
-                zot_item.authors.remove(author)
 
         # Remove failed authors
         Author.remove_failed_authors()
@@ -255,8 +199,12 @@ class Collection(TitleSlugDescriptionModel, PermalinkAble):
         collection_keys = [collection['data']['key'] for collection in collections]
         for local_collection in cls.objects.all():
             if local_collection.slug not in collection_keys:
-                local_collection.delete()
-                logger.debug('Collection {} deleted.'.format(local_collection.title))
+                edit_url = reverse_lazy('admin:library_collection_change', args=[local_collection.pk])
+                mail_managers(
+                    f'Kollektion zu löschen: {local_collection.title}',
+                    f'Die Kollektion {local_collection.title} scheint in Zotero nicht mehr zu existieren. '
+                    f'Falls dies richtig ist, bitte per Hand löschen: {settings.DEFAULT_DOMAIN}{edit_url}.')
+                logger.debug('Collection {} marked for deletion.'.format(local_collection.title))
 
         save_collections(False, collections)
 
@@ -288,7 +236,8 @@ class ZotItem(ProductBase):
     authors = models.ManyToManyField(Author)
     published = models.DateField(blank=True, null=True)
     collection = models.ManyToManyField(Collection)
-    scholarium = models.BooleanField(default=False)
+    scholarium = models.BooleanField(default=False)  # If item is physically present in library
+    amount = models.SmallIntegerField(null=True, blank=True)
 
     @property
     def lendings_active(self):
@@ -300,6 +249,77 @@ class ZotItem(ProductBase):
             return self.product.item_set.get(type__title='Leihe').amount - len(self.lendings_active)
         except ObjectDoesNotExist:
             return None
+
+    @classmethod
+    def update_or_create_from_data(cls, key, data):
+        """
+        Given API data from Zotero as dict, update or create a ZotItem.
+        """
+        item_data = {}
+
+        # Get title
+        try:
+            title = data.get('title') or data['subject']  # Sometimes title is missing
+        except KeyError as e:
+            logger.exception(e)
+            return None
+
+        # Get date
+        date = data.get('date')
+        try:
+            date = parse(date) if date else None
+        except ValueError:
+            logger.debug(f'Date {date} not recognized: {title}. skipping.')
+
+        # Get extra variables
+        # TODO: get price, additional_supply from variables
+        extra_variables = dict(re.findall(r'{(\w+):\s(\w+)}', data.get('extra', '')))
+
+        # Get amount
+        amount = extra_variables.get('amount')
+        if not amount:
+            tags = [tag['tag'] for tag in data['tags']]
+            if any([tag in tags for tag in settings.ZOTERO_PUBLISHER_TAGS]):
+                amount = 1
+
+        # Get/Set authors
+        authors = []
+        for creator in data.get('creators', []):
+            names = list(filter(None, [creator.get(name_key) for name_key in ['firstName', 'name', 'lastName']]))
+            full_name = ' '.join(names)
+            author, created = Author.objects.get_or_create(name=full_name)
+            authors.append(author)
+
+        item_data = {
+            'title': title,
+            'published': date,
+            'amount': amount
+        }
+
+        zot_item, created = cls.objects.update_or_create(slug=key, defaults=item_data)
+        zot_item.authors.clear()
+        zot_item.authors.add(*authors)
+
+        logger.debug(f'Saved item {zot_item.title}. Created: {created}')
+
+    def update_or_create_purchase_item(self, price=None, printing=False):
+        """
+        Updates purchasable items for a Zotero Item
+        """
+        itemtype = ItemType.objects.filter(slug__contains='purchase').update_or_create(
+            default_amount=1,
+            shipping=True,
+            request_price=True,
+            additional_supply=printing,
+            defaults={
+                'slug': f'{self.collection.title}_purchase'
+            })
+        self.product.item_set.update_or_create(
+            type=itemtype,
+            defaults={
+                'amount': self.amount,
+                'price': price,
+            })
 
     def update_or_create_item(self, type, type_defaults={}, item_defaults={}, file_key=None):
         """
@@ -326,13 +346,6 @@ class ZotItem(ProductBase):
                 defaults['format'] = 'file'
             attachment, created = ZotAttachment.objects.update_or_create(item=item, defaults=defaults)
         return item
-
-    def get_or_create_author(self, name):
-        author, created = Author.objects.get_or_create(name=name)
-        self.authors.add(author)
-        if created:
-            logger.debug('Created author {}'.format(name))
-        return author
 
     def __str__(self):
         return '%s (%s)' % (self.title, ', '.join([author.__str__() for author in self.authors.all()]))
