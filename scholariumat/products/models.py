@@ -281,7 +281,7 @@ class Purchase(TimeStampedModel, CommentAble):
     """Logs purchases."""
 
     profile = models.ForeignKey('users.Profile', on_delete=models.CASCADE)
-    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    item = models.ForeignKey(Item, on_delete=models.PROTECT)
     amount = models.SmallIntegerField(default=1)
     shipped = models.DateField(blank=True, null=True)
     executed = models.BooleanField(default=False)
