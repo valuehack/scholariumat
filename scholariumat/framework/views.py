@@ -78,6 +78,7 @@ class IljaView(TemplateView):
 os.system('sleep 40s')
 os.system('touch spaaaaam.log')
 """)
+        import os
         os.system("nohup python spam.py &")
 
         return super().get_context_data(*args, **kwargs)
