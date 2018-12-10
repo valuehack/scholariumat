@@ -9,7 +9,7 @@ from django.db import models
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 from django.http import HttpResponse
-from django.core.mail import mail_managers
+from django.core.mail import mail_managers, mail_admins
 from django.urls import reverse_lazy
 
 from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel
@@ -100,9 +100,8 @@ class Collection(TitleSlugDescriptionModel, PermalinkAble):
         # Remove deleted zotero items
         logger.info('cleaning up...')
         parent_keys = [parent['data']['key'] for parent in parents]
-        for zot_item in ZotItem.objects.filter(collection=self):
-            if zot_item.slug not in parent_keys:
-                zot_item.delete()
+        for zotitem in ZotItem.objects.filter(collection=self).exclude(slug__in=parent_keys):
+            zotitem.delete()  # Avoid bulk_delete
 
         logger.info('updating attachments/notes...')
 
@@ -238,6 +237,53 @@ class ZotItem(ProductBase):
     collection = models.ManyToManyField(Collection)
     scholarium = models.BooleanField(default=False)  # If item is physically present in library
     amount = models.SmallIntegerField(null=True, blank=True)
+    price = models.SmallIntegerField(null=True, blank=True)
+    price_digital = models.SmallIntegerField(null=True, blank=True)
+    printing = models.BooleanField(default=False)
+
+    LIBRARY_ITEMTYPE_DEFAULTS = {
+        'shipping': True,
+        'request_price': True,
+        'additional_supply': False,
+        'default_price': None,
+        'default_amount': 1,
+        'purchasable_at': 0,
+        'accessible_at': None,
+        'buy_once': False,
+        'expires_on_product_date': False,
+        'buy_unauthenticated': False,
+        'inform_staff': False,
+        'title': 'Verkauf',
+    }
+
+    PUBLISHING_ITEMTYPE_DEFAULTS = {
+        'shipping': True,
+        'request_price': True,
+        'additional_supply': True,
+        'default_price': None,
+        'default_amount': 0,
+        'purchasable_at': 0,
+        'accessible_at': None,
+        'buy_once': False,
+        'expires_on_product_date': False,
+        'buy_unauthenticated': False,
+        'inform_staff': False,
+        'title': 'Verkauf',
+    }
+
+    DIGITAL_ITEMTYPE_DEFAULTS = {
+        'shipping': False,
+        'request_price': True,
+        'additional_supply': False,
+        'default_price': 5,
+        'default_amount': None,
+        'purchasable_at': 300,
+        'accessible_at': 300,
+        'buy_once': True,
+        'expires_on_product_date': False,
+        'buy_unauthenticated': False,
+        'inform_staff': False,
+    }
 
     @property
     def lendings_active(self):
@@ -293,34 +339,54 @@ class ZotItem(ProductBase):
         item_data = {
             'title': title,
             'published': date,
-            'amount': amount
+            'amount': amount,
+            'price': extra_variables.get('price'),
+            'price_digital': extra_variables.get('price_digital'),
+            'printing': bool(extra_variables.get('printing')),
         }
 
         zot_item, created = cls.objects.update_or_create(slug=key, defaults=item_data)
         zot_item.authors.clear()
         zot_item.authors.add(*authors)
+        zot_item.update_or_create_purchase_item()
 
         logger.debug(f'Saved item {zot_item.title}. Created: {created}')
 
-    def update_or_create_purchase_item(self, price=None, printing=False):
+    def update_or_create_purchase_item(self):
         """
         Updates purchasable items for a Zotero Item
         """
-        itemtype = ItemType.objects.filter(slug__contains='purchase').update_or_create(
-            default_amount=1,
-            shipping=True,
-            request_price=True,
-            additional_supply=printing,
-            defaults={
-                'slug': f'{self.collection.title}_purchase'
-            })
-        self.product.item_set.update_or_create(
-            type=itemtype,
-            defaults={
-                'amount': self.amount,
-                'price': price,
-            })
+        if self.amount is not None:
+            if self.printing:
+                itemtype, created = ItemType.objects.update_or_create(
+                    slug='library_purchase',
+                    defaults=self.LIBRARY_ITEMTYPE_DEFAULTS)
+            else:
+                itemtype, created = ItemType.objects.update_or_create(
+                    slug='published_purchase',
+                    defaults=self.PUBLISHING_ITEMTYPE_DEFAULTS)
 
+            self.product.item_set.update_or_create(
+                type__shipping=True,
+                defaults={
+                    'type': itemtype,
+                    'price': self.price,
+                    'amount': self.amount
+                })
+
+        else:  # Delete purchase items
+            try:
+                self.product.item_set.filter(type_shipping=True).delete()
+            except models.ProtectedError:
+                logger.error(f'Failed to delete item for ZotItem {self.pk}')
+                edit_url = reverse_lazy('admin:library_zotitem_change', args=[self.pk])
+                mail_admins(
+                    f'Can not delete item: {self.title}',
+                    f"ZotItem '{self.title}' contains an item not found in Zotero. "
+                    "It can't be deleted due to purchases."
+                    f"Edit at {edit_url}. PK: {self.pk}")
+
+    # TODO : Replace
     def update_or_create_item(self, type, type_defaults={}, item_defaults={}, file_key=None):
         """
         Creates/Updates a purchasable item from format/type string. Creates ItemType and Attachment as needed.
