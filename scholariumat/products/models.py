@@ -348,7 +348,7 @@ class FileAttachment(models.Model):
     already_uploaded_url = models.CharField(
         max_length=255,
         blank=True,
-        default='',
+        default=''
     )
     type = models.ForeignKey('products.AttachmentType', on_delete=models.PROTECT)
 
