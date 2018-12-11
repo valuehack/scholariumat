@@ -22,6 +22,11 @@ from framework.behaviours import CommentAble, PermalinkAble
 logger = logging.getLogger(__name__)
 
 
+def handle_protected(error):
+    logger.error(f'Failed to delete item: {error}')
+    mail_admins(f'Can not delete protected item', f"{error}")
+
+
 class ZotAttachment(AttachmentBase):
 
     FORMAT_CHOICES = [
@@ -31,7 +36,7 @@ class ZotAttachment(AttachmentBase):
 
     key = models.CharField(max_length=100, blank=True)
     format = models.CharField(max_length=5, choices=FORMAT_CHOICES)
-    zotitem = models.ForeignKey('ZotItem', on_delete=models.CASCADE)
+    zotitem = models.ForeignKey('ZotItem', on_delete=models.CASCADE, null=True, blank=True)
 
     ITEMTYPE_DEFAULTS = {
         'shipping': False,
@@ -48,7 +53,7 @@ class ZotAttachment(AttachmentBase):
     }
 
     @classmethod
-    def update_or_create_from_data(cls, key, data):
+    def update_or_create_from_data(cls, data):
         if data['itemType'] == 'attachment' and 'filename' in data:
             format = 'file'
             type = data['filename'].split('.')[-1]
@@ -62,40 +67,41 @@ class ZotAttachment(AttachmentBase):
 
         try:
             zotitem = ZotItem.objects.get(slug=data['parentItem'])
-        except ObjectDoesNotExist:
+        except ZotItem.DoesNotExist:
             return None
 
         attachment_type, created = AttachmentType.objects.get_or_create(slug=type, defaults={'title': type.upper()})
         attachment, created = cls.objects.update_or_create(
-            key=key, format=format, zotitem=zotitem, type=attachment_type)
+            key=data['key'], format=format, zotitem=zotitem, type=attachment_type)
         attachment.update_or_create_item()
 
+        return attachment
+
     def update_or_create_item(self):
-        if self.type.slug in settings.DOWNLOAD_FORMATS:
-            if self.format == 'file':
-                title = 'Exzerpt'
-            else:
-                title = self.FORMAT_CHOICES[self.file]
+        if self.type.slug not in settings.DOWNLOAD_FORMATS:
+            try:
+                self.item_set.delete()
+            except models.ProtectedError as e:
+                handle_protected(e)
+            return None
 
-            defaults = self.ITEMTYPE_DEFAULTS
-            defaults['title'] = title
+        if self.format == 'note':
+            slug = 'note'
+            title = 'Exzerpt'
+        else:
+            slug = self.type.slug
+            title = self.type.title
 
-            attachment_type, created = AttachmentType.objects.update_or_create(slug='pdf', defaults=defaults)
-            self.zotitem.product.item_set.update_or_create()
-        else:
-            self.item_set.delete()
-            
-        
-        if created:
-            logger.debug('Created attachment type {}'.format(attachment_type))
-        defaults = {
-            'key': file_key,
-            'type': attachment_type
-        }
-        if type == 'note':
-            defaults['format'] = type
-        else:
-            defaults['format'] = 'file'
+        type_defaults = self.ITEMTYPE_DEFAULTS
+        type_defaults['title'] = title
+
+        price = self.zotitem.price
+        item_defaults = {'_price': price} if price else {}
+
+        item_type, created = ItemType.objects.update_or_create(slug=slug, defaults=type_defaults)
+        item, created = self.zotitem.product.item_set.update_or_create(type=item_type, **item_defaults)
+        self.item = item
+        self.save()
 
     def get(self):
         zot = zotero.Zotero(settings.ZOTERO_USER_ID, settings.ZOTERO_LIBRARY_TYPE, settings.ZOTERO_API_KEY)
@@ -141,10 +147,6 @@ class Collection(TitleSlugDescriptionModel, PermalinkAble):
         Retrieves and saves metadata from all items, attachments and notes inside the collection from zotero.
         """
 
-        def handle_protected(error):
-            logger.error(f'Failed to delete item: {error}')
-            mail_admins(f'Can not delete protected item', f"{error}")
-
         logger.info('Retrieving items in {}'.format(self.title))
 
         zot = zotero.Zotero(settings.ZOTERO_USER_ID, settings.ZOTERO_LIBRARY_TYPE, settings.ZOTERO_API_KEY)
@@ -161,10 +163,7 @@ class Collection(TitleSlugDescriptionModel, PermalinkAble):
         logger.info('updating items...')
 
         for item in parents:
-            try:
-                zotitem = ZotItem.update_or_create_from_data(item['key'], item['data'])
-            except models.ProtectedError as e:
-                handle_protected(e)
+            zotitem = ZotItem.update_or_create_from_data(item['data'])
             zotitem.collection.add(self)
 
         logger.info('cleaning up...')
@@ -183,13 +182,13 @@ class Collection(TitleSlugDescriptionModel, PermalinkAble):
         logger.info('updating attachments/notes...')
 
         for child in children:
-            ZotAttachment.update_or_create_from_data(child['key'], child['data'])
+            ZotAttachment.update_or_create_from_data(child['data'])
 
         # Remove deleted attachments/notes or attachments not in DOWNLOAD_FORMATS
         logger.info('cleaning up...')
         child_keys = [child['data']['key'] for child in children]
         try:
-            attachments = ZotAttachment.objects.filter(collection=self).exclude(
+            attachments = ZotAttachment.objects.filter(zotitem__collection=self).exclude(
                 type__slug__in=settings.DOWNLOAD_FORMATS, key__in=child_keys)
             Item.objects.filter(zotattachment__in=attachments).delete()
             attachments.delete()
@@ -316,7 +315,7 @@ class ZotItem(ProductBase):
             return None
 
     @classmethod
-    def update_or_create_from_data(cls, key, data):
+    def update_or_create_from_data(cls, data):
         """
         Given API data from Zotero as dict, update or create a ZotItem.
         """
@@ -335,14 +334,13 @@ class ZotItem(ProductBase):
             logger.debug(f'Date {date} not recognized: {title}. skipping.')
 
         # Get extra variables
-        # TODO: get price, additional_supply from variables
         extra_variables = dict(re.findall(r'{(\w+):\s(\w+)}', data.get('extra', '')))
 
         # Get amount
         amount = extra_variables.get('amount')
         if not amount:
             tags = [tag['tag'] for tag in data['tags']]
-            if any([tag in tags for tag in settings.ZOTERO_PUBLISHER_TAGS]):
+            if any([tag in tags for tag in settings.ZOTERO_OWNER_TAGS]):
                 amount = 1
 
         # Get/Set authors
@@ -362,12 +360,13 @@ class ZotItem(ProductBase):
             'printing': bool(extra_variables.get('printing')),
         }
 
-        zot_item, created = cls.objects.update_or_create(slug=key, defaults=item_data)
+        zot_item, created = cls.objects.update_or_create(slug=data['key'], defaults=item_data)
         zot_item.authors.clear()
         zot_item.authors.add(*authors)
         zot_item.update_or_create_purchase_item()
 
         logger.debug(f'Saved item {zot_item.title}. Created: {created}')
+        return zot_item
 
     def update_or_create_purchase_item(self):
         """
@@ -387,12 +386,15 @@ class ZotItem(ProductBase):
                 type__shipping=True,
                 defaults={
                     'type': itemtype,
-                    'price': self.price,
+                    '_price': self.price,
                     'amount': self.amount
                 })
 
         else:  # Delete purchase items
-            self.product.item_set.filter(type_shipping=True).delete()
+            try:
+                self.product.item_set.filter(type_shipping=True).delete()
+            except models.ProtectedError as e:
+                handle_protected(e)
 
     def __str__(self):
         return '%s (%s)' % (self.title, ', '.join([author.__str__() for author in self.authors.all()]))
