@@ -14,7 +14,7 @@ from django.urls import reverse_lazy
 
 from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel
 
-from products.models import Purchase, ItemType, AttachmentType
+from products.models import Purchase, ItemType, AttachmentType, Item
 from products.behaviours import AttachmentBase, ProductBase
 from framework.behaviours import CommentAble, PermalinkAble
 
@@ -26,11 +26,76 @@ class ZotAttachment(AttachmentBase):
 
     FORMAT_CHOICES = [
         ('file', 'Datei'),
-        ('note', 'Notiz')
+        ('note', 'Exzerpt')
     ]
 
     key = models.CharField(max_length=100, blank=True)
     format = models.CharField(max_length=5, choices=FORMAT_CHOICES)
+    zotitem = models.ForeignKey('ZotItem', on_delete=models.CASCADE)
+
+    ITEMTYPE_DEFAULTS = {
+        'shipping': False,
+        'request_price': True,
+        'additional_supply': False,
+        'default_price': 5,
+        'default_amount': None,
+        'purchasable_at': 300,
+        'accessible_at': 300,
+        'buy_once': True,
+        'expires_on_product_date': False,
+        'buy_unauthenticated': False,
+        'inform_staff': False,
+    }
+
+    @classmethod
+    def update_or_create_from_data(cls, key, data):
+        if data['itemType'] == 'attachment' and 'filename' in data:
+            format = 'file'
+            type = data['filename'].split('.')[-1]
+            if type not in settings.DOWNLOAD_FORMATS:
+                return None
+        elif data['itemType'] == 'note':
+            format = 'note'
+            type = 'pdf'
+        else:
+            return None
+
+        try:
+            zotitem = ZotItem.objects.get(slug=data['parentItem'])
+        except ObjectDoesNotExist:
+            return None
+
+        attachment_type, created = AttachmentType.objects.get_or_create(slug=type, defaults={'title': type.upper()})
+        attachment, created = cls.objects.update_or_create(
+            key=key, format=format, zotitem=zotitem, type=attachment_type)
+        attachment.update_or_create_item()
+
+    def update_or_create_item(self):
+        if self.type.slug in settings.DOWNLOAD_FORMATS:
+            if self.format == 'file':
+                title = 'Exzerpt'
+            else:
+                title = self.FORMAT_CHOICES[self.file]
+
+            defaults = self.ITEMTYPE_DEFAULTS
+            defaults['title'] = title
+
+            attachment_type, created = AttachmentType.objects.update_or_create(slug='pdf', defaults=defaults)
+            self.zotitem.product.item_set.update_or_create()
+        else:
+            self.item_set.delete()
+            
+        
+        if created:
+            logger.debug('Created attachment type {}'.format(attachment_type))
+        defaults = {
+            'key': file_key,
+            'type': attachment_type
+        }
+        if type == 'note':
+            defaults['format'] = type
+        else:
+            defaults['format'] = 'file'
 
     def get(self):
         zot = zotero.Zotero(settings.ZOTERO_USER_ID, settings.ZOTERO_LIBRARY_TYPE, settings.ZOTERO_API_KEY)
@@ -75,6 +140,11 @@ class Collection(TitleSlugDescriptionModel, PermalinkAble):
         """
         Retrieves and saves metadata from all items, attachments and notes inside the collection from zotero.
         """
+
+        def handle_protected(error):
+            logger.error(f'Failed to delete item: {error}')
+            mail_admins(f'Can not delete protected item', f"{error}")
+
         logger.info('Retrieving items in {}'.format(self.title))
 
         zot = zotero.Zotero(settings.ZOTERO_USER_ID, settings.ZOTERO_LIBRARY_TYPE, settings.ZOTERO_API_KEY)
@@ -91,70 +161,40 @@ class Collection(TitleSlugDescriptionModel, PermalinkAble):
         logger.info('updating items...')
 
         for item in parents:
-            zot_item = ZotItem.update_or_create_from_data(item['key'], item['data'])
-            zot_item.collection.add(self)
+            try:
+                zotitem = ZotItem.update_or_create_from_data(item['key'], item['data'])
+            except models.ProtectedError as e:
+                handle_protected(e)
+            zotitem.collection.add(self)
+
+        logger.info('cleaning up...')
 
         # Remove failed authors
-        Author.remove_failed_authors()
+        Author.objects.filter(zotitem__isnull=True).delete()
 
         # Remove deleted zotero items
-        logger.info('cleaning up...')
         parent_keys = [parent['data']['key'] for parent in parents]
         for zotitem in ZotItem.objects.filter(collection=self).exclude(slug__in=parent_keys):
-            zotitem.delete()  # Avoid bulk_delete
+            try:
+                zotitem.delete()  # Avoid bulk_delete
+            except models.ProtectedError as e:
+                handle_protected(e)
 
         logger.info('updating attachments/notes...')
 
         for child in children:
-            type_defaults = {
-                'shipping': False,
-                'buy_once': True,
-                'accessible_at': 300,
-                'purchasable_at': 300,
-                'default_price': settings.DEFAULT_FILE_PRICE
-            }
+            ZotAttachment.update_or_create_from_data(child['key'], child['data'])
 
-            try:
-                zot_item = ZotItem.objects.get(slug=child['data']['parentItem'])
-            except ObjectDoesNotExist:
-                continue
-
-            if child['data']['itemType'] == 'attachment' and 'filename' in child['data']:
-                type = child['data']['filename'].split('.')[-1]  # Get file type
-
-                if type in settings.DOWNLOAD_FORMATS:
-                    type_defaults['title'] = type.upper()
-                else:
-                    continue
-
-                if zot_item.scholarium:
-                    type_defaults['accessible_at'] = None
-                    type_defaults['purchasable_at'] = 0
-                    type = f'scholarium_{type}'
-
-            elif child['data']['itemType'] == 'note':
-                type = 'note'
-                type_defaults['title'] = 'Exzerpt'
-            else:
-                continue
-
-            # Create purchasable Item
-            zot_item.update_or_create_item(
-                type=type,
-                type_defaults=type_defaults,
-                file_key=child['data']['key'])
-
-        # Remove deleted attachments/notes
+        # Remove deleted attachments/notes or attachments not in DOWNLOAD_FORMATS
         logger.info('cleaning up...')
         child_keys = [child['data']['key'] for child in children]
-        for zot_item in ZotItem.objects.filter(collection=self):
-            for item in zot_item.product.item_set.filter(type__slug__in=settings.DOWNLOAD_FORMATS):
-                attachments = ZotAttachment.objects.filter(item=item)
-                for attachment in attachments:
-                    if attachment.key not in child_keys:
-                        attachment.delete()
-                if not item.attachments:
-                    item.delete()
+        try:
+            attachments = ZotAttachment.objects.filter(collection=self).exclude(
+                type__slug__in=settings.DOWNLOAD_FORMATS, key__in=child_keys)
+            Item.objects.filter(zotattachment__in=attachments).delete()
+            attachments.delete()
+        except models.ProtectedError as e:
+            handle_protected(e)
 
         logger.info('Sync finished.')
 
@@ -215,12 +255,6 @@ class Collection(TitleSlugDescriptionModel, PermalinkAble):
 class Author(models.Model):
     name = models.CharField(max_length=255)
 
-    @classmethod
-    def remove_failed_authors(cls):
-        for author in cls.objects.filter(zotitem__isnull=True):
-            logger.debug('Deleted author {}'.format(author.name))
-            author.delete()
-
     def __str__(self):
         return self.name
 
@@ -235,7 +269,6 @@ class ZotItem(ProductBase):
     authors = models.ManyToManyField(Author)
     published = models.DateField(blank=True, null=True)
     collection = models.ManyToManyField(Collection)
-    scholarium = models.BooleanField(default=False)  # If item is physically present in library
     amount = models.SmallIntegerField(null=True, blank=True)
     price = models.SmallIntegerField(null=True, blank=True)
     price_digital = models.SmallIntegerField(null=True, blank=True)
@@ -271,20 +304,6 @@ class ZotItem(ProductBase):
         'title': 'Verkauf',
     }
 
-    DIGITAL_ITEMTYPE_DEFAULTS = {
-        'shipping': False,
-        'request_price': True,
-        'additional_supply': False,
-        'default_price': 5,
-        'default_amount': None,
-        'purchasable_at': 300,
-        'accessible_at': 300,
-        'buy_once': True,
-        'expires_on_product_date': False,
-        'buy_unauthenticated': False,
-        'inform_staff': False,
-    }
-
     @property
     def lendings_active(self):
         return self.lending_set.filter(returned__isnull=True)
@@ -301,8 +320,6 @@ class ZotItem(ProductBase):
         """
         Given API data from Zotero as dict, update or create a ZotItem.
         """
-        item_data = {}
-
         # Get title
         try:
             title = data.get('title') or data['subject']  # Sometimes title is missing
@@ -375,43 +392,7 @@ class ZotItem(ProductBase):
                 })
 
         else:  # Delete purchase items
-            try:
-                self.product.item_set.filter(type_shipping=True).delete()
-            except models.ProtectedError:
-                logger.error(f'Failed to delete item for ZotItem {self.pk}')
-                edit_url = reverse_lazy('admin:library_zotitem_change', args=[self.pk])
-                mail_admins(
-                    f'Can not delete item: {self.title}',
-                    f"ZotItem '{self.title}' contains an item not found in Zotero. "
-                    "It can't be deleted due to purchases."
-                    f"Edit at {edit_url}. PK: {self.pk}")
-
-    # TODO : Replace
-    def update_or_create_item(self, type, type_defaults={}, item_defaults={}, file_key=None):
-        """
-        Creates/Updates a purchasable item from format/type string. Creates ItemType and Attachment as needed.
-        """
-        # Create item type if not present
-        itemtype, created = ItemType.objects.get_or_create(slug=type, defaults=type_defaults)
-        if created:
-            logger.debug('Created item type {}'.format(itemtype))
-
-        item = self.product.item_set.update_or_create(type=itemtype, defaults=item_defaults)[0]
-
-        if file_key:  # Create/Update attachment if necessary
-            attachment_type, created = AttachmentType.objects.get_or_create(slug='pdf', defaults={'title': 'PDF'})
-            if created:
-                logger.debug('Created attachment type {}'.format(attachment_type))
-            defaults = {
-                'key': file_key,
-                'type': attachment_type
-            }
-            if type == 'note':
-                defaults['format'] = type
-            else:
-                defaults['format'] = 'file'
-            attachment, created = ZotAttachment.objects.update_or_create(item=item, defaults=defaults)
-        return item
+            self.product.item_set.filter(type_shipping=True).delete()
 
     def __str__(self):
         return '%s (%s)' % (self.title, ', '.join([author.__str__() for author in self.authors.all()]))
