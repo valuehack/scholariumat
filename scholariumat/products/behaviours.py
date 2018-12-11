@@ -36,7 +36,7 @@ class AttachmentBase(models.Model):
     """Base class to create downloadable item attachment classes."""
 
     type = models.ForeignKey('products.AttachmentType', on_delete=models.PROTECT)
-    item = models.ForeignKey('products.Item', on_delete=models.CASCADE)
+    item = models.ForeignKey('products.Item', on_delete=models.CASCADE, null=True, blank=True)
 
     def get(self):
         pass
