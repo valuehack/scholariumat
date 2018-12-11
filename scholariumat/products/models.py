@@ -345,6 +345,11 @@ class AttachmentType(TitleSlugDescriptionModel):
 
 class FileAttachment(models.Model):
     file = models.FileField()
+    already_uploaded_url = models.CharField(
+        max_length=255,
+        blank=True,
+        default='',
+    )
     type = models.ForeignKey('products.AttachmentType', on_delete=models.PROTECT)
 
     def get(self):
@@ -353,6 +358,12 @@ class FileAttachment(models.Model):
         response['Content-Disposition'] = f'attachment; \
             filename={slugify(product.type.title)}.{self.type.slug}'
         return response
+
+    def save(self, *args, **kwargs):
+        if self.already_uploaded_url:
+            self.file.path = self.already_uploaded_url
+            self.already_uploaded_url = ''
+        return super().save(*args, **kwargs)
 
     def __str__(self):
         return f'{self.type.__str__()}: {self.file.name}'
