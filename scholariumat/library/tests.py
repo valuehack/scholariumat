@@ -5,7 +5,7 @@ from django.test import TestCase
 from django.conf import settings
 
 from library.models import Collection, ZotItem, ZotAttachment
-from products.models import ItemType, AttachmentType
+from products.models import ItemType, AttachmentType, Purchase, Item
 
 
 class AttachmentTest(TestCase):
@@ -64,17 +64,14 @@ class ImportTest(TestCase):
 
 
 class SyncTest(TestCase):
-    def setUp(self):
-        self.mock_settings = {
+    @classmethod
+    def setUpTestData(cls):
+        cls.mock_settings = {
             'ZOTERO_USER_ID': '',
             'ZOTERO_API_KEY': '',
             'ZOTERO_LIBRARY_TYPE': ''
         }
-
-    def test_sync(self):
-        zotero = mock.MagicMock()
-        collection = Collection.objects.create(title='test collection 3', slug='testkey4')
-        items = [
+        cls.items = [
             {'data': {'key': 'testkey',
                       'itemType': settings.ZOTERO_ITEM_TYPES[0],
                       'title': 'test book',
@@ -83,7 +80,8 @@ class SyncTest(TestCase):
                       'creators': [{
                         'firstName': 'John',
                         'lastName': 'Smith'
-                      }]}},
+                      }],
+                      'extra': '{price: 12}{price_digital: 6}'}},
             {'data': {'key': 'testkey2',
                       'itemType': 'attachment',
                       'title': 'test book pdf',
@@ -91,24 +89,62 @@ class SyncTest(TestCase):
                       'parentItem': 'testkey',
                       'filename': 'testfile.pdf'}},
         ]
-        zotero().everything.return_value = items
-        with mock.patch('pyzotero.zotero.Zotero', zotero), self.settings(**self.mock_settings):
-            collection.sync()
+        cls.zotero = mock.MagicMock()
 
-        testitem = ZotItem.objects.get(slug=items[0]['data']['key'])
-        # Test title
-        self.assertEqual(testitem.title, items[0]['data']['title'])
-        # Test date
+    def setUp(self):
+        self.zotero().everything.return_value = self.items
+        self.collection = Collection.objects.create(title='test collection 3', slug='testkey4')
+        with mock.patch('pyzotero.zotero.Zotero', self.zotero), self.settings(**self.mock_settings):
+            self.collection.sync()
+
+    def tearDown(self):
+        Purchase.objects.all().delete()
+        Collection.objects.all().delete()
+
+    def test_retrieval(self):
+        testitem = ZotItem.objects.get(slug=self.items[0]['data']['key'])
+        self.assertEqual(testitem.title, self.items[0]['data']['title'])
         self.assertEqual(testitem.published, date(2018, 1, 1))
-        # Test author creation
         self.assertTrue(testitem.authors.filter(name='John Smith'))
+
+    def test_item_creation(self):
         # Test if purchase item and itemtype got created
-        self.assertTrue(testitem.product.item_set.filter(type__slug__contains='purchase'))
+        testitem = ZotItem.objects.get(slug=self.items[0]['data']['key'])
+        item = testitem.product.item_set.get(type__slug__contains='purchase')
+        self.assertEqual(item.price, 12)
+        self.assertEqual(item.amount, 1)
+
+    def test_attachment_creation(self):
         # Test if purchase item with attachment and got created
-        pdf_item = testitem.product.item_set.get(type__slug='pdf')
-        self.assertEqual(pdf_item.attachments[0].key, items[1]['data']['key'])
-        # Test deletion
-        zotero().everything.return_value = [items[0]]
-        with mock.patch('pyzotero.zotero.Zotero', zotero), self.settings(**self.mock_settings):
-            collection.sync()
-        self.assertEqual(pdf_item.attachments, [])
+        self.assertTrue(ZotAttachment.objects.exists())
+        testitem = ZotItem.objects.get(slug=self.items[0]['data']['key'])
+        item = testitem.product.item_set.get(type__slug='pdf')
+        self.assertEqual(item.attachments[0].key, self.items[1]['data']['key'])
+        self.assertEqual(item.price, 6)
+
+    def test_deletion(self):
+        self.zotero().everything.return_value = [self.items[0]]
+        with mock.patch('pyzotero.zotero.Zotero', self.zotero), self.settings(**self.mock_settings):
+            self.collection.sync()
+        self.assertFalse(ZotAttachment.objects.exists())
+        self.assertFalse(Item.objects.filter(type__slug='pdf').exists())
+
+    def test_extra_variables(self):
+        pass
+
+    def test_override(self):
+        self.zotero().everything.return_value[0]['data']['extra'] = '{amount: 2}'
+        with mock.patch('pyzotero.zotero.Zotero', self.zotero), self.settings(**self.mock_settings):
+            self.collection.sync()
+        purchase_item = Item.objects.get(type__slug__contains='purchase')
+        self.assertEqual(purchase_item.amount, 2)
+        self.assertEqual(purchase_item.price, None)
+
+        pdf_item = Item.objects.get(type__slug='pdf')
+        self.assertEqual(pdf_item.price, 5)
+
+    def test_amount_change(self):
+        pass
+
+    def test_purchase_protection(self):
+        pass

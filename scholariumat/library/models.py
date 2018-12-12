@@ -95,8 +95,8 @@ class ZotAttachment(AttachmentBase):
         type_defaults = self.ITEMTYPE_DEFAULTS
         type_defaults['title'] = title
 
-        price = self.zotitem.price
-        item_defaults = {'_price': price} if price else {}
+        price = self.zotitem.price_digital or self.ITEMTYPE_DEFAULTS['default_price']
+        item_defaults = {'_price': price}
 
         item_type, created = ItemType.objects.update_or_create(slug=slug, defaults=type_defaults)
         item, created = self.zotitem.product.item_set.update_or_create(type=item_type, **item_defaults)
@@ -371,7 +371,10 @@ class ZotItem(ProductBase):
         }
 
         existing = cls.objects.filter(slug=slug)
-        amount_dif = amount - getattr(existing.get(), 'amount', 0) if existing else 0
+        if amount and existing:
+            amount_dif = int(amount) - getattr(existing.get(), 'amount', 0)
+        else:
+            amount_dif = 0
         zot_item, created = existing.update_or_create(defaults=item_data)
         zot_item.authors.clear()
         zot_item.authors.add(*authors)
