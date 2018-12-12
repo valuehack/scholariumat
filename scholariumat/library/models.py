@@ -314,6 +314,14 @@ class ZotItem(ProductBase):
         except ObjectDoesNotExist:
             return None
 
+    @property
+    def amount_bought(self):
+        try:
+            local_amount = self.product.item_set.get(type__shipping=True).amount
+            return self.amount - local_amount
+        except Item.DoesNotExist:
+            return None
+
     @classmethod
     def update_or_create_from_data(cls, data):
         """
@@ -351,7 +359,9 @@ class ZotItem(ProductBase):
             author, created = Author.objects.get_or_create(name=full_name)
             authors.append(author)
 
+        slug = data['key']
         item_data = {
+            'slug': slug,
             'title': title,
             'published': date,
             'amount': amount,
@@ -360,15 +370,17 @@ class ZotItem(ProductBase):
             'printing': bool(extra_variables.get('printing')),
         }
 
-        zot_item, created = cls.objects.update_or_create(slug=data['key'], defaults=item_data)
+        existing = cls.objects.filter(slug=slug)
+        amount_dif = amount - getattr(existing.get(), 'amount', 0) if existing else 0
+        zot_item, created = existing.update_or_create(defaults=item_data)
         zot_item.authors.clear()
         zot_item.authors.add(*authors)
-        zot_item.update_or_create_purchase_item()
+        zot_item.update_or_create_purchase_item(amount_dif=amount_dif)
 
         logger.debug(f'Saved item {zot_item.title}. Created: {created}')
         return zot_item
 
-    def update_or_create_purchase_item(self):
+    def update_or_create_purchase_item(self, amount_dif=0):
         """
         Updates purchasable items for a Zotero Item
         """
@@ -382,12 +394,20 @@ class ZotItem(ProductBase):
                     slug='published_purchase',
                     defaults=self.PUBLISHING_ITEMTYPE_DEFAULTS)
 
-            self.product.item_set.update_or_create(
-                type__shipping=True,
+            existing = self.product.item_set.filter(type__shipping=True)
+
+            amount = self.amount
+            if existing:
+                local_amount = existing.first().amount
+                if local_amount is not self.amount:
+                    amount = local_amount + amount_dif
+
+            existing.update_or_create(
                 defaults={
+                    'product': self.product,
                     'type': itemtype,
                     '_price': self.price,
-                    'amount': self.amount
+                    'amount': amount
                 })
 
         else:  # Delete purchase items
