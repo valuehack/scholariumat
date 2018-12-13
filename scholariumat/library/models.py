@@ -375,7 +375,8 @@ class ZotItem(ProductBase):
 
         existing = cls.objects.filter(slug=slug)
         if amount and existing:
-            amount_dif = int(amount) - getattr(existing.get(), 'amount', 0)
+            local_amount = existing.get().amount or 0
+            amount_dif = int(amount) - local_amount
         else:
             amount_dif = 0
         zot_item, created = existing.update_or_create(defaults=item_data)

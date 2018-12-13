@@ -127,6 +127,7 @@ class SyncTest(TestCase):
         item = testitem.product.item_set.get(type__slug='pdf')
         self.assertEqual(item.attachments[0].key, self.items[1]['data']['key'])
         self.assertEqual(item.price, 6)
+        self.assertEqual(item.amount, None)
 
     def test_deletion(self):
         self.zotero().everything.return_value = [self.items[0]]
