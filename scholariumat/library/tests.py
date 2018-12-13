@@ -3,9 +3,12 @@ from datetime import date
 
 from django.test import TestCase
 from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.core import mail
 
 from library.models import Collection, ZotItem, ZotAttachment
-from products.models import ItemType, AttachmentType, Purchase, Item
+from products.models import ItemType, AttachmentType, Purchase, Item, Product
+from users.models import Profile
 
 
 class AttachmentTest(TestCase):
@@ -71,7 +74,10 @@ class SyncTest(TestCase):
             'ZOTERO_API_KEY': '',
             'ZOTERO_LIBRARY_TYPE': ''
         }
-        cls.items = [
+        cls.zotero = mock.MagicMock()
+
+    def setUp(self):
+        self.items = [
             {'data': {'key': 'testkey',
                       'itemType': settings.ZOTERO_ITEM_TYPES[0],
                       'title': 'test book',
@@ -89,9 +95,6 @@ class SyncTest(TestCase):
                       'parentItem': 'testkey',
                       'filename': 'testfile.pdf'}},
         ]
-        cls.zotero = mock.MagicMock()
-
-    def setUp(self):
         self.zotero().everything.return_value = self.items
         self.collection = Collection.objects.create(title='test collection 3', slug='testkey4')
         with mock.patch('pyzotero.zotero.Zotero', self.zotero), self.settings(**self.mock_settings):
@@ -99,7 +102,10 @@ class SyncTest(TestCase):
 
     def tearDown(self):
         Purchase.objects.all().delete()
-        Collection.objects.all().delete()
+        ZotItem.objects.all().delete()
+        Product.objects.all().delete()
+        Item.objects.all().delete()
+        ItemType.objects.all().delete()
 
     def test_retrieval(self):
         testitem = ZotItem.objects.get(slug=self.items[0]['data']['key'])
@@ -129,9 +135,6 @@ class SyncTest(TestCase):
         self.assertFalse(ZotAttachment.objects.exists())
         self.assertFalse(Item.objects.filter(type__slug='pdf').exists())
 
-    def test_extra_variables(self):
-        pass
-
     def test_override(self):
         self.zotero().everything.return_value[0]['data']['extra'] = '{amount: 2}'
         with mock.patch('pyzotero.zotero.Zotero', self.zotero), self.settings(**self.mock_settings):
@@ -144,7 +147,29 @@ class SyncTest(TestCase):
         self.assertEqual(pdf_item.price, 5)
 
     def test_amount_change(self):
-        pass
+        purchase_item = Item.objects.get(type__slug__contains='purchase')
+        purchase_item.sell(1)  # Bought 1 time
+        self.zotero().everything.return_value[0]['data']['extra'] = '{amount: 4}'
+        with mock.patch('pyzotero.zotero.Zotero', self.zotero), self.settings(**self.mock_settings):
+            self.collection.sync()
+        purchase_item.refresh_from_db()
+        self.assertEqual(purchase_item.amount, 3)
+
+        purchase_item.sell(1)  # Bought 1 time
+        self.zotero().everything.return_value[0]['data']['extra'] = '{amount: 3}'
+        with mock.patch('pyzotero.zotero.Zotero', self.zotero), self.settings(**self.mock_settings):
+            self.collection.sync()
+        purchase_item.refresh_from_db()
+        self.assertEqual(purchase_item.amount, 1)
 
     def test_purchase_protection(self):
-        pass
+        purchase_item = Item.objects.get(type__slug__contains='purchase')
+        user = get_user_model().objects.create(email='a.b@c.de')
+        profile = Profile.objects.create(user=user)
+        purchase = Purchase.objects.create(profile=profile, item=purchase_item)
+        purchase.execute()
+        self.zotero().everything.return_value[0]['data']['tags'] = []
+        with mock.patch('pyzotero.zotero.Zotero', self.zotero), self.settings(**self.mock_settings):
+            self.collection.sync()
+        self.assertTrue(Item.objects.filter(type__slug__contains='purchase').exists())
+        self.assertEqual(len(mail.outbox), 1)
