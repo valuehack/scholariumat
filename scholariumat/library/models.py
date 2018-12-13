@@ -343,6 +343,7 @@ class ZotItem(ProductBase):
             date = parse(date) if date else None
         except ValueError:
             logger.debug(f'Date {date} not recognized: {title}. skipping.')
+            return None
 
         # Get extra variables
         extra_variables = dict(re.findall(r'{(\w+):\s(\w+)}', data.get('extra', '')))
