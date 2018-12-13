@@ -72,17 +72,18 @@ class ZotAttachment(AttachmentBase):
 
         attachment_type, created = AttachmentType.objects.get_or_create(slug=type, defaults={'title': type.upper()})
         attachment, created = cls.objects.update_or_create(
-            key=data['key'], format=format, zotitem=zotitem, type=attachment_type)
+            key=data['key'], defaults={'format': format, 'zotitem': zotitem, 'type': attachment_type})
         attachment.update_or_create_item()
 
         return attachment
 
     def update_or_create_item(self):
         if self.type.slug not in settings.DOWNLOAD_FORMATS:
-            try:
-                self.item_set.delete()
-            except models.ProtectedError as e:
-                handle_protected(e)
+            if self.item:
+                try:
+                    self.item.delete()
+                except models.ProtectedError as e:
+                    handle_protected(e)
             return None
 
         if self.format == 'note':
@@ -99,7 +100,9 @@ class ZotAttachment(AttachmentBase):
         item_defaults = {'_price': price}
 
         item_type, created = ItemType.objects.update_or_create(slug=slug, defaults=type_defaults)
-        item, created = self.zotitem.product.item_set.update_or_create(type=item_type, **item_defaults)
+        item_defaults['type'] = item_type
+
+        item, created = self.zotitem.product.item_set.update_or_create(zotattachment=self, defaults=item_defaults)
         self.item = item
         self.save()
 
@@ -415,7 +418,7 @@ class ZotItem(ProductBase):
 
         else:  # Delete purchase items
             try:
-                self.product.item_set.filter(type_shipping=True).delete()
+                self.product.item_set.filter(type__shipping=True).delete()
             except models.ProtectedError as e:
                 handle_protected(e)
 
