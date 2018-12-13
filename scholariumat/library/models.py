@@ -167,7 +167,8 @@ class Collection(TitleSlugDescriptionModel, PermalinkAble):
 
         for item in parents:
             zotitem = ZotItem.update_or_create_from_data(item['data'])
-            zotitem.collection.add(self)
+            if zotitem:
+                zotitem.collection.add(self)
 
         logger.info('cleaning up...')
 
