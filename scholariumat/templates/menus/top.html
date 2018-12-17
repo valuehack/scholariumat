@@ -188,9 +188,13 @@
         </form>
       </div>
       <div class="actions">
-        <button class="ui left floated button" form="login_form" type="submit">Anmelden</button>
-        Sie haben noch keinen Zugang?
-        <button class="ui register_open button">Eintragen</button>
+          <div class="ui left floated register_open labeled button">
+            <div class="ui button">
+              Eintragen
+            </div>
+            <div class="ui left pointing basic label">Sie haben noch keinen Zugang?</div>
+          </div>
+        <button class="ui button" form="login_form" type="submit">Anmelden</button>
       </div>
     </div>
 
@@ -208,9 +212,13 @@
         </form>
       </div>
       <div class="actions">
-        <button class="ui left floated button" form="register_form_top" type="submit">Eintragen</button>
-        Sie sind bereits eingetragen?
-        <button class="ui login_open button">Anmelden</button>
+        <div class="ui left floated login_open labeled button">
+          <div class="ui button">
+            Anmelden
+          </div>
+          <div class="ui left pointing basic label">Sie sind bereits eingetragen?</div>
+        </div>
+        <button class="ui button" form="register_form_top" type="submit">Eintragen</button>
       </div>
     </div>
     <script>
