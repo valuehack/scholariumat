@@ -10,11 +10,11 @@
     
       {% if status.accessible and item.attachments %}
         <div class="item">
-          <div class="ui left labeled button">
+          <div class="ui left labeled button" id="{{ item.pk }}_open">
             <div class="ui right pointing basic label">
               {{ item }}
             </div>
-            <div class="ui grey icon button" id="{{ item.pk }}_open">
+            <div class="ui grey icon button">
               <i class="download icon"></i>
               <div class="ui mini modal" id="{{ item_pk }}_dlmodal">
                 <div class="header">{{ item }}</div>
@@ -56,12 +56,12 @@
             <input type="hidden" name="requested_item" value="{{ item.pk }}"/>
           </form>
           <div class="item">
-            <div class="ui left labeled button">
+            <div onclick='document.forms["{{ item.pk }}_form"].submit(); return false;' class="ui left labeled button">
               <div class="ui basic right pointing label">
                   {{ item }}
               </div>
               {% if request.user.is_authenticated %}
-                <div onclick='document.forms["{{ item.pk }}_form"].submit(); return false;' class="ui animated icon button">
+                <div class="ui animated icon button">
                   <div class="visible content" style="margin-right: 0.8em;">
                     {{ item.price }}&nbsp;
                     <span style="height: 1em;">
@@ -74,7 +74,7 @@
                 </div>
               {% else %}
                 {% necessary_level item.price as level %}
-                <div onclick='document.forms["{{ item.pk }}_form"].submit(); return false;' class="ui animated button">
+                <div class="ui animated button">
                   <div class="visible content">
                     {{ level.amount }} €
                   </div>
@@ -92,11 +92,11 @@
             <input type="hidden" name="requested_item" value="{{ item.pk }}"/>
           </form>
           <div class="item">
-            <div class="ui left labeled button">
+            <div class="ui left labeled button" onclick='document.forms["{{ item.pk }}_form"].submit(); return false;' >
               <div class="ui basic right pointing label">
                 {{ item }}
               </div>
-              <a onclick='document.forms["{{ item.pk }}_form"].submit(); return false;' class="ui button">Anfragen</a>
+              <a class="ui button">Anfragen</a>
             </div>
           </div>
         
