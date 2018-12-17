@@ -150,18 +150,19 @@ class SyncTest(TestCase):
     def test_amount_change(self):
         purchase_item = Item.objects.get(type__slug__contains='purchase')
         purchase_item.sell(1)  # Bought 1 time
+        with mock.patch('pyzotero.zotero.Zotero', self.zotero), self.settings(**self.mock_settings):
+            self.collection.sync()
+        purchase_item.refresh_from_db()
+        self.assertEqual(purchase_item.amount, 0)
+
+    def test_amount_override(self):
+        purchase_item = Item.objects.get(type__slug__contains='purchase')
+        purchase_item.sell(1)  # Bought 1 time
         self.zotero().everything.return_value[0]['data']['extra'] = '{amount: 4}'
         with mock.patch('pyzotero.zotero.Zotero', self.zotero), self.settings(**self.mock_settings):
             self.collection.sync()
         purchase_item.refresh_from_db()
-        self.assertEqual(purchase_item.amount, 3)
-
-        purchase_item.sell(1)  # Bought 1 time
-        self.zotero().everything.return_value[0]['data']['extra'] = '{amount: 3}'
-        with mock.patch('pyzotero.zotero.Zotero', self.zotero), self.settings(**self.mock_settings):
-            self.collection.sync()
-        purchase_item.refresh_from_db()
-        self.assertEqual(purchase_item.amount, 1)
+        self.assertEqual(purchase_item.amount, 4)
 
     def test_purchase_protection(self):
         purchase_item = Item.objects.get(type__slug__contains='purchase')

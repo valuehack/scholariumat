@@ -272,10 +272,10 @@ class ZotItem(ProductBase):
     authors = models.ManyToManyField(Author)
     published = models.DateField(blank=True, null=True)
     collection = models.ManyToManyField(Collection)
-    amount = models.SmallIntegerField(null=True, blank=True)
-    price = models.SmallIntegerField(null=True, blank=True)
-    price_digital = models.SmallIntegerField(null=True, blank=True)
-    printing = models.BooleanField(default=False)
+    amount = models.SmallIntegerField(null=True, blank=True, editable=False)
+    price = models.SmallIntegerField(null=True, blank=True, editable=False)
+    price_digital = models.SmallIntegerField(null=True, blank=True, editable=False)
+    printing = models.BooleanField(default=False, editable=False)
 
     LIBRARY_ITEMTYPE_DEFAULTS = {
         'shipping': True,
@@ -376,20 +376,18 @@ class ZotItem(ProductBase):
         }
 
         existing = cls.objects.filter(slug=slug)
-        if amount and existing:
-            local_amount = existing.get().amount or 0
-            amount_dif = int(amount) - local_amount
-        else:
-            amount_dif = 0
+        local_amount = existing.get().amount if existing else None
+        amount_changed = local_amount is not amount
+
         zot_item, created = existing.update_or_create(defaults=item_data)
         zot_item.authors.clear()
         zot_item.authors.add(*authors)
-        zot_item.update_or_create_purchase_item(amount_dif=amount_dif)
+        zot_item.update_or_create_purchase_item(amount_changed=amount_changed)
 
         logger.debug(f'Saved item {zot_item.title}. Created: {created}')
         return zot_item
 
-    def update_or_create_purchase_item(self, amount_dif=0):
+    def update_or_create_purchase_item(self, amount_changed=False):
         """
         Updates purchasable items for a Zotero Item
         """
@@ -405,11 +403,10 @@ class ZotItem(ProductBase):
 
             existing = self.product.item_set.filter(type__shipping=True)
 
+            # Only overwrite amount if changed
             amount = self.amount
-            if existing:
-                local_amount = existing.first().amount
-                if local_amount is not self.amount:
-                    amount = local_amount + amount_dif
+            if existing and not amount_changed:
+                amount = existing.first().amount
 
             existing.update_or_create(
                 defaults={
