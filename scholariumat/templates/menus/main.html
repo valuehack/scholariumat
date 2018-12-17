@@ -1,5 +1,5 @@
 <div class="ui big stackable attached menu">
-  <div class="ui container">
+  <div class="ui text container">
     {% if request.user.is_authenticated %}
       <a href="{% url 'blog:list' %}"  class="item">
         Scholien
@@ -42,7 +42,7 @@
         Kontakt
       </a>
     {% endif %}
-    <a href="{% url 'donations:levels' %}" class="right item">
+    <a href="{% url 'donations:levels' %}" class="item">
       <b>Unterstützen</b>
     </a>
   </div>
