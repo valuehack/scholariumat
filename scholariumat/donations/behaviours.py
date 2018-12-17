@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 class DonationMixin(models.Model):
     """Profile mixin for managing user donations"""
-    uninsterested = models.BooleanField(default=False)  # Indicated no interest in future donations.
+    uninterested = models.BooleanField(default=False)  # Indicated no interest in future donations.
 
     @property
     def donations(self):
