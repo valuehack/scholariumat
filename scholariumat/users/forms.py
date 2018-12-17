@@ -13,6 +13,13 @@ logger = logging.getLogger(__name__)
 class UserForm(forms.ModelForm):
     captcha = ReCaptchaField(attrs={'_no_label': True, '_no_errors': True})
 
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if email:
+            email = email.lower()
+
+        return email
+
     class Meta:
         model = get_user_model()
         fields = ['email']

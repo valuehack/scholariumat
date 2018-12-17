@@ -4,6 +4,9 @@
 {% block content %}
 <div class="ui text container">
   <h1 class="ui centered header">Anmeldung</h1>
+  {% for error in form.non_field_errors %}
+    <div class="ui floating error message">{{ error }}</div>
+  {% endfor %}
   <form class="ui form" method="POST">
     {% csrf_token %}
     {% render_form form %}
