@@ -4,39 +4,40 @@
 {% block content %}
   <div class="ui text container">
     <h1 class="ui centered header">
-      {% block title %}{{ section_title }}{% endblock %}
+      {% block title %}{{ type.header }}{% endblock %}
     </h1>
-    {% if not request.user.is_authenticated %}
-      <p>{{ object.description|apply_markup:"markdown" }}</p>
+    {% if type.description %}
+      <p>{{ type.description|apply_markup:"markdown" }}</p>
     {% endif %}
-    <div class="ui hidden divider"></div>
+    <div class="ui hidden section divider"></div>
 
-    {% if object_list %}
-      {% for event in object_list %}
+    {% if future_events %}
+      <h2 class="ui centered header">Kommende {{ type.header }}</h2>
+      {% for event in future_events %}
         <div class="ui basic segment">
           <h2 class="ui centered header">
             <a href="{% url 'events:event' event.slug %}">{{ event.title }}</a>
             <div class="sub header">
-                {% include "components/event_date.html" with object=event %}
+                {% include "events/components/event_date.html" with object=event %}
             </div>
           </h2>
-          {% if event.description is not None %}
-            {{ event.description|apply_markup:"markdown" }}
+          {% if event.description %}
+            {{ event.description|apply_markup:"markdown"|truncatewords:64 }}
           {% endif %}
         </div>
         {% if not forloop.last %}
           <div class="ui section divider"></div>
         {% endif %}
       {% endfor %}
-      {% if paginator.num_pages > 1 %}
-        <div class="ui hidden section divider"></div>
-        <div class="ui right floated pagination menu">
-          {% include "components/pagination.html" %}
-        </div>
-      {% endif %}
-    {% else %}
-      <div class="ui message">Aktuell sind noch keine weiteren {{ section_title }} geplant.</div>
+      <div class="ui hidden section divider"></div>
     {% endif %}
-
   </div>
+  {% if object_list and request.user.is_authenticated %}
+    <h2 class="ui centered header">Vergangene {{ type.header }}</h2>
+    <div class="ui hidden divider"></div>
+    <div class="ui container">
+      {% include 'events/components/event_table.html' with object_list=object_list %}
+    </div>
+  {% endif %}
+
 {% endblock content %}

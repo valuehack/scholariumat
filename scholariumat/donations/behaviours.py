@@ -6,6 +6,7 @@ import datetime
 from django.db import models
 from django.conf import settings
 from django.urls import reverse_lazy
+from django.core.mail import mail_managers
 
 import paypalrestsdk as paypal
 
@@ -26,13 +27,11 @@ class DonationMixin(models.Model):
     @property
     def donation(self):
         """Returns HIGHEST active donation."""
-        donations = self.donations.filter(expiration__gte=datetime.date.today()).order_by('-amount')
-        return donations[0] if donations else None
+        return self.donations.filter(expiration__gte=datetime.date.today()).order_by('-amount').first()
 
     @property
     def last_donation(self):
-        donations = self.donation_set.filter(executed=True).order_by('-date')
-        return donations[0] if donations else None
+        return self.donation_set.filter(executed=True).order_by('-date').first()
 
     @property
     def expired_donations(self):
@@ -216,6 +215,9 @@ class Payment(CommentAble):
                 self.save()
                 self.profile.refill(self.amount)
                 logger.info("{} donated {} and is now level {}".format(self.profile, self.amount, self.profile.level))
+                mail_managers(
+                    f'Neue Unterstützung: {self.level.title}',
+                    f'Nutzer {self.profile} hat {self.amount} Euro per {self.method} unterstützt. ')
                 return True
 
     def _execute_paypal(self, request):

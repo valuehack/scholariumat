@@ -4,6 +4,10 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.views import defaults as default_views
 
+
+handler404 = 'framework.views.page_not_found_view'
+handler500 = 'framework.views.server_error_view'
+
 urlpatterns = [
     path(settings.ADMIN_URL, admin.site.urls),
     path("account/", include("authtools.urls")),
@@ -11,7 +15,7 @@ urlpatterns = [
     path("scholien/", include("blog.urls")),
     path('profil/', include("users.urls")),
     path('spende/', include("donations.urls")),
-    path('veranstaltungen/', include("events.urls")),
+    path('', include("events.urls")),
     path('studium/', include("studies.urls")),
     path('', include("products.urls")),
     path('', include("framework.urls")),

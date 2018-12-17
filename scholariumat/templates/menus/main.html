@@ -4,14 +4,14 @@
       <a href="{% url 'blog:list' %}"  class="item">
         Scholien
       </a>
-      <a href="{% url 'events:type' 'salon' %}" class="item">
-        Salons
+      <a href="{% url 'events:salons' %}" class="item">
+        Salon
       </a>
-      <a href="{% url 'events:type' 'seminar' %}" class="item">
+      <a href="{% url 'events:seminars' %}" class="item">
         Seminare
       </a>
-      <a href="{% url 'events:recordings' %}" class="item">
-        Aufzeichnungen
+      <a href="{% url 'events:lectures' %}" class="item">
+        Vortrag
       </a>
       <a href="{% url 'library:list' %}" class="item">
         Bibliothek
@@ -26,11 +26,14 @@
       <a href="{% url 'blog:list' %}"  class="item">
         Scholien
       </a>
-      <a href="{% url 'events:type' 'salon' %}" class="item">
-        Salons
+      <a href="{% url 'events:salons' %}" class="item">
+        Salon
       </a>
-      <a href="{% url 'events:type' 'seminar' %}" class="item">
+      <a href="{% url 'events:seminars' %}" class="item">
         Seminare
+      </a>
+      <a href="{% url 'events:lectures' %}" class="item">
+        Vortrag
       </a>
       <a href="{% url 'studies:products' %}" class="item">
         Studium

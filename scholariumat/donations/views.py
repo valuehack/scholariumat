@@ -20,6 +20,11 @@ logger = logging.getLogger(__name__)
 class DonationView(DetailView):
     model = Donation
 
+    def dispatch(self, *args, **kwargs):
+        if not self.request.user.is_authenticated:
+            return HttpResponseRedirect(reverse_lazy('donations:levels'))
+        return super().dispatch(*args, **kwargs)
+
     def get_object(self):
         donation = self.request.user.profile.donation
         if not donation:

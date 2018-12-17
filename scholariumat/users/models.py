@@ -74,7 +74,7 @@ class Profile(CartMixin, DonationMixin, LendingMixin, BalanceMixin, TimeStampedM
         return f'{self.name}, {self.street}, {self.postcode} {self.city}, {self.country}'
 
     def __str__(self):
-        return self.user.__str__()
+        return f'{self.name} ({self.user.__str__()})' if self.name else self.user.__str__()
 
     class Meta():
         verbose_name = 'Nutzerprofil'

@@ -4,7 +4,7 @@ from .base import env
 # GENERAL
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#debug
-DEBUG = True
+DEBUG = env.bool('DJANGO_DEBUG', True)
 # https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
 SECRET_KEY = env('DJANGO_SECRET_KEY', default='fZHvlsQIedWTplwARXrwH0TI4MZXNFpSE7wl8X1a1g4TK4ckuopNSGyQEDmj8B8L')
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
@@ -30,7 +30,7 @@ TEMPLATES[0]['OPTIONS']['debug'] = DEBUG  # noqa F405
 # EMAIL
 # ------------------------------------------------------------------------------
 EMAIL_BACKEND = 'sendgrid_backend.SendgridBackend'
-SENDGRID_API_KEY = env('SENDGRID_API_KEY')
+SENDGRID_API_KEY = env('SENDGRID_API_KEY', default='')
 SENDGRID_SANDBOX_MODE_IN_DEBUG = env.bool('SENDGRID_SANDBOX_MODE_IN_DEBUG', default=True)
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-host
