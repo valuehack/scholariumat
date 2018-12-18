@@ -344,7 +344,7 @@ class AttachmentType(TitleSlugDescriptionModel):
 
 
 class FileAttachment(models.Model):
-    file = models.FileField()
+    file = models.FileField(null=True, blank=True)
     already_uploaded_url = models.CharField(
         max_length=255,
         blank=True,
@@ -353,6 +353,8 @@ class FileAttachment(models.Model):
     type = models.ForeignKey('products.AttachmentType', on_delete=models.PROTECT)
 
     def get(self):
+        if not self.file:
+            raise FileNotFoundError
         product = next(i.product for i in self.item_set.all() if i.product.type)
         response = HttpResponse(self.file, content_type=f'application/{self.type.slug}')
         response['Content-Disposition'] = f'attachment; \
