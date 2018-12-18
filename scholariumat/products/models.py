@@ -361,7 +361,7 @@ class FileAttachment(models.Model):
 
     def save(self, *args, **kwargs):
         if self.already_uploaded_url:
-            self.file.path = self.already_uploaded_url
+            self.file.name = self.already_uploaded_url
             self.already_uploaded_url = ''
         return super().save(*args, **kwargs)
 
