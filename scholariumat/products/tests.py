@@ -6,20 +6,14 @@ from library.models import ZotItem
 from products.models import Item, ItemType, Purchase
 
 
-class ProductTest(TestCase):
-    def setUp(self, price=10, amount=1):
+class PurchaseTest(TestCase):
+    def setUp(self):
         self.user = get_user_model().objects.create(email='a.b@c.de')
         Profile.objects.create(user=self.user)
+        self.user.profile.cart.delete()
         self.book = ZotItem.objects.create(title='Testbook', slug='testslug')
         self.itemtype = ItemType.objects.create(title='Kauf')
-        self.item = Item.objects.create(type=self.itemtype, _price=price, amount=amount, product=self.book.product)
-
-
-class PurchaseTest(ProductTest):
-    def setUp(self):
-        self.amount_start = 10
-        self.price_start = 10
-        super().setUp(price=self.price_start, amount=self.amount_start)
+        self.item = Item.objects.create(type=self.itemtype, _price=10, amount=10, product=self.book.product)
 
     def test_balance(self):
         # Test if purchase fails if balance is not sufficient.
@@ -35,16 +29,32 @@ class PurchaseTest(ProductTest):
 
     def test_purchase(self):
         # Test if total price works.
-        amount = 3
         purchase = Purchase.objects.create(profile=self.user.profile, item=self.item, amount=3)
-        self.assertEqual(purchase.total, amount * self.price_start)
+        self.assertEqual(purchase.total, 30)
+
+    def test_buy_once(self):
+        self.itemtype.buy_once = True
+        self.itemtype.save()
+        profile = self.user.profile
+        profile.refill(10)
+        self.item.add_to_cart(profile)
+        self.item.add_to_cart(profile)
+        self.assertEqual(profile.cart_total, 10)
+        self.assertEqual(profile.cart.first().amount, 1)
+        profile.execute_cart()
+        self.assertEqual(profile.balance, 0)
 
 
-class ItemTest(ProductTest):
+class ItemTest(TestCase):
     def setUp(self):
         self.amount_start = 2
         self.price_start = 1
-        super().setUp(price=self.price_start, amount=self.amount_start)
+        self.user = get_user_model().objects.create(email='a.b@c.de')
+        Profile.objects.create(user=self.user)
+        self.book = ZotItem.objects.create(title='Testbook', slug='testslug')
+        self.itemtype = ItemType.objects.create(title='Kauf')
+        self.item = Item.objects.create(
+            type=self.itemtype, _price=self.price_start, amount=self.amount_start, product=self.book.product)
         self.user.profile.refill(10)
 
     def test_item(self):

@@ -237,7 +237,7 @@ class Item(TimeStampedModel):
         """Only add a limited product if no purchase of it exists."""
         if self.get_purchasability(profile.user) == 'purchasable':
             purchase, created = Purchase.objects.get_or_create(profile=profile, item=self, executed=False)
-            if not created:
+            if not created and not self.type.buy_once:
                 purchase.amount += 1
                 purchase.save()
             return True
@@ -325,6 +325,11 @@ class Purchase(TimeStampedModel, CommentAble):
         self.profile.refill(self.total)
         self.item.refill(self.amount)
         self.delete()
+
+    def save(self, *args, **kwargs):
+        if self.item.type.buy_once:
+            self.amount = 1
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return '%dx %s (%s)' % (self.amount, self.item.product.__str__(), self.profile.__str__())
