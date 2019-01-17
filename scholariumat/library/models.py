@@ -401,11 +401,11 @@ class ZotItem(ProductBase):
         if self.amount is not None:
             if self.printing:
                 itemtype, created = ItemType.objects.update_or_create(
-                    slug='library_purchase',
+                    slug='published_purchase',
                     defaults=self.PUBLISHING_ITEMTYPE_DEFAULTS)
             else:
                 itemtype, created = ItemType.objects.update_or_create(
-                    slug='published_purchase',
+                    slug='library_purchase',
                     defaults=self.LIBRARY_ITEMTYPE_DEFAULTS)
 
             existing = self.product.item_set.filter(type__shipping=True)
