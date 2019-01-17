@@ -310,6 +310,9 @@ ZOTERO_OWNER_TAGS = [
     'Schütz',
     'Taghizadegan'
 ]
+ZOTERO_EXCLUDED_TAGS = [
+    'WienerSchulen'
+]
 
 # Error Messages
 MESSAGE_UNEXPECTED_ERROR = "Ein unerwarteter Fehler ist aufgetreten. "\

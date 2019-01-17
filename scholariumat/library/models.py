@@ -350,7 +350,9 @@ class ZotItem(ProductBase):
         amount = extra_variables.get('amount')
         if not amount:
             tags = [tag['tag'] for tag in data['tags']]
-            if any([tag in tags for tag in settings.ZOTERO_OWNER_TAGS]):
+            excluded = any([tag in tags for tag in settings.ZOTERO_EXCLUDED_TAGS])
+            owned = any([tag in tags for tag in settings.ZOTERO_OWNER_TAGS])
+            if owned and not excluded:
                 amount = 1
 
         # Get/Set authors
