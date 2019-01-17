@@ -3,7 +3,7 @@ import time
 
 from django_cron import CronJobBase, Schedule
 
-from .models import Collection
+from .models import Collection, ZotItem
 
 
 logger = logging.getLogger(__name__)
@@ -21,5 +21,6 @@ class ZoteroSync(CronJobBase):
         Collection.retrieve()
         for collection in Collection.objects.all():
             collection.sync()
+        ZotItem.remove_deleted()
         end = time.time()
         logger.info('Zotero synchronisation job finished. Took {} seconds.'.format(int(end - start)))

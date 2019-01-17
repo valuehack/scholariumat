@@ -177,11 +177,8 @@ class Collection(TitleSlugDescriptionModel, PermalinkAble):
 
         # Remove deleted zotero items
         parent_keys = [parent['data']['key'] for parent in parents]
-        for zotitem in ZotItem.objects.filter(collection=self).exclude(slug__in=parent_keys):
-            try:
-                zotitem.delete()  # Avoid bulk_delete
-            except models.ProtectedError as e:
-                handle_protected(e)
+        removed_from_collection = ZotItem.objects.filter(collection=self).exclude(slug__in=parent_keys)
+        self.zotitem_set.remove(*removed_from_collection)
 
         logger.info('updating attachments/notes...')
 
@@ -386,6 +383,14 @@ class ZotItem(ProductBase):
 
         logger.debug(f'Saved item {zot_item.title}. Created: {created}')
         return zot_item
+
+    @classmethod
+    def remove_deleted(cls):
+        for item in cls.objects.filter(collection__isnull=True):
+            try:
+                item.delete()  # Avoid bulk_delete
+            except models.ProtectedError as e:
+                handle_protected(e)
 
     def update_or_create_purchase_item(self, amount_changed=False):
         """

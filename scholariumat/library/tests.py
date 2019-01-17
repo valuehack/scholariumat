@@ -129,6 +129,26 @@ class SyncTest(TestCase):
         self.assertEqual(item.price, 6)
         self.assertEqual(item.amount, None)
 
+    def test_removed_from_all_collections(self):
+        self.zotero().everything.return_value = []
+        with mock.patch('pyzotero.zotero.Zotero', self.zotero), self.settings(**self.mock_settings):
+            self.collection.sync()
+        ZotItem.remove_deleted()
+        self.assertFalse(ZotItem.objects.exists())
+
+    def test_removed_from_collection(self):
+        collection2 = Collection.objects.create(title='test collection 4', slug='testkey5')
+        with mock.patch('pyzotero.zotero.Zotero', self.zotero), self.settings(**self.mock_settings):
+            collection2.sync()
+        self.zotero().everything.return_value = []
+        with mock.patch('pyzotero.zotero.Zotero', self.zotero), self.settings(**self.mock_settings):
+            self.collection.sync()
+        ZotItem.remove_deleted()
+
+        self.assertTrue(ZotItem.objects.exists())
+        self.assertFalse(bool(self.collection.zotitem_set.all()))
+        self.assertTrue(bool(collection2.zotitem_set.all()))
+
     def test_deletion(self):
         self.zotero().everything.return_value = [self.items[0]]
         with mock.patch('pyzotero.zotero.Zotero', self.zotero), self.settings(**self.mock_settings):
