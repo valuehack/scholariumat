@@ -11,7 +11,7 @@ bcrypt==3.1.4
 scp==0.12.1
 ipython==7.1.1
 WeasyPrint==43
-django-recaptcha==1.4.0
+django-recaptcha==2.0.0
 
 # Django
 # ------------------------------------------------------------------------------
