@@ -2,10 +2,11 @@ import logging
 from slugify import slugify
 from datetime import date
 
+from django.contrib.sites.models import Site
 from django.db import models
 from django.db.models import Q
 from django.core.mail import mail_managers, send_mail
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.conf import settings
 from django.http import HttpResponse
 from django.template.loader import render_to_string
@@ -220,18 +221,24 @@ class Item(TimeStampedModel):
         else:
             raise NotImplementedError()
 
-    def inform_users(self):
-        user_addresses = [profile.user.email for profile in self.requests.all()]
+    def resolve_requests(self):
+        for profile in self.requests.all():
+            if self.add_to_cart(profile):
+                    self.inform_user(profile)
+                    self.requests.remove(profile)
+
+    def inform_user(self, profile):
+        basket_url = Site.objects.get_current().domain + reverse('products:basket')
         send_mail(
             f'Verfügbarkeit: {self.product}',
-            render_to_string('products/emails/availability_email.txt', {'item': self}),
+            render_to_string('products/emails/availability_email.txt', {'item': self, 'basket_url': basket_url}),
             settings.DEFAULT_FROM_EMAIL,
-            user_addresses,
+            [profile.user.email],
             fail_silently=False,
-            html_message=render_to_string('products/emails/availability_email.html', {'item': self})
+            html_message=render_to_string('products/emails/availability_email.html',
+                                          {'item': self, 'basket_url': basket_url})
         )
-        logger.debug(f'Informed users {self.requests.all()} of availability of {self.product} as {self}')
-        self.requests.clear()
+        logger.debug(f'Informed user {profile.user} of availability of {self.product} as {self}')
 
     def add_to_cart(self, profile):
         """Only add a limited product if no purchase of it exists."""
@@ -270,6 +277,8 @@ class Item(TimeStampedModel):
     def save(self, *args, **kwargs):
         if not (self.pk or self.amount):
             self.amount = self.type.default_amount
+        if self.pk:
+            self.resolve_requests()
         super().save(*args, **kwargs)
 
     class Meta:

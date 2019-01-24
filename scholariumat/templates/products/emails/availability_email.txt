@@ -1,4 +1,5 @@
 Wir möchten Sie gerne informieren, dass das von Ihnen angefragte Produkt: {{ item.product }} nun verfügbar ist.
+Sie können es in Ihrem Warenkorb finden und kaufen: {{ basket_url }}.
 
 Mit freundlichen Grüßen,
 Ihr scholarium
