@@ -112,10 +112,14 @@ class PurchaseView(LoginRequiredMixin, DownloadMixin, TemplateView):
 
         events = Event.objects.filter(product__in=products)
         # events = products.filter(item__type__slug__in=['livestream', 'attendence'])
-        context['future_events'] = events.filter(date__gte=date.today())
-        context['past_events'] = events.filter(date__lt=date.today())
+        context['future_events'] = {event: purchases.filter(item__product=event.product) for
+                                    event in events.filter(date__gte=date.today())}
+        context['past_events'] = {event: purchases.filter(item__product=event.product) for
+                                  event in events.filter(date__lt=date.today())}
 
         # context['digital_content'] = products.filter(zotitem__isnull=False, item__amount__isnull=True)
-        digital_product = products.filter(item__amount__isnull=True)
-        context['digital_content'] = ZotItem.objects.filter(product__in=digital_product)
+        digital_product = {product: purchases.filter(item__product=product) for
+                           product in products.filter(item__amount__isnull=True)}
+        context['digital_content'] = {item: purchases.filter(item__product=item.product) for
+                                      item in ZotItem.objects.filter(product__in=digital_product)}
         return context
