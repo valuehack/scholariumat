@@ -344,7 +344,7 @@ class ZotItem(ProductBase):
             return None
 
         # Get extra variables
-        extra_variables = dict(re.findall(r'{(\w+):\s(\w+)}', data.get('extra', '')))
+        extra_variables = dict(re.findall(r'{(\w+):\s?(\w+)}', data.get('extra', '')))
 
         # Get amount
         amount = extra_variables.get('amount')
