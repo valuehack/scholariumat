@@ -123,3 +123,10 @@ class PurchaseView(LoginRequiredMixin, DownloadMixin, TemplateView):
         context['digital_content'] = {item: purchases.filter(item__product=item.product) for
                                       item in ZotItem.objects.filter(product__in=digital_product)}
         return context
+
+
+class HistoryView(LoginRequiredMixin, ListView):
+    template_name = 'products/purchase_history.html'
+
+    def get_queryset(self):
+        return self.request.user.profile.purchases.order_by('-date')
