@@ -80,7 +80,8 @@ class CartMixin(models.Model):
 
     @property
     def cart(self):
-        return self.purchase_set.filter(executed=False).order_by('-created')
+        return self.purchase_set.filter(executed=False).order_by('-created')\
+            .select_related('item__type').select_related('item__product')
 
     @property
     def cart_shipping(self):
@@ -109,7 +110,8 @@ class CartMixin(models.Model):
 
     @property
     def purchases(self):
-        return self.purchase_set.filter(executed=True).order_by('-modified')
+        return self.purchase_set.filter(executed=True).order_by('-modified')\
+            .select_related('item__type').select_related('item__product')
 
     @property
     def items_bought(self):
