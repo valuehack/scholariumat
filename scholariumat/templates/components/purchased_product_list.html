@@ -10,7 +10,12 @@
             {% endfor %}
         </td>
         <td>
-          {% include 'components/download_dropdown.html' with product=product.product %}
+          {% any_attachments_accessible request product.product as attachments %}
+          {% if attachments %}
+            <a href="{{ product.get_absolute_url }}">
+              <i class="download icon"></i>
+            </a>
+          {% endif %}
         </td>
         {% if livestream_btn %}
           <td class="single right aligned line compact">
