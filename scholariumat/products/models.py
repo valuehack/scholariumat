@@ -14,8 +14,6 @@ from django.template.loader import render_to_string
 from django_extensions.db.models import TimeStampedModel, TitleDescriptionModel, TitleSlugDescriptionModel
 
 from framework.behaviours import CommentAble
-from .behaviours import AttachmentBase
-
 
 logger = logging.getLogger(__name__)
 
@@ -36,10 +34,7 @@ class Product(models.Model):
             Q(purchase__in=profile.purchases) | Q(type__accessible_at__lt=profile.amount)).distinct()
 
     def any_attachments_accessible(self, profile):
-        """Only checks for existence for performance reasons"""
-        for item in self.items_accessible(profile):
-            if item.attachments:
-                return True
+        return self.items_accessible(profile).filter(Q(zotattachment__isnull=False) | Q(files__isnull=False)).exists()
 
     def __str__(self):
         return self.type.__str__()
@@ -120,14 +115,9 @@ class Item(TimeStampedModel):
 
     @property
     def attachments(self):
-        # TODO: Remove? Custom attachments should maybe be handled individually when needed.
-        """Fetches related attachments """
-        attachment_list = []
-        for item_rel in self._meta.get_fields():
-            if item_rel.related_model and issubclass(item_rel.related_model, AttachmentBase)\
-                    and getattr(self, item_rel.get_accessor_name(), False):
-                attachment_list += (getattr(self, item_rel.get_accessor_name()).all())
-        return list(self.files.all()) + attachment_list
+        files = self.files.all()
+        zotattachment = self.zotattachment_set.all()
+        return list(files) + list(zotattachment)
 
     def get_status(self, user):
         state = {
