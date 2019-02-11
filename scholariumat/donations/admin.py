@@ -31,5 +31,37 @@ class LevelFilter(SimpleListFilter):
         return queryset.all()
 
 
+class ExpirationFilter(SimpleListFilter):
+    title = "Status"
+    parameter_name = "expiration"
+
+    def lookups(self, request, model_admin):
+        return [('expired', 'Abgelaufen')]
+
+    def queryset(self, request, queryset):
+        value = self.value()
+
+        if value:
+            donations = Donation.objects.filter(profile=OuterRef('pk')).order_by('-expiration')
+            return queryset.annotate(latest_donation=Subquery(donations.values('expiration')[:1]))\
+                .filter(latest_donation__lt=date.today())
+        return queryset.all()
+
+
+class InterestedFilter(SimpleListFilter):
+    title = "Interessiert"
+    parameter_name = "interested"
+
+    def lookups(self, request, model_admin):
+        return [('interested', 'Interessiert')]
+
+    def queryset(self, request, queryset):
+        value = self.value()
+
+        if value:
+            return queryset.filter(uninterested=False)
+        return queryset.all()
+
+
 admin.site.register(DonationLevel)
 admin.site.register(PaymentMethod)

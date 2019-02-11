@@ -9,7 +9,7 @@ from django.db.models import OuterRef, Subquery
 from authtools.admin import UserAdmin
 
 from donations.models import Donation
-from donations.admin import DonationInline, LevelFilter
+from donations.admin import DonationInline, LevelFilter, ExpirationFilter, InterestedFilter
 from .models import Profile
 
 
@@ -17,7 +17,7 @@ class ProfileAdmin(admin.ModelAdmin):
     list_display = ['user', 'organization', 'level', 'balance', 'expiration']
     search_fields = ['user__email', 'first_name', 'last_name']
     raw_id_fields = ['user']
-    list_filter = [LevelFilter]
+    list_filter = [LevelFilter, ExpirationFilter, InterestedFilter]
     inlines = [DonationInline]
     actions = ['generate_csv_full', 'generate_csv_emails_only']
 
@@ -40,9 +40,10 @@ class ProfileAdmin(admin.ModelAdmin):
 
         active_donations = Donation.objects.filter(
             profile=OuterRef('pk'), expiration__gte=date.today()).order_by('-amount')
+        latest_donations = Donation.objects.filter(profile=OuterRef('pk')).order_by('-expiration')
         queryset = queryset.annotate(
             active_donation=Subquery(active_donations.values('amount')[:1]),
-            expiration_date=Subquery(active_donations.values('expiration')[:1]))
+            expiration_date=Subquery(latest_donations.values('expiration')[:1]))
 
         writer.writerows(queryset.values_list(
             'title',
