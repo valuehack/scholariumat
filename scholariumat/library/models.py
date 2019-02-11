@@ -429,8 +429,10 @@ class ZotItem(ProductBase):
         else:  # Delete purchase items
             try:
                 self.product.item_set.filter(type__shipping=True).delete()
-            except models.ProtectedError as e:
-                handle_protected(e)
+            except models.ProtectedError:
+                logger.warning(f'Can not delete item for {self}, has been bought. Setting amount to 0.')
+                self.amount = 0
+                return self.update_or_create_purchase_item(amount_changed=amount_changed)
 
     def __str__(self):
         return '%s (%s)' % (self.title, ', '.join([author.__str__() for author in self.authors.all()]))

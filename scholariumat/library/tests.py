@@ -4,7 +4,6 @@ from datetime import date
 from django.test import TestCase
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.core import mail
 
 from library.models import Collection, ZotItem, ZotAttachment
 from products.models import ItemType, AttachmentType, Purchase, Item, Product
@@ -194,4 +193,3 @@ class SyncTest(TestCase):
         with mock.patch('pyzotero.zotero.Zotero', self.zotero), self.settings(**self.mock_settings):
             self.collection.sync()
         self.assertTrue(Item.objects.filter(type__slug__contains='purchase').exists())
-        self.assertEqual(len(mail.outbox), 1)
