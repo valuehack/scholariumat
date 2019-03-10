@@ -10,8 +10,7 @@ from django.db import models
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 from django.http import HttpResponse
-from django.core.mail import mail_managers, mail_admins
-from django.urls import reverse_lazy
+from django.core.mail import mail_admins
 
 from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel
 
