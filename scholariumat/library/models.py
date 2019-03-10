@@ -244,12 +244,10 @@ class Collection(TitleSlugDescriptionModel, PermalinkAble):
         collection_keys = [collection['data']['key'] for collection in collections]
         for local_collection in cls.objects.all():
             if local_collection.slug not in collection_keys:
-                edit_url = reverse_lazy('admin:library_collection_change', args=[local_collection.pk])
-                mail_managers(
-                    f'Kollektion zu löschen: {local_collection.title}',
-                    f'Die Kollektion {local_collection.title} scheint in Zotero nicht mehr zu existieren. '
-                    f'Falls dies richtig ist, bitte per Hand löschen: {settings.DEFAULT_DOMAIN}{edit_url}.')
-                logger.debug('Collection {} marked for deletion.'.format(local_collection.title))
+                try:
+                    local_collection.delete()
+                except models.ProtectedError as e:
+                    handle_protected(e)
 
         save_collections(False, collections)
 
