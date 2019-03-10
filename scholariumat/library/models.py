@@ -3,6 +3,7 @@ from pyzotero import zotero, zotero_errors
 from slugify import slugify
 from dateutil.parser import parse
 from weasyprint import HTML
+from pyzotero.zotero_errors import ResourceNotFound
 import re
 
 from django.db import models
@@ -153,7 +154,12 @@ class Collection(TitleSlugDescriptionModel, PermalinkAble):
         logger.info('Retrieving items in {}'.format(self.title))
 
         zot = zotero.Zotero(settings.ZOTERO_USER_ID, settings.ZOTERO_LIBRARY_TYPE, settings.ZOTERO_API_KEY)
-        items = zot.everything(zot.collection_items(self.slug))
+        try:
+            items = zot.everything(zot.collection_items(self.slug))
+        except ResourceNotFound:
+            logger.warning(f'Revoming collection {self.title}')
+            self.delete()
+            return None
 
         # Seperate items and attachments/notes
         parents, children = [], []
