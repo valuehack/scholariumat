@@ -18,4 +18,4 @@ pytest-django==3.4.3  # https://github.com/pytest-dev/pytest-django
 # ------------------------------------------------------------------------------
 flake8==3.6.0  # https://github.com/PyCQA/flake8
 coverage==4.5.2  # https://github.com/nedbat/coveragepy
-coveralls==1.5.1  # https://github.com/coveralls-clients/coveralls-python
+coveralls==1.7.0  # https://github.com/coveralls-clients/coveralls-python
