@@ -1,5 +1,6 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
+from django.core import mail
 
 from users.models import Profile
 from library.models import ZotItem
@@ -69,3 +70,24 @@ class ItemTest(TestCase):
         purchase.execute()
         self.assertEqual(purchase.executed, True)
         self.assertEqual(self.item.amount, self.amount_start - 1)
+
+
+class RequestTest(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create(email='a.b@c.de')
+        Profile.objects.create(user=self.user)
+        self.book = ZotItem.objects.create(title='Testbook', slug='testslug')
+        self.itemtype = ItemType.objects.create(title='Kauf', additional_supply=True)
+        self.item = Item.objects.create(
+            type=self.itemtype, _price=1, amount=0, product=self.book.product)
+
+    def test_request(self):
+        self.item.request(self.user)
+        self.item.refill(1)
+
+        # Assert item put in basket
+        self.assertIsNotNone(self.user.profile.cart.all())
+        self.assertEqual(self.item, self.user.profile.cart.first().item)
+
+        # Assert admins and user are informed
+        self.assertEqual(len(mail.outbox), 2)

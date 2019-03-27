@@ -1,9 +1,15 @@
 language: python
 python: '3.6'
-services:
-  - postgresql
+addons:
+  postgresql: "10"
+  apt:
+    packages:
+      - postgresql-10
+      - postgresql-client-10
 env:
   - DJANGO_SETTINGS_MODULE=config.settings.test
+  global:
+    - PGPORT=5433
 install:
   - pip install -r requirements/test.txt
 before_script:

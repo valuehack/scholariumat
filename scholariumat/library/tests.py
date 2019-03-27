@@ -1,5 +1,6 @@
 from unittest import mock
 from datetime import date
+from pyzotero.zotero_errors import ResourceNotFound
 
 from django.test import TestCase
 from django.conf import settings
@@ -73,9 +74,9 @@ class SyncTest(TestCase):
             'ZOTERO_API_KEY': '',
             'ZOTERO_LIBRARY_TYPE': ''
         }
-        cls.zotero = mock.MagicMock()
 
     def setUp(self):
+        self.zotero = mock.MagicMock()
         self.items = [
             {'data': {'key': 'testkey',
                       'itemType': settings.ZOTERO_ITEM_TYPES[0],
@@ -193,3 +194,9 @@ class SyncTest(TestCase):
         with mock.patch('pyzotero.zotero.Zotero', self.zotero), self.settings(**self.mock_settings):
             self.collection.sync()
         self.assertTrue(Item.objects.filter(type__slug__contains='purchase').exists())
+
+    def test_deleted_collection(self):
+        self.zotero().everything.side_effect = ResourceNotFound()
+        with mock.patch('pyzotero.zotero.Zotero', self.zotero), self.settings(**self.mock_settings):
+            self.collection.sync()
+        self.assertFalse(Collection.objects.all())

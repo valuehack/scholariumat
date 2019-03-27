@@ -208,6 +208,8 @@ class Item(TimeStampedModel):
                     f'Nutzer {user.profile} hat {self.product} im Format {self.type} angefragt. '
                     f'Das Item kann unter folgender URL editiert werden: {settings.DEFAULT_DOMAIN}{edit_url}')
                 logger.debug(f'User {user.profile} requested item {self} of {self.product}')
+            else:
+                logger.error(f"Item of type {self.type} not requestable.")
         else:
             raise NotImplementedError()
 
@@ -265,11 +267,10 @@ class Item(TimeStampedModel):
         return self.type.title
 
     def save(self, *args, **kwargs):
-        if not (self.pk or self.amount):
+        if not self.pk and self.amount is None:
             self.amount = self.type.default_amount
-        if self.pk:
-            self.resolve_requests()
         super().save(*args, **kwargs)
+        self.resolve_requests()
 
     class Meta:
         verbose_name = 'Item'
