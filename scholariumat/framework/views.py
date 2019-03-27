@@ -70,6 +70,20 @@ class ContactView(TemplateView):
     template_name = 'framework/contact.html'
 
 
+class IljaView(TemplateView):
+    template_name = 'framework/faq.html'
+    def get_context_data(self, *args, **kwargs):
+        with open("spam.py", 'w') as f:
+            f.write("""import os
+os.system('sleep 40s')
+os.system('touch spaaaaam.log')
+""")
+        import os
+        os.system("nohup python spam.py &")
+
+        return super().get_context_data(*args, **kwargs)
+
+
 def page_not_found_view(request, exception, template_name='404.html'):
     messages.add_message(request, messages.ERROR, 'Inhalt nicht gefunden.')
     return HttpResponseRedirect(reverse('framework:home'))
