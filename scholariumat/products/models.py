@@ -270,6 +270,7 @@ class Item(TimeStampedModel):
         if not self.pk and self.amount is None:
             self.amount = self.type.default_amount
         super().save(*args, **kwargs)
+        self.refresh_from_db()
         self.resolve_requests()
 
     class Meta:
