@@ -47,7 +47,7 @@ class PurchaseAdmin(admin.ModelAdmin):
 
 class ItemAdmin(admin.ModelAdmin):
     raw_id_fields = ['product', 'files']
-    list_display = ['type', 'price', 'product']
+    list_display = ['title', 'type', 'price', 'product']
 
 
 class AttachmentAdmin(admin.ModelAdmin):

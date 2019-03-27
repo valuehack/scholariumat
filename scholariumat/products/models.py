@@ -276,6 +276,7 @@ class Item(TimeStampedModel):
     class Meta:
         verbose_name = 'Item'
         verbose_name_plural = 'Items'
+        ordering = ['product', '_price']
 
 
 class Purchase(TimeStampedModel, CommentAble):
