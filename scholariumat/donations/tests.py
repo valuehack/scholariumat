@@ -73,3 +73,10 @@ class DonationTest(TestCase):
         self.assertEqual(self.profile.donation.level.amount, 150)
         self.assertEqual(self.profile.level.amount, 150)
         self.assertEqual(self.profile.expiration, date.today() + timedelta(days=settings.DONATION_PERIOD))
+
+    def test_small_donation(self):
+        donation_amount = 70
+        self.profile.donate(donation_amount)
+        self.assertEqual(self.profile.balance, donation_amount)
+        self.assertEqual(self.profile.level, None)
+        self.assertEqual(self.profile.expiration, None)
