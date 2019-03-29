@@ -5,6 +5,7 @@ from django.core import mail
 from users.models import Profile
 from library.models import ZotItem
 from products.models import Item, ItemType, Purchase
+from donations.models import DonationLevel, Donation
 
 
 class PurchaseTest(TestCase):
@@ -44,6 +45,17 @@ class PurchaseTest(TestCase):
         self.assertEqual(profile.cart.first().amount, 1)
         profile.execute_cart()
         self.assertEqual(profile.balance, 0)
+
+    def test_discount(self):
+        DonationLevel.objects.create(amount=75)
+        lowest_donation = DonationLevel.get_lowest_amount()
+        donation = Donation.objects.create(amount=lowest_donation, profile=self.user.profile)
+        donation.execute()
+        self.item.discounts.create(level=DonationLevel.get_level_by_amount(lowest_donation), discount=50)
+        purchase = Purchase.objects.create(profile=self.user.profile, item=self.item, amount=1)
+        purchase.execute()
+        self.assertEqual(purchase.executed, True)
+        self.assertEqual(self.user.profile.balance, 70)
 
 
 class ItemTest(TestCase):
