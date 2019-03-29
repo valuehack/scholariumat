@@ -217,8 +217,8 @@ class Item(TimeStampedModel):
     def resolve_requests(self):
         for profile in self.requests.all():
             if self.add_to_cart(profile):
-                    self.inform_user(profile)
-                    self.requests.remove(profile)
+                self.inform_user(profile)
+                self.requests.remove(profile)
 
     def inform_user(self, profile):
         basket_url = Site.objects.get_current().domain + reverse('products:basket')
