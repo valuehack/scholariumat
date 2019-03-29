@@ -117,7 +117,7 @@ class SyncTest(TestCase):
         # Test if purchase item and itemtype got created
         testitem = ZotItem.objects.get(slug=self.items[0]['data']['key'])
         item = testitem.product.item_set.get(type__slug__contains='purchase')
-        self.assertEqual(item.price, 12)
+        self.assertEqual(item.get_price(), 12)
         self.assertEqual(item.amount, 1)
 
     def test_attachment_creation(self):
@@ -126,7 +126,7 @@ class SyncTest(TestCase):
         testitem = ZotItem.objects.get(slug=self.items[0]['data']['key'])
         item = testitem.product.item_set.get(type__slug='pdf')
         self.assertEqual(item.attachments[0].key, self.items[1]['data']['key'])
-        self.assertEqual(item.price, 6)
+        self.assertEqual(item.get_price(), 6)
         self.assertEqual(item.amount, None)
 
     def test_removed_from_all_collections(self):
@@ -162,10 +162,10 @@ class SyncTest(TestCase):
             self.collection.sync()
         purchase_item = Item.objects.get(type__slug__contains='purchase')
         self.assertEqual(purchase_item.amount, 2)
-        self.assertEqual(purchase_item.price, None)
+        self.assertEqual(purchase_item.get_price(), None)
 
         pdf_item = Item.objects.get(type__slug='pdf')
-        self.assertEqual(pdf_item.price, 5)
+        self.assertEqual(pdf_item.get_price(), 5)
 
     def test_amount_change(self):
         purchase_item = Item.objects.get(type__slug__contains='purchase')
