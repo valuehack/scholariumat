@@ -7,7 +7,7 @@
   <div class="ui list">
     {% for item in items %}
       {% item_status request item as status %}
-    
+
       {% if status.accessible and item.attachments %}
         <div class="item">
           <div class="ui left labeled button" id="{{ item.pk }}_open">
@@ -48,7 +48,7 @@
           </div>
         </div>
       {% endif %}
-      
+
       {% if status.visible %}
         {% if status.purchasability == 'purchasable' %}
           <form id="{{ item.pk }}_form" method="POST">
@@ -73,10 +73,14 @@
                   </div>
                 </div>
               {% else %}
-                {% necessary_level item.price as level %}
                 <div class="ui animated button">
                   <div class="visible content">
-                    {{ level.amount }} €
+                    {% if item.type.requires_donation %}
+                      {% necessary_level item.price as level %}
+                      {{ level.amount }} €
+                    {% else %}
+                      {{ item.price }}
+                    {% endif %}
                   </div>
                   <div class="hidden content">
                     <i class="cart icon"></i>
@@ -85,7 +89,7 @@
               {% endif %}
             </div>
           </div>
-        
+
         {% elif status.purchasability == 'requestable' %}
           <form id="{{ item.pk }}_form" method="POST">
             {% csrf_token %}
@@ -99,34 +103,34 @@
               <a class="ui button">Anfragen</a>
             </div>
           </div>
-        
+
         {% else %}
           <div class="item">
           <div class="ui left labeled button">
             <div class="ui basic right pointing label">
               {{ item }}
             </div>
-        
+
               {% if status.purchasability == 'level required' %}
                 {% necessary_level item.type.purchasable_at as level %}
                 <a href="{% url 'donations:levels' %}" class="ui disabled button">Verfügbar als {{ level.title }}</a>
-              
+
               {% elif status.purchasability == 'purchased' %}
                 <div class="ui disabled button">Bereits erworben</div>
-              
+
               {% elif status.purchasability == 'accessible' %}
                 <div class="ui disabled button">Bereits verfügbar</div>
-              
+
               {% elif status.purchasability == 'sold out' %}
                 <div class="ui disabled button">Ausverkauft</div>
-              
+
               {% elif status.purchasability == 'unavailable' %}
                 <div class="ui disabled button">Nicht verfügbar</div>
 
               {% endif %}
             </div>
           </div>
-  
+
         {% endif %}
       {% endif %}
     {% endfor %}

@@ -56,6 +56,7 @@ class ItemType(TitleDescriptionModel, TimeStampedModel):
     buy_once = models.BooleanField(default=False)  # If True, item can only be purchased once
     expires_on_product_date = models.BooleanField(default=False)  # Item is only visible/purchasable until product.date
     buy_unauthenticated = models.BooleanField(default=False)  # Item is visible/purchasable for unauthenticated users
+    requires_donation = models.BooleanField(default=True)  # User needs to make a higher donation if unauthenticated
     inform_staff = models.BooleanField(default=False)  # Inform staff if item is bought
 
     def __str__(self):
