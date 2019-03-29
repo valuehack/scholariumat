@@ -46,18 +46,18 @@ class PaymentView(UpdateOrCreateRequiredMixin, MessageMixin, FormView):
     def get_form(self, data=None, files=None, **kwargs):
         amount = self.request.GET.get('amount', None)
         if amount:
-            level = DonationLevel.get_level_by_amount(amount)
-            return super().get_form(data, files, initial={'level': level}, **kwargs)
+            return super().get_form(data, files, initial={'amount': amount}, **kwargs)
         else:
             return super().get_form(data, files, **kwargs)
 
     def form_valid(self, form):
-        amount = form.cleaned_data['level'].amount
+        amount = form.cleaned_data['amount']
         method = form.cleaned_data['payment_method']
         profile = self.get_profile()
         profile.clean_donations()  # Clean up old initiated donations
         donation = profile.donation_set.create(amount=amount, method=method)
         logger.debug(f'Created donation {donation}')
+
         if donation.init():
             logger.debug(f'Initiated donation {donation}. Redirecting to {donation.approval_url}')
             return HttpResponseRedirect(donation.approval_url)

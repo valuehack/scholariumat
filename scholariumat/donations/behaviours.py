@@ -126,7 +126,6 @@ class Payment(CommentAble):
         return True
 
     def _create_paypal(self):
-        level = self.level
         payment_settings = {
             "intent": "sale",
             "payer": {
@@ -141,15 +140,15 @@ class Payment(CommentAble):
                         "brand_name": "scholarium"}},
                 "item_list": {
                     "items": [{
-                        "name": level.title,
-                        "sku": level.id,
+                        "name": 'Unterstützung',
+                        "sku": self.slug,
                         "price": self.amount,
                         "currency": "EUR",
                         "quantity": 1}]},
                 "amount": {
                     "total": self.amount,
                     "currency": "EUR"},
-                "description": level.title}]}
+                "description": 'Unterstützung'}]}
 
         paypal.configure(settings.PAYPAL_SETTINGS)
         payment = paypal.Payment(payment_settings)
@@ -216,7 +215,7 @@ class Payment(CommentAble):
                 self.profile.refill(self.amount)
                 logger.info("{} donated {} and is now level {}".format(self.profile, self.amount, self.profile.level))
                 mail_managers(
-                    f'Neue Unterstützung: {self.level.title}',
+                    f'Neue Unterstützung: {self.amount}€',
                     f'Nutzer {self.profile} hat {self.amount} Euro per {self.method} unterstützt. ')
                 return True
 
