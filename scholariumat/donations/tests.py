@@ -36,7 +36,7 @@ class RequestDonationTest(TestCase):
         self.assertTrue(profile)
 
         post_data = {
-            'level': 7,
+            'amount': 75,
             'payment_method': 1
         }
         response = self.client.post(reverse('donations:payment'), post_data)
@@ -79,4 +79,4 @@ class DonationTest(TestCase):
         self.profile.donate(donation_amount)
         self.assertEqual(self.profile.balance, donation_amount)
         self.assertEqual(self.profile.level, None)
-        self.assertEqual(self.profile.expiration, None)
+        self.assertEqual(self.profile.expiration, date.today() + timedelta(days=settings.DONATION_PERIOD))
