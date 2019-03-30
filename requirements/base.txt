@@ -32,7 +32,7 @@ django-semanticui-forms==1.6.5  # https://github.com/thetarkus/django-semanticui
 django-markup==1.4.1
 Markdown==3.1
 webstack-django-sorting==1.0.1
-django-analytical==2.4.0
+django-analytical==2.5.0
 
 # Django REST Framework
 djangorestframework==3.8.2  # https://github.com/encode/django-rest-framework
