@@ -3,14 +3,14 @@ from pyzotero import zotero, zotero_errors
 from slugify import slugify
 from dateutil.parser import parse
 from weasyprint import HTML
+from pyzotero.zotero_errors import ResourceNotFound
 import re
 
 from django.db import models
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 from django.http import HttpResponse
-from django.core.mail import mail_managers, mail_admins
-from django.urls import reverse_lazy
+from django.core.mail import mail_admins
 
 from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel
 
@@ -153,7 +153,12 @@ class Collection(TitleSlugDescriptionModel, PermalinkAble):
         logger.info('Retrieving items in {}'.format(self.title))
 
         zot = zotero.Zotero(settings.ZOTERO_USER_ID, settings.ZOTERO_LIBRARY_TYPE, settings.ZOTERO_API_KEY)
-        items = zot.everything(zot.collection_items(self.slug))
+        try:
+            items = zot.everything(zot.collection_items(self.slug))
+        except ResourceNotFound:
+            logger.warning(f'Revoming collection {self.title}')
+            self.delete()
+            return None
 
         # Seperate items and attachments/notes
         parents, children = [], []
@@ -238,12 +243,10 @@ class Collection(TitleSlugDescriptionModel, PermalinkAble):
         collection_keys = [collection['data']['key'] for collection in collections]
         for local_collection in cls.objects.all():
             if local_collection.slug not in collection_keys:
-                edit_url = reverse_lazy('admin:library_collection_change', args=[local_collection.pk])
-                mail_managers(
-                    f'Kollektion zu löschen: {local_collection.title}',
-                    f'Die Kollektion {local_collection.title} scheint in Zotero nicht mehr zu existieren. '
-                    f'Falls dies richtig ist, bitte per Hand löschen: {settings.DEFAULT_DOMAIN}{edit_url}.')
-                logger.debug('Collection {} marked for deletion.'.format(local_collection.title))
+                try:
+                    local_collection.delete()
+                except models.ProtectedError as e:
+                    handle_protected(e)
 
         save_collections(False, collections)
 
@@ -429,8 +432,10 @@ class ZotItem(ProductBase):
         else:  # Delete purchase items
             try:
                 self.product.item_set.filter(type__shipping=True).delete()
-            except models.ProtectedError as e:
-                handle_protected(e)
+            except models.ProtectedError:
+                logger.warning(f'Can not delete item for {self}, has been bought. Setting amount to 0.')
+                self.amount = 0
+                return self.update_or_create_purchase_item(amount_changed=amount_changed)
 
     def __str__(self):
         return '%s (%s)' % (self.title, ', '.join([author.__str__() for author in self.authors.all()]))

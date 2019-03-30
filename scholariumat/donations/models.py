@@ -76,7 +76,7 @@ class Donation(Payment, TimeStampedModel):
         return DonationLevel.get_level_by_amount(self.amount)
 
     def __str__(self):
-        return '%s: %s (%s)' % (self.profile.name, self.level.title, self.date)
+        return '%s: %s (%s)' % (self.profile.name, self.amount, self.date)
 
     class Meta:
         verbose_name = 'Unterstützung'

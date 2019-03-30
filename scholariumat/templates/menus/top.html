@@ -3,15 +3,17 @@
 <div class="ui container">
 
   {% if request.user.is_authenticated %}
+    {% with request.user.profile.cart as cart %}
     <div class="ui right floated compact menu">
-      <a class="ui {% if not request.user.profile.cart %}disabled {% endif %}icon item" id="basket">
+      <a class="ui {% if not cart %}disabled {% endif %}icon item" href="{% url 'products:basket' %}" id="basket">
         <i class="shop icon"></i>
-        {% if request.user.profile.cart|length %}
+        {% if cart|length %}
           <div class="ui primary small floating circular label">
-            {{ request.user.profile.cart|length }}
+            {{ cart|length }}
           </div>
         {% endif %}
       </a>
+    {% endwith %}
       <div class="item">
         <span class="text">
           {{ request.user.profile.balance }}&nbsp;&nbsp;
@@ -27,79 +29,6 @@
       </div>
     </div>
 
-    <div class="ui popup" id="basket_popup">
-
-
-
-          <div class="content">
-            <table class="ui very basic collapsing single line unstackable table">
-              <tbody>
-                {% for purchase in request.user.profile.cart %}
-                  <tr>
-                    <td></td>
-                    <td class="center aligned">
-                        {% if purchase.amount > 1 %}{{ purchase.amount }}{% endif %}
-                    </td>
-                    <td>
-                      {% if not purchase.available %}
-                        <i id="{{ purchase.pk }}_popup" class="ui red link exclamation circle icon" data-content="Das Produkt ist in der gewünschten Menge nicht verfügbar"></i>
-                        <script>
-                          $('#{{ purchase.pk }}_popup')
-                            .popup()
-                          ;
-                        </script>
-                      {% endif %}
-                      <a href="{{ purchase.item.product.type.get_absolute_url }}">{{ purchase.item.product|truncatechars:35 }}</a></td>
-                    <td class="right aligned">
-                      {{ purchase.total }}
-                    </td>
-                    <td>
-                      <form id="{{ purchase.pk }}_itemform" action="{% url 'products:basket' %}" method="POST">
-                        {% csrf_token %}
-                        <input type="hidden" name="remove" value="{{ purchase.pk }}">
-                      </form>
-                      <a onclick='document.forms["{{ purchase.pk }}_itemform"].submit(); return false;'><i class="ui link times circle outline icon"></i></a>
-                    </td>
-                    <td></td>
-                  </tr>
-                {% endfor %}
-                {% if request.user.profile.cart_shipping %}
-                <tr>
-                  <td></td>
-                  <td></td>
-                  <td>Versand</td>
-                  <td class="right aligned">{{ request.user.profile.cart_shipping }}</td>
-                  <td></td>
-                  <td></td>
-                </tr>
-                {% endif %}
-              </tbody>
-              <tfoot>
-                <tr>
-                  <th></th>
-                  <th></th>
-                  <th>
-                    <div style="height: 1em;">
-                      <img class="ui right floated image" src="{% static 'images/coin.png' %}" style="height: 1.2em; width: auto; left: 15px;">
-                    </div>
-                  </th>
-                  <th class="right aligned"><b>{{ request.user.profile.cart_total }}</b>
-                  </th>
-                  <th></th>
-                  <th></th>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-
-      <div class="ui divider"></div>
-      <form id="buy_form" action="{% url 'products:basket' %}" method="POST">
-        {% csrf_token %}
-        <input type="hidden" name="buy">
-      </form>
-      <a href="{% url 'products:basket' %}" class="ui button">Details</a>
-      <button onclick='document.forms["buy_form"].submit(); return false;' class="ui {% if not request.user.profile.cart_available %}disabled {% endif %} primary right floated button">Kaufen</button>
-    </div>
 
     <div class="ui right floated compact menu" id="profile">
       <a class="item">
@@ -237,13 +166,4 @@
       on: 'click',
       lastResort:	'bottom center'
     });
-    {% if request.user.profile.cart %}
-      $('#basket')
-        .popup({
-          popup: '#basket_popup',
-          on: 'click',
-          position   : 'bottom center',
-          lastResort:	'bottom center'
-        });
-    {% endif %}
 </script>

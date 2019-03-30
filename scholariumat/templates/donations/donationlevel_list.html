@@ -19,7 +19,7 @@
   <div class="ui floating inverted {{ level.color }} segment">
     <h2 class="ui header">
       {{ level.title }}<br>
-      <div class="sub header" style="color: white;">{{ level.amount }} &euro;</div>
+      <div class="sub header" style="color: white;">Jahresbeitrag: {{ level.amount }} &euro;</div>
     </h2>
     <p>{{ level.description|apply_markup:"markdown" }}</p>
     <a href="{% url 'donations:payment' %}?amount={{ level.amount }}" class="ui basic inverted black fluid button">Werden Sie jetzt {{ level.title }}</a>

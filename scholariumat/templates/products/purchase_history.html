@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}Vergangene Käufe{% endblock %}
+
+{% block content %}
+<div class="ui text container">
+  <h1 class="ui centered header">Vergangene Käufe</h1>
+  <div class="ui hidden divider"></div>
+
+{% if object_list %}
+<table class="ui table">
+  <tbody>
+      {% for purchase in object_list %}
+        <tr>
+          <td class="single line">{% if purchase.date %}{{ purchase.date }}{% endif %}</td>
+          <td class="center aligned">
+            {% if purchase.amount > 1 %}{{ purchase.amount }}{% endif %}
+          </td>
+          <td><div class="ui label">{{ purchase.item.type.title }}</div></td>
+          <td>
+            {{ purchase.item.product }}
+          </td>
+        </tr>
+      {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+</div>
+{% endblock content %}

@@ -10,6 +10,11 @@ def item_status(request, item):
 
 
 @register.simple_tag
+def item_price(request, item):
+    return item.get_price(request.user)
+
+
+@register.simple_tag
 def items_accessible(request, product):
     if request.user.is_authenticated:
         return product.items_accessible(request.user.profile)
