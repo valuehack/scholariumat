@@ -1,0 +1,12 @@
+{% load markup_tags %}
+
+{% if announcements %}
+<div class="ui text container">
+  {% for announcement in announcements %}
+  <div class="ui floated message">
+    {{ announcement.message|apply_markup:'markdown' }}
+  </div>
+  {% endfor %}
+</div>
+<div class="ui hidden divider"></div>
+{% endif %}

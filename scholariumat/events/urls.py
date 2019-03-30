@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, reverse_lazy
 from django.views.generic.base import RedirectView
 
 from .views import EventView, EventListView, RecordingsView, AttendancesView
@@ -14,4 +14,7 @@ urlpatterns = [
     path('veranstaltung/<slug:slug>/teilnehmer', AttendancesView.as_view(), name='attendances'),
     path('veranstaltungen/veranstaltung/<slug:slug>',
          RedirectView.as_view(pattern_name='events:event', query_string=True)),
+    path('70er/', RedirectView.as_view(
+         url=reverse_lazy('events:event',
+                          kwargs={'slug': 'jubilaumskonferenz-der-wiener-schule-im-palais-cob'})), name='70er'),
 ]

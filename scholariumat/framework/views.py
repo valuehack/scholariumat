@@ -11,6 +11,7 @@ from django.conf import settings
 
 from events.models import Event
 from blog.models import Article
+from .models import Announcement
 
 
 class CompatibleOrderableListMixin(OrderableListMixin):
@@ -52,6 +53,7 @@ class HomeView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['announcements'] = Announcement.objects.all()
         if self.request.user.is_authenticated:
             context['events'] = Event.objects.published().filter(date__gte=date.today()).order_by('date')[:4]
             articles = Article.objects.published()[:4]

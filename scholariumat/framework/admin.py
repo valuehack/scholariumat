@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.http import HttpResponseRedirect
 
+from .models import Announcement
+
 
 class PublishAdmin(admin.ModelAdmin):
     change_form_template = "admin/publish_changeform.html"
@@ -11,3 +13,6 @@ class PublishAdmin(admin.ModelAdmin):
             self.message_user(request, "Zu Buffer Queue hinzugefügt.")
             return HttpResponseRedirect(".")
         return super().response_change(request, obj)
+
+
+admin.site.register(Announcement)

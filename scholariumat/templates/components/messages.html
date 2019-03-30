@@ -1,13 +1,13 @@
 {% if messages %}
   <div class="ui text container">
   {% for message in messages %}
-    <div class="ui floating medium message transition">
+    <div class="ui floating medium closable message transition">
       {{ message|safe }}
     </div>
   {% endfor %}
 </div>
   <script>
-    $('.message')
+    $('.closable')
       .on('click', function() {
         $(this)
           .closest('.message')
