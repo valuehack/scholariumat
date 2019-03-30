@@ -1,5 +1,6 @@
 from unittest import mock
 from datetime import date
+from pyzotero.zotero_errors import ResourceNotFound
 
 from django.test import TestCase
 from django.conf import settings
@@ -73,9 +74,9 @@ class SyncTest(TestCase):
             'ZOTERO_API_KEY': '',
             'ZOTERO_LIBRARY_TYPE': ''
         }
-        cls.zotero = mock.MagicMock()
 
     def setUp(self):
+        self.zotero = mock.MagicMock()
         self.items = [
             {'data': {'key': 'testkey',
                       'itemType': settings.ZOTERO_ITEM_TYPES[0],
@@ -116,7 +117,7 @@ class SyncTest(TestCase):
         # Test if purchase item and itemtype got created
         testitem = ZotItem.objects.get(slug=self.items[0]['data']['key'])
         item = testitem.product.item_set.get(type__slug__contains='purchase')
-        self.assertEqual(item.price, 12)
+        self.assertEqual(item.get_price(), 12)
         self.assertEqual(item.amount, 1)
 
     def test_attachment_creation(self):
@@ -125,7 +126,7 @@ class SyncTest(TestCase):
         testitem = ZotItem.objects.get(slug=self.items[0]['data']['key'])
         item = testitem.product.item_set.get(type__slug='pdf')
         self.assertEqual(item.attachments[0].key, self.items[1]['data']['key'])
-        self.assertEqual(item.price, 6)
+        self.assertEqual(item.get_price(), 6)
         self.assertEqual(item.amount, None)
 
     def test_removed_from_all_collections(self):
@@ -161,10 +162,10 @@ class SyncTest(TestCase):
             self.collection.sync()
         purchase_item = Item.objects.get(type__slug__contains='purchase')
         self.assertEqual(purchase_item.amount, 2)
-        self.assertEqual(purchase_item.price, None)
+        self.assertEqual(purchase_item.get_price(), None)
 
         pdf_item = Item.objects.get(type__slug='pdf')
-        self.assertEqual(pdf_item.price, 5)
+        self.assertEqual(pdf_item.get_price(), 5)
 
     def test_amount_change(self):
         purchase_item = Item.objects.get(type__slug__contains='purchase')
@@ -193,3 +194,9 @@ class SyncTest(TestCase):
         with mock.patch('pyzotero.zotero.Zotero', self.zotero), self.settings(**self.mock_settings):
             self.collection.sync()
         self.assertTrue(Item.objects.filter(type__slug__contains='purchase').exists())
+
+    def test_deleted_collection(self):
+        self.zotero().everything.side_effect = ResourceNotFound()
+        with mock.patch('pyzotero.zotero.Zotero', self.zotero), self.settings(**self.mock_settings):
+            self.collection.sync()
+        self.assertFalse(Collection.objects.all())

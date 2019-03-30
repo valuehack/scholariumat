@@ -10,6 +10,7 @@ from django.urls import reverse_lazy, reverse
 from django.conf import settings
 from django.http import HttpResponse
 from django.template.loader import render_to_string
+from django.core.validators import MaxValueValidator
 
 from django_extensions.db.models import TimeStampedModel, TitleDescriptionModel, TitleSlugDescriptionModel
 
@@ -56,6 +57,7 @@ class ItemType(TitleDescriptionModel, TimeStampedModel):
     buy_once = models.BooleanField(default=False)  # If True, item can only be purchased once
     expires_on_product_date = models.BooleanField(default=False)  # Item is only visible/purchasable until product.date
     buy_unauthenticated = models.BooleanField(default=False)  # Item is visible/purchasable for unauthenticated users
+    requires_donation = models.BooleanField(default=True)  # User needs to make a higher donation if unauthenticated
     inform_staff = models.BooleanField(default=False)  # Inform staff if item is bought
 
     def __str__(self):
@@ -64,6 +66,14 @@ class ItemType(TitleDescriptionModel, TimeStampedModel):
     class Meta:
         verbose_name = 'Item Typ'
         verbose_name_plural = 'Item Typen'
+
+
+class Discount(models.Model):
+    discount = models.PositiveSmallIntegerField(validators=[MaxValueValidator(100)])
+    level = models.ForeignKey('donations.DonationLevel', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.discount}% - {self.level}'
 
 
 class Item(TimeStampedModel):
@@ -89,6 +99,7 @@ class Item(TimeStampedModel):
     requests = models.ManyToManyField('users.Profile', related_name='item_requests', blank=True, editable=False)
     files = models.ManyToManyField('products.FileAttachment', blank=True)
     _expires = models.DateField(null=True, blank=True)
+    discounts = models.ManyToManyField('Discount', blank=True)
 
     @property
     def expires(self):
@@ -96,10 +107,6 @@ class Item(TimeStampedModel):
             return self._expires
         if self.type.expires_on_product_date:
             return getattr(self.product.type, 'date', None)
-
-    @property
-    def price(self):
-        return self._price or self.type.default_price
 
     @property
     def expired(self):
@@ -111,7 +118,7 @@ class Item(TimeStampedModel):
 
     @property
     def available(self):
-        return self.price and not self.expired and not self.sold_out
+        return self.get_price() and not self.expired and not self.sold_out
 
     @property
     def attachments(self):
@@ -126,6 +133,13 @@ class Item(TimeStampedModel):
             'visible': self.is_visible(user)
         }
         return state
+
+    def get_price(self, user=None):
+        price = self._price or self.type.default_price
+        if user and price is not None:
+            discount = self.discounts.filter(level__amount__lte=user.profile.amount).order_by('-discount').first()
+            return price * (1 - discount.discount/100) if discount else price
+        return price
 
     def get_purchasability(self, user):
         """
@@ -156,7 +170,7 @@ class Item(TimeStampedModel):
                 return states[4]
             else:
                 return states[5]
-        elif self.price is None:
+        elif self.get_price() is None:
             if self.type.request_price and user.is_authenticated:
                 return states[4]
             else:
@@ -208,14 +222,16 @@ class Item(TimeStampedModel):
                     f'Nutzer {user.profile} hat {self.product} im Format {self.type} angefragt. '
                     f'Das Item kann unter folgender URL editiert werden: {settings.DEFAULT_DOMAIN}{edit_url}')
                 logger.debug(f'User {user.profile} requested item {self} of {self.product}')
+            else:
+                logger.error(f"Item of type {self.type} not requestable.")
         else:
             raise NotImplementedError()
 
     def resolve_requests(self):
         for profile in self.requests.all():
             if self.add_to_cart(profile):
-                    self.inform_user(profile)
-                    self.requests.remove(profile)
+                self.inform_user(profile)
+                self.requests.remove(profile)
 
     def inform_user(self, profile):
         basket_url = Site.objects.get_current().domain + reverse('products:basket')
@@ -265,15 +281,16 @@ class Item(TimeStampedModel):
         return self.type.title
 
     def save(self, *args, **kwargs):
-        if not (self.pk or self.amount):
+        if not self.pk and self.amount is None:
             self.amount = self.type.default_amount
-        if self.pk:
-            self.resolve_requests()
         super().save(*args, **kwargs)
+        self.refresh_from_db()
+        self.resolve_requests()
 
     class Meta:
         verbose_name = 'Item'
         verbose_name_plural = 'Items'
+        ordering = ['product', '_price']
 
 
 class Purchase(TimeStampedModel, CommentAble):
@@ -289,7 +306,7 @@ class Purchase(TimeStampedModel, CommentAble):
 
     @property
     def total(self):
-        return 0 if self.free else self.item.price * self.amount
+        return 0 if self.free else self.item.get_price(self.profile.user) * self.amount
 
     @property
     def available(self):

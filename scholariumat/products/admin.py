@@ -1,7 +1,8 @@
 from django.contrib import admin
 from django.urls import reverse
 
-from .models import Item, ItemType, Product, Purchase, FileAttachment, AttachmentType
+from .models import Item, ItemType, Product, Purchase, \
+    FileAttachment, AttachmentType, Discount
 
 
 class ProductBaseAdmin(admin.ModelAdmin):
@@ -47,13 +48,14 @@ class PurchaseAdmin(admin.ModelAdmin):
 
 class ItemAdmin(admin.ModelAdmin):
     raw_id_fields = ['product', 'files']
-    list_display = ['type', 'price', 'product']
+    list_display = ['title', 'type', '_price', 'product']
 
 
 class AttachmentAdmin(admin.ModelAdmin):
     raw_id_fields = ['item']
 
 
+admin.site.register(Discount)
 admin.site.register(Product, ProductAdmin)
 admin.site.register(ItemType)
 admin.site.register(Purchase, PurchaseAdmin)

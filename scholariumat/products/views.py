@@ -28,7 +28,10 @@ class PurchaseMixin():
                         messages.info(request, settings.MESSAGE_CART_ADDED)
                 else:
                     request.session['buy'] = item.pk
-                    amount = DonationLevel.get_necessary_level(item.price).amount
+                    if item.type.requires_donation:
+                        amount = DonationLevel.get_necessary_level(item.get_price()).amount
+                    else:
+                        amount = item.get_price()
                     return HttpResponseRedirect(f"{reverse('donations:payment')}?amount={amount}")
             else:
                 item.request(request.user)

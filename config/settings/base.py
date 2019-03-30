@@ -335,3 +335,10 @@ GOOGLE_ANALYTICS_PROPERTY_ID = env('GOOGLE_ANALYTICS_PROPERTY_ID', default="")
 
 # ReCaptcha
 NOCAPTCHA = True
+
+# Django-markup
+MARKUP_SETTINGS = {
+    'markdown': {
+        'safe_mode': False,
+    }
+}
