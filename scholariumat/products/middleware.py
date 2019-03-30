@@ -15,5 +15,7 @@ class AddToCartMiddleware:
             del request.session['buy']
             item = Item.objects.get(pk=item_pk)
             profile.purchase_set.create(item=item, executed=False)
+            if request.user.profile.execute_cart():
+                return HttpResponseRedirect(reverse('products:purchases'))
             return HttpResponseRedirect(reverse('products:basket'))
         return self.get_response(request)

@@ -5,6 +5,7 @@ from django.http import HttpResponseRedirect, HttpResponseNotFound
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
+from django.contrib.auth import login
 
 from vanilla import FormView, DetailView, ListView
 from braces.views import MessageMixin
@@ -96,6 +97,8 @@ class ApprovalView(MessageMixin, FormView):
         self.donation.execute(self.request)
         if self.donation.executed:
             self.messages.info('Vielen Dank für Ihre Unterstützung')
+            if not self.request.user.is_authenticated:
+                login(self.request, self.donation.profile.user)
             return HttpResponseRedirect(self.get_success_url())
         else:
             self.messages.error(settings.MESSAGE_UNEXPECTED_ERROR)
