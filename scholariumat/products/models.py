@@ -138,7 +138,7 @@ class Item(TimeStampedModel):
         price = self._price or self.type.default_price
         if user and price is not None:
             discount = self.discounts.filter(level__amount__lte=user.profile.amount).order_by('-discount').first()
-            return price * (1 - discount.discount/100) if discount else price
+            return int(price * (1 - discount.discount/100) if discount else price)
         return price
 
     def get_purchasability(self, user):
