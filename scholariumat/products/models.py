@@ -15,6 +15,7 @@ from django.core.validators import MaxValueValidator
 from django_extensions.db.models import TimeStampedModel, TitleDescriptionModel, TitleSlugDescriptionModel
 
 from framework.behaviours import CommentAble
+from .behaviours import PayAble
 
 logger = logging.getLogger(__name__)
 
@@ -314,28 +315,34 @@ class Purchase(TimeStampedModel, CommentAble):
         return self.item.available and self.item.amount >= self.amount
 
     def execute(self):
+        if self.executed:
+            logger.warning(f'Cannot execute purchase: Already executed.')
+            return False
+
         state = self.item.get_purchasability(self.profile.user)
-        if state == 'purchasable':
-            if self.profile.spend(self.total):
-                if self.item.sell(self.amount):
-                    if self.item.type.inform_staff:
-                        mail_managers(
-                            f'Neuer Kauf: {self.item.product}',
-                            f'Nutzer {self.profile} hat {self.item.product} ({self.item.type}) gekauft.')
-                    if self.item.type.shipping:
-                        mail_managers(
-                            f'Versand notwendig: {self.item.product}',
-                            f'Nutzer {self.profile} hat {self.item.product} im Format {self.item.type} bestellt. '
-                            f'Adresse: {self.profile.address}')
-                    self.executed = True
-                    self.date = date.today()
-                    self.save()
-                    return True
-                else:
-                    self.profile.refill(self.total)
-        else:
+        if state != 'purchasable':
             logger.warning(f'Cannot execute purchase: item state: {state}')
             return False
+
+        if self.profile.spend(self.total):
+            if self.item.sell(self.amount):
+                if self.item.type.inform_staff:
+                    mail_managers(
+                        f'Neuer Kauf: {self.item.product}',
+                        f'Nutzer {self.profile} hat {self.item.product} ({self.item.type}) gekauft.')
+                if self.item.type.shipping:
+                    mail_managers(
+                        f'Versand notwendig: {self.item.product}',
+                        f'Nutzer {self.profile} hat {self.item.product} im Format {self.item.type} bestellt. '
+                        f'Adresse: {self.profile.address}')
+                self.executed = True
+                self.date = date.today()
+                self.save()
+                logger.debug(f'Executed purchase {self}')
+                return True
+            else:
+                logger.warning(f'Cannot execute purchase: Balance not high enough!')
+                self.profile.refill(self.total)
 
     def revert(self):
         self.profile.refill(self.total)
@@ -353,6 +360,21 @@ class Purchase(TimeStampedModel, CommentAble):
     class Meta():
         verbose_name = 'Kauf'
         verbose_name_plural = 'Käufe'
+
+
+class Payment(PayAble, TimeStampedModel):
+    profile = models.ForeignKey('users.Profile', on_delete=models.CASCADE)
+    purchase = models.ForeignKey('Purchase', blank=True, null=True, on_delete=models.SET_NULL)
+
+    def execute(self, *args, **kwargs):
+        success = super().execute(*args, **kwargs)
+        if success:
+            if not self.purchase:
+                self.purchase = self.profile.purchase_set.create(item=self.item)
+            logger.debug(f"Executing purchase {self.purchase}...")
+            self.purchase.free = True
+            self.purchase.save()
+            return self.purchase.execute()
 
 
 class AttachmentType(TitleSlugDescriptionModel):

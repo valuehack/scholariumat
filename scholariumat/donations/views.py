@@ -39,7 +39,7 @@ class DonationLevelView(ListView):
     template_name = 'donations/donationlevel_list.html'
 
 
-class PaymentView(UpdateOrCreateRequiredMixin, MessageMixin, FormView):
+class PaymentView(UpdateOrCreateRequiredMixin, MessageMixin, FormView):  # TODO: Use products implementation
     """Form to select level and payment method. Can be passed any amount value to initialize the level selection."""
     form_class = PaymentForm
     template_name = 'donations/payment_form.html'
@@ -68,7 +68,7 @@ class PaymentView(UpdateOrCreateRequiredMixin, MessageMixin, FormView):
             return self.form_invalid(form)
 
 
-class ApprovalView(MessageMixin, FormView):
+class ApprovalView(MessageMixin, FormView):  # TODO: Use products implementation
     """Executes the referenced payment. Approvement button is only shown if payment method required it."""
     form_class = ApprovalForm
     template_name = 'donations/approval_form.html'

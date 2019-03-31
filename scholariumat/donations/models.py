@@ -1,12 +1,13 @@
 import datetime
 import logging
 
+from django.urls import reverse_lazy
 from django.db import models
 from django.conf import settings
 
 from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel, TitleDescriptionModel
 
-from .behaviours import Payment
+from products.behaviours import PayAble
 
 
 logger = logging.getLogger(__name__)
@@ -48,7 +49,7 @@ class DonationLevel(TitleSlugDescriptionModel):
         verbose_name_plural = 'Spendenstufen'
 
 
-class PaymentMethod(TitleDescriptionModel):
+class PaymentMethod(TitleDescriptionModel):  # TODO: Move to products
     slug = models.SlugField()
     local_approval = models.BooleanField(default=False)  # Required additinal step by customer if True
 
@@ -60,7 +61,7 @@ class PaymentMethod(TitleDescriptionModel):
         verbose_name_plural = 'Zahlungsmethoden'
 
 
-class Donation(Payment, TimeStampedModel):
+class Donation(PayAble, TimeStampedModel):
     """Enables user to use services according to active donation level."""
     @staticmethod
     def _default_expiration():
@@ -72,8 +73,19 @@ class Donation(Payment, TimeStampedModel):
     expiration = models.DateField(default=_default_expiration.__func__)
 
     @property
+    def return_url(self):
+        return '{}{}'.format(settings.DEFAULT_DOMAIN, reverse_lazy('donations:approve', kwargs={'slug': self.slug}))
+
+    @property
     def level(self):
         return DonationLevel.get_level_by_amount(self.amount)
+
+    def execute(self, *args, **kwargs):
+        success = super().execute(*args, **kwargs)
+        if success:
+            self.profile.refill(self.amount)
+            logger.info("{} donated {} and is now level {}".format(self.profile, self.amount, self.profile.level))
+        return success
 
     def __str__(self):
         return '%s: %s (%s)' % (self.profile.name, self.amount, self.date)

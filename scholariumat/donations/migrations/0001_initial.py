@@ -5,6 +5,7 @@ import django.db.models.deletion
 import django_extensions.db.fields
 import donations.behaviours
 import donations.models
+import products.models
 
 
 class Migration(migrations.Migration):
@@ -22,7 +23,7 @@ class Migration(migrations.Migration):
                 ('created', django_extensions.db.fields.CreationDateTimeField(auto_now_add=True, verbose_name='created')),
                 ('modified', django_extensions.db.fields.ModificationDateTimeField(auto_now=True, verbose_name='modified')),
                 ('comment', models.TextField(blank=True)),
-                ('slug', models.SlugField(default=donations.behaviours.Payment._get_default_id, max_length=100, unique=True)),
+                ('slug', models.SlugField(default=products.behaviours.PayAble._get_default_id, max_length=100, unique=True)),
                 ('executed', models.BooleanField(default=False)),
                 ('review', models.BooleanField(default=False)),
                 ('approval_url', models.CharField(blank=True, max_length=200)),

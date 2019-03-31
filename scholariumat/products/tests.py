@@ -1,11 +1,60 @@
+import os
+
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.core import mail
+from django.test import Client
+from django.urls import reverse
 
 from users.models import Profile
 from library.models import ZotItem
-from products.models import Item, ItemType, Purchase
-from donations.models import DonationLevel, Donation
+from products.models import Item, ItemType, Purchase, Payment
+from donations.models import DonationLevel, Donation, PaymentMethod
+
+
+class RequestPaymentTest(TestCase):
+    def setUp(self):
+        os.environ['RECAPTCHA_TESTING'] = 'True'
+        self.client = Client()
+        self.book = ZotItem.objects.create(title='Testbook', slug='testslug')
+        self.itemtype = ItemType.objects.create(title='Kauf', buy_unauthenticated=True, requires_donation=False)
+        self.item = Item.objects.create(type=self.itemtype, _price=10, product=self.book.product)
+        self.method = PaymentMethod.objects.create(title='Bar')
+
+    def test_payment(self):
+        response = self.client.get(reverse('products:payment'))
+        self.assertEqual(response.status_code, 302)
+        post_data = {
+            'email': 'a.b@c.de',
+            'g-recaptcha-response': 'PASSED',
+            'title': 'm',
+            'name': '',
+            'organization': '',
+            'street': '',
+            'postcode': '',
+            'country': ''}
+        response = self.client.post(response.url, post_data, follow=True)
+        self.assertRedirects(response, reverse('products:payment'))
+        profile = Profile.objects.get(user__email='a.b@c.de')
+        self.assertTrue(profile)
+
+        post_data = {
+            'item': self.item.pk,
+            'payment_method': self.method.pk
+        }
+        response = self.client.post(reverse('products:payment'), post_data)
+        self.assertEqual(response.status_code, 302)
+
+        payment = Payment.objects.get(profile=profile)
+        response = self.client.post(reverse('products:approve', kwargs={'slug': payment.slug}), {})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(profile.level, None)
+        self.assertEqual(profile.balance, 0)
+        self.assertEqual(len(profile.purchases), 1)
+        self.assertTrue(Payment.objects.get(profile=profile).executed)
+
+    def tearDown(self):
+        del os.environ['RECAPTCHA_TESTING']
 
 
 class PurchaseTest(TestCase):

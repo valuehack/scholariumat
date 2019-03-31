@@ -1,19 +1,27 @@
+import logging
 from datetime import date
 
 from django.contrib import messages
 from django.conf import settings
-from django.urls import reverse
-from django.http import HttpResponseRedirect, HttpResponse
+from django.urls import reverse, reverse_lazy
+from django.http import HttpResponseRedirect, HttpResponse, HttpResponseNotFound
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import mail_managers
+from django.contrib.auth import login
 
-from vanilla import ListView, TemplateView
+from vanilla import ListView, TemplateView, FormView
 from braces.views import LoginRequiredMixin, MessageMixin
 
-from .models import Item, Purchase
 from events.models import Event
 from library.models import ZotItem
 from donations.models import DonationLevel
+from donations.forms import ApprovalForm
+from users.views import UpdateOrCreateRequiredMixin
+from .models import Item, Purchase, Payment
+from .forms import PaymentForm
+
+
+logger = logging.getLogger(__name__)
 
 
 class PurchaseMixin():
@@ -27,12 +35,13 @@ class PurchaseMixin():
                     if item.add_to_cart(request.user.profile):
                         messages.info(request, settings.MESSAGE_CART_ADDED)
                 else:
-                    request.session['buy'] = item.pk
                     if item.type.requires_donation:
+                        request.session['buy'] = item.pk
                         amount = DonationLevel.get_necessary_level(item.get_price()).amount
+                        return HttpResponseRedirect(f"{reverse('donations:payment')}?amount={amount}")
                     else:
                         amount = item.get_price()
-                    return HttpResponseRedirect(f"{reverse('donations:payment')}?amount={amount}")
+                        return HttpResponseRedirect(f"{reverse('products:payment')}?item={item.pk}")
             else:
                 item.request(request.user)
                 messages.info(request, settings.MESSAGE_REQUEST_SEND)
@@ -126,6 +135,74 @@ class PurchaseView(LoginRequiredMixin, DownloadMixin, TemplateView):
         context['digital_content'] = {item: purchases.filter(item__product=item.product) for
                                       item in ZotItem.objects.filter(product__in=digital_product)}
         return context
+
+
+class PaymentView(UpdateOrCreateRequiredMixin, MessageMixin, FormView):
+    form_class = PaymentForm
+    template_name = 'donations/payment_form.html'
+
+    def get_form(self, data=None, files=None, **kwargs):
+        item = self.request.GET.get('item', None)
+        if item:
+            return super().get_form(data, files, initial={'item': item}, **kwargs)
+        else:
+            return super().get_form(data, files, **kwargs)
+
+    def form_valid(self, form):
+        item = form.cleaned_data['item']
+        if not item:
+            return HttpResponseRedirect(reverse('donations:levels'))
+        method = form.cleaned_data['payment_method']
+        profile = self.get_profile()
+        profile.clean_payments()
+        purchase = Purchase.objects.create(item=item, profile=profile)
+        payment = Payment.objects.create(profile=profile, purchase=purchase, method=method, amount=item.get_price())
+        logger.debug(f'Created payment {payment}')
+
+        if payment.init():
+            logger.debug(f'Initiated payment {payment}. Redirecting to {payment.approval_url}')
+            return HttpResponseRedirect(payment.approval_url)
+        else:
+            logger.error(f'Failed to intiate payment {payment}')
+            self.messages.error(settings.MESSAGE_UNEXPECTED_ERROR)
+            return self.form_invalid(form)
+
+
+class ApprovalView(MessageMixin, FormView):
+    """Executes the referenced payment. Approvement button is only shown if payment method required it."""
+    form_class = ApprovalForm
+    template_name = 'products/approval_form.html'
+    success_url = reverse_lazy('products:purchases')
+
+    def get_context_data(self, **kwargs):
+        """Insert the form into the context dict."""
+        kwargs['payment'] = self.payment
+        return super().get_context_data(**kwargs)
+
+    def dispatch(self, *args, **kwargs):
+        try:
+            self.payment = Payment.objects.get(slug=self.kwargs.get('slug'))
+        except ObjectDoesNotExist:
+            return HttpResponseNotFound()  # Cancel if non-existent payment is referenced
+
+        if self.payment.executed:  # Cancel if payment already executed
+            self.messages.info('Zahlung bereits erfolgreich durchgeführt.')
+            return HttpResponseRedirect(self.get_success_url())
+
+        if not self.payment.method.local_approval:
+            return self.form_valid(self.get_form())
+        return super().dispatch(*args, **kwargs)
+
+    def form_valid(self, form):
+        self.payment.execute(self.request)
+        if self.payment.executed:
+            self.messages.info('Vielen Dank für Ihre Bestellung')
+            if not self.request.user.is_authenticated:
+                login(self.request, self.payment.profile.user)
+            return HttpResponseRedirect(self.get_success_url())
+        else:
+            self.messages.error(settings.MESSAGE_UNEXPECTED_ERROR)
+            return HttpResponseRedirect(reverse('framework:home'))
 
 
 class HistoryView(LoginRequiredMixin, ListView):

@@ -16,7 +16,7 @@ class RequestDonationTest(TestCase):
         os.environ['RECAPTCHA_TESTING'] = 'True'
         self.client = Client()
         DonationLevel.objects.create(amount=75, title='Level 1')
-        PaymentMethod.objects.create(title='Bar')
+        self.method = PaymentMethod.objects.create(title='Bar')
 
     def test_donation(self):
         response = self.client.get(reverse('donations:payment'))
@@ -37,7 +37,7 @@ class RequestDonationTest(TestCase):
 
         post_data = {
             'amount': 75,
-            'payment_method': 1
+            'payment_method': self.method.pk
         }
         response = self.client.post(reverse('donations:payment'), post_data)
 

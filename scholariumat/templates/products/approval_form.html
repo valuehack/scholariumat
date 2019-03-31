@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% load markup_tags %}
+
+{% block title %}Zahlung{% endblock %}
+
+{% block content %}
+<div class="ui text container">
+  <h1 class="ui centered header">
+    {{ payment.method.title }}: {{ payment.amount }}€
+  </h1>
+  <h3 class="ui header">Referenz: {{ payment.slug|slice:':4' }}</h3>
+    <p>{{ payment.method.description|apply_markup:"markdown" }}</p>
+    <form method="post">
+      {% csrf_token %}
+      {{ form }}
+      <button class="ui primary button" type="submit">Bestätigen</button>
+    </form>
+</div>
+
+
+
+{% endblock content %}

@@ -11,6 +11,7 @@ from django_extensions.db.models import TimeStampedModel
 from library.behaviours import LendingMixin
 from products.behaviours import CartMixin, BalanceMixin
 from donations.behaviours import DonationMixin
+from products.behaviours import PaymentProfileMixin
 
 
 logger = logging.getLogger(__name__)
@@ -40,7 +41,7 @@ class User(AbstractEmailUser):
         verbose_name_plural = 'Nutzer'
 
 
-class Profile(CartMixin, DonationMixin, LendingMixin, BalanceMixin, TimeStampedModel):
+class Profile(CartMixin, DonationMixin, PaymentProfileMixin, LendingMixin, BalanceMixin, TimeStampedModel):
     '''Model for all User related data that is not associated with authentification.'''
 
     TITLE_MALE = 'm'
