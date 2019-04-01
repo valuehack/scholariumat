@@ -5,6 +5,7 @@ from braces.views import LoginRequiredMixin, StaffuserRequiredMixin
 from django.db.models import Q
 from django.http import Http404
 
+from products.models import Purchase
 from products.views import PurchaseMixin, DownloadMixin
 from .models import Event, EventType
 
@@ -47,8 +48,9 @@ class AttendancesView(StaffuserRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['purchases'] = self.get_object().product.item_set.get(
-            type__slug__contains='attendance').purchase_set.filter(executed=True)
+        attendance_items = self.get_object().product.item_set.filter(
+            type__slug__contains='attendance')
+        context['purchases'] = Purchase.objects.filter(item__in=attendance_items, executed=True)
         context['total'] = sum([purchase.amount for purchase in context['purchases']])
         return context
 
