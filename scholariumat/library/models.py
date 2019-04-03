@@ -59,7 +59,7 @@ class ZotAttachment(AttachmentBase):
             type = data['filename'].split('.')[-1]
             if type not in settings.DOWNLOAD_FORMATS:
                 return None
-        elif data['itemType'] == 'note':
+        elif data['itemType'] == 'note' and data['note'].startswith('<p><strong>Yellow Annotations'):
             format = 'note'
             type = 'pdf'
         else:
