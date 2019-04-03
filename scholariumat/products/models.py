@@ -306,6 +306,13 @@ class Purchase(TimeStampedModel, CommentAble):
     date = models.DateField(null=True, blank=True)
 
     @property
+    def method(self):
+        try:
+            return str(self.payment.method)
+        except Payment.DoesNotExist:
+            return 'Guthaben'
+
+    @property
     def total(self):
         return 0 if self.free else self.item.get_price(self.profile.user) * self.amount
 
@@ -364,7 +371,7 @@ class Purchase(TimeStampedModel, CommentAble):
 
 class Payment(PayAble, TimeStampedModel):
     profile = models.ForeignKey('users.Profile', on_delete=models.CASCADE)
-    purchase = models.ForeignKey('Purchase', blank=True, null=True, on_delete=models.SET_NULL)
+    purchase = models.OneToOneField('Purchase', blank=True, null=True, on_delete=models.SET_NULL)
 
     def execute(self, *args, **kwargs):
         success = super().execute(*args, **kwargs)
