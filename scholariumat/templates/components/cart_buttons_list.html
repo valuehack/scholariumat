@@ -89,7 +89,7 @@
                 </div>
               {% endif %}
             </div>
-            {% if user.is_authenticated and not item.requires_donation %}
+            {% if user.is_authenticated and not item.type.requires_donation %}
             <form method="POST" id="{{ item.pk }}_buyform">
               {% csrf_token %}
               <input type="hidden" name="requested_item" value="{{ item.pk }}"/>
