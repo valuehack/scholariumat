@@ -31,6 +31,11 @@ class PurchaseMixin():
         if 'requested_item' in request.POST:
             item = Item.objects.get(pk=request.POST['requested_item'])
             if item.available:
+                if 'buy_directly' in request.POST:
+                    if not item.type.requires_donation:
+                        amount = item.get_price()
+                        return HttpResponseRedirect(f"{reverse('products:payment')}?item={item.pk}")
+
                 if request.user.is_authenticated:
                     if item.add_to_cart(request.user.profile):
                         messages.info(request, settings.MESSAGE_CART_ADDED)

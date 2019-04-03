@@ -89,7 +89,19 @@
                 </div>
               {% endif %}
             </div>
+            {% if user.is_authenticated and not item.requires_donation %}
+            <form method="POST" id="{{ item.pk }}_buyform">
+              {% csrf_token %}
+              <input type="hidden" name="requested_item" value="{{ item.pk }}"/>
+              <input type="hidden" name="buy_directly" value="True"/>
+            </form>
+            <button onclick='document.forms["{{ item.pk }}_buyform"].submit(); return false;' class="ui top pointing large blue label">
+              Direkt buchen für {{ item.get_price }} €
+            </button>
+            <div class="ui hidden divider"></div>
+            {% endif %}
           </div>
+
 
         {% elif status.purchasability == 'requestable' %}
           <form id="{{ item.pk }}_form" method="POST">
