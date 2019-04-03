@@ -47,8 +47,13 @@ class PurchaseAdmin(admin.ModelAdmin):
 
 
 class ItemAdmin(admin.ModelAdmin):
+    search_fields = [
+        'title',
+        'product__event__title',
+        'product__zotitem__title',
+        'product__studyproduct__title']
     raw_id_fields = ['product', 'files']
-    list_display = ['title', 'type', '_price', 'product']
+    list_display = ['__str__', 'title', 'type', '_price', 'product']
 
 
 class AttachmentAdmin(admin.ModelAdmin):
