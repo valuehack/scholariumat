@@ -46,14 +46,6 @@ class AttendancesView(StaffuserRequiredMixin, DetailView):
     model = Event
     lookup_field = 'slug'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        attendance_items = self.get_object().product.item_set.filter(
-            type__slug__contains='attendance')
-        context['purchases'] = Purchase.objects.filter(item__in=attendance_items, executed=True)
-        context['total'] = sum([purchase.amount for purchase in context['purchases']])
-        return context
-
 
 class RecordingsView(LoginRequiredMixin, PurchaseMixin, DownloadMixin, ListView):
     model = Event

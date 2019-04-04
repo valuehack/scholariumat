@@ -1,18 +1,24 @@
 <h1>Teilnehmer für {{ object }}</h1>
-<table style="text-align: left;">
-  <tr>
-    <th>Name</th>
-    <th>Anzahl</th>
-    <th>Email</th>
-    <th>Zahlungsart</th>
-  </tr>
-  {% for purchase in purchases %}
-  <tr>
-    <td>{{ purchase.profile.name }}</td>
-    <td>{{ purchase.amount }}</td>
-    <td>{{ purchase.profile.user.email }}</td>
-    <td>{{ purchase.method }}</td>
-  </tr>
-  {% endfor %}
-</table>
-<p>{{ total }} Teilnehmer</p>
+
+{% for item in object.product.item_set.all %}
+  <h2>{{ item }}</h2>
+  <table style="text-align: left;">
+    <tr>
+      <th>Anzahl</th>
+      <th>Name</th>
+      <th>Email</th>
+      <th>Zahlungsart</th>
+      <th>Datum</th>
+    </tr>
+    {% for purchase in item.purchases %}
+    <tr>
+      <td style="text-align: center;">{{ purchase.amount }}</td>
+      <td>{{ purchase.profile.name }}</td>
+      <td>{{ purchase.profile.user.email }}</td>
+      <td>{{ purchase.method }}</td>
+      <td>{{ purchase.date }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  <p>{{ item.purchases|length }} Bestellungen</p>
+{% endfor %}

@@ -127,6 +127,10 @@ class Item(TimeStampedModel):
         zotattachment = self.zotattachment_set.all()
         return list(files) + list(zotattachment)
 
+    @property
+    def purchases(self):
+        return self.purchase_set.filter(executed=True)
+
     def get_status(self, user):
         state = {
             'accessible': self.is_accessible(user),
