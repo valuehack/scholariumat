@@ -5,7 +5,6 @@ from braces.views import LoginRequiredMixin, StaffuserRequiredMixin
 from django.db.models import Q
 from django.http import Http404
 
-from products.models import Purchase
 from products.views import PurchaseMixin, DownloadMixin
 from .models import Event, EventType
 
