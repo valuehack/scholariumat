@@ -63,7 +63,7 @@
               {% if request.user.is_authenticated %}
                 {% item_price request item as price %}
                 <div class="ui animated icon button">
-                  <div class="visible content" style="margin-right: 0.8em;">
+                  <div class="visible content" style="margin-right: 0.8em; white-space: nowrap;">
                     {{ price }}&nbsp;
                     <span style="height: 1em;">
                       <img class="ui image" src="{% static 'images/coin.png' %}" style="display: inline; height: 1.2em; width: auto;">
@@ -90,15 +90,16 @@
               {% endif %}
             </div>
             {% if user.is_authenticated and not item.type.requires_donation %}
+            <div class="ui horizontal divider">oder</div>
             <form method="POST" id="{{ item.pk }}_buyform">
               {% csrf_token %}
               <input type="hidden" name="requested_item" value="{{ item.pk }}"/>
               <input type="hidden" name="buy_directly" value="True"/>
             </form>
-            <button onclick='document.forms["{{ item.pk }}_buyform"].submit(); return false;' class="ui top pointing large blue label">
+            <button onclick='document.forms["{{ item.pk }}_buyform"].submit(); return false;' class="ui blue button">
               Direkt buchen für {{ item.get_price }} €
             </button>
-            <div class="ui hidden divider"></div>
+            <div class="ui hidden section divider"></div>
             {% endif %}
           </div>
 
