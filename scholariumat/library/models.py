@@ -350,16 +350,20 @@ class ZotItem(ProductBase):
         extra_variables = dict(re.findall(r'{(\w+):\s?(\w+)}', data.get('extra', '')))
 
         # Get amount
+        tags = [tag['tag'] for tag in data['tags']]
+        printing = settings.ZOTERO_PRINTING_TAG in tags
+
         amount = extra_variables.get('amount')
         if not amount:
-            tags = [tag['tag'] for tag in data['tags']]
             owned = any([tag in tags for tag in settings.ZOTERO_OWNER_TAGS])
-            if owned:
-                excluded = any([tag in tags for tag in settings.ZOTERO_EXCLUDED_TAGS])
-                if excluded:
-                    amount = 0
-                else:
-                    amount = 1
+            excluded = any([tag in tags for tag in settings.ZOTERO_EXCLUDED_TAGS])
+
+            if excluded:
+                amount = 0
+            elif owned:
+                amount = 1
+            elif printing:
+                amount = 0
 
         # Get/Set authors
         authors = []
@@ -377,7 +381,7 @@ class ZotItem(ProductBase):
             'amount': amount,
             'price': extra_variables.get('price'),
             'price_digital': extra_variables.get('price_digital'),
-            'printing': bool(extra_variables.get('printing')),
+            'printing': printing
         }
 
         existing = cls.objects.filter(slug=slug)
