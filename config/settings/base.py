@@ -305,14 +305,14 @@ ZOTERO_ITEM_TYPES = [
 ZOTERO_OWNER_TAGS = [
     'Hoppe',
     'Baader',
-    'schuetz',
-    'schütz',
-    'Schütz',
+    'Schuetz',
     'Taghizadegan'
 ]
 ZOTERO_EXCLUDED_TAGS = [
     'WienerSchulen'
 ]
+
+ZOTERO_PRINTING_TAG = 'Druck'
 
 # Error Messages
 MESSAGE_UNEXPECTED_ERROR = "Ein unerwarteter Fehler ist aufgetreten. "\
