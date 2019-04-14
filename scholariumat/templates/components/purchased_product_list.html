@@ -23,7 +23,7 @@
             {% if livestream %}
               {% is_accessible request livestream.item as accessible %}
               {% if accessible %}
-                  <a href="{% url 'events:event' product.slug %}"><button class="ui primary button">Zum Livestream</button>
+                  <a href="{% url 'events:event' product.slug %}"><button class="ui primary button">Zum Video</button>
               {% endif %}
             {% endif %}
             {% endwith %}

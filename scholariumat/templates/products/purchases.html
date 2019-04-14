@@ -16,7 +16,7 @@
 
     {% if past_events %}
       <h3 class="ui header">Vergangene Veranstaltungen</h3>
-        {% include 'components/purchased_product_list.html' with products=past_events %}
+        {% include 'components/purchased_product_list.html' with products=past_events livestream_btn=True %}
 
     {% endif %}
 
