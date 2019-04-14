@@ -60,6 +60,7 @@ class ItemType(TitleDescriptionModel, TimeStampedModel):
     buy_unauthenticated = models.BooleanField(default=False)  # Item is visible/purchasable for unauthenticated users
     requires_donation = models.BooleanField(default=True)  # User needs to make a higher donation if unauthenticated
     inform_staff = models.BooleanField(default=False)  # Inform staff if item is bought
+    show_remaining_at = models.IntegerField(null=True, blank=True)  # Show number of items left
 
     def __str__(self):
         return f'{self.title} ({self.slug})'
@@ -130,6 +131,11 @@ class Item(TimeStampedModel):
     @property
     def purchases(self):
         return self.purchase_set.filter(executed=True)
+
+    @property
+    def show_remaining(self):
+        if self.amount and self.type.show_remaining_at:
+            return self.type.show_remaining_at >= self.amount
 
     def get_status(self, user):
         state = {

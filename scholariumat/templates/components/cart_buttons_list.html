@@ -57,12 +57,17 @@
           </form>
           <div class="item">
             <div onclick='document.forms["{{ item.pk }}_form"].submit(); return false;' class="ui left labeled button">
-              <div class="ui basic right pointing label">
-                  {{ item }}
-              </div>
+                  <div class="ui basic right pointing label">
+                      {{ item }} 
+                      {% if item.show_remaining %}
+                        <div class="ui basic label" style="margin-left: 1em;">
+                          Noch {{ item.amount }} übrig
+                        </div>
+                      {% endif %}
+                  </div>
               {% if request.user.is_authenticated %}
                 {% item_price request item as price %}
-                <div class="ui animated icon button">
+                <div class="ui animated icon button" style="min-width: fit-content;">
                   <div class="visible content" style="margin-right: 0.8em; white-space: nowrap;">
                     {{ price }}&nbsp;
                     <span style="height: 1em;">
