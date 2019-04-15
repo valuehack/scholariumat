@@ -38,6 +38,21 @@ class ProductBase(TitleSlugDescriptionModel, TimeStampedModel, PermalinkAble):
         abstract = True
 
 
+class ProductContent(models.Model):
+    type = models.ForeignKey('products.ContentType', on_delete=models.PROTECT)
+    product = models.ForeignKey('products.Product', on_delete=models.CASCADE)
+
+    @property
+    def items(self):
+        return self.product.item_set.filter(type__in=self.type.included_in.all())
+
+    def is_accessible(self, user):
+        return self.items.intersection(user.profile.items_bought).exists()
+
+    class Meta:
+        abstract = True
+
+
 class AttachmentBase(models.Model):
     """Base class to create downloadable item attachment classes."""
 

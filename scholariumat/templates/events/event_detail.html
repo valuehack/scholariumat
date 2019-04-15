@@ -14,7 +14,7 @@
   {% endif %}
   {% with object.livestream as livestream %}
   {% if livestream %}
-    {% is_accessible request livestream.item as accessible %}
+    {% is_accessible request livestream as accessible %}
     {% if accessible %}
       {% if livestream.show %}
         <div class="ui embed" data-url="{{ livestream.link_embedded }}?autoplay=0&showinfo=0&modestbranding=1&rel=0"></div>

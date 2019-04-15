@@ -7,8 +7,7 @@ from django.urls import reverse
 
 from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel
 
-from products.models import Item, ItemType, AttachmentType, FileAttachment
-from products.behaviours import ProductBase
+from products.behaviours import ProductBase, ProductContent
 from framework.behaviours import PublishAble
 from framework.managers import PublishedManager
 
@@ -55,37 +54,7 @@ class Event(ProductBase, PublishAble):
 
     @property
     def livestream(self):
-        livestreams = Livestream.objects.filter(item__product__event=self)
-        return livestreams[0] if livestreams else None
-
-    def update_or_create_livestream(self, link):
-        item_type = ItemType.objects.get(slug='livestream')
-        item, created = self.product.item_set.get_or_create(type=item_type)
-        livestream, created = Livestream.objects.update_or_create(item=item, defaults={'link': link})
-        logger.debug(f'Livestream for {self} saved.')
-        return item
-
-    def get_or_create_attendance(self):
-        item_type = ItemType.objects.get(slug=f'{self.type.slug}_attendance')
-        item, created = self.product.item_set.get_or_create(type=item_type)
-        logger.debug(f'Attendance item for {self} saved.')
-        return item
-
-    def get_or_create_recording(self, recording):
-        item_type = ItemType.objects.get(slug=f'{self.type.slug}_recording')
-        attachment_type = AttachmentType.objects.get(slug='mp3')
-        item, created = self.product.item_set.get_or_create(type=item_type)
-        attachment, created = FileAttachment.objects.get_or_create(type=attachment_type, file=recording)
-        item.files.add(attachment)
-        livestream = self.livestream
-        if livestream:
-            livestream.item.files.add(attachment)
-        logger.debug(f'Attachment for {self} saved.')
-        return item
-
-    def publish(self):
-        self.create_attendance_item()
-        super().publish()
+        return self.product.livestream_set.first()
 
     def get_absolute_url(self):
         return reverse('events:event', kwargs={'slug': self.slug})
@@ -99,10 +68,7 @@ class Event(ProductBase, PublishAble):
         verbose_name_plural = "Veranstaltungen"
 
 
-class Livestream(TimeStampedModel):
-    """Every livestream is a purchasable item."""
-
-    item = models.OneToOneField(Item, on_delete=models.CASCADE)
+class Livestream(TimeStampedModel, ProductContent):
     link = models.CharField(max_length=100)
     chat = models.BooleanField(default=False)
 
@@ -112,7 +78,7 @@ class Livestream(TimeStampedModel):
 
     @property
     def show(self):
-        event = self.item.product.event
+        event = self.product.event
         if event.time_start:
             event_start = datetime.combine(event.date, event.time_start)
             if datetime.now() + timedelta(minutes=settings.SHOW_LIVESTREAM) >= event_start:
@@ -121,4 +87,4 @@ class Livestream(TimeStampedModel):
             return True if event.date <= date.today() else False
 
     def __str__(self):
-        return f"Livestream: {self.item.product}"
+        return f"Livestream: {self.product.event}"
