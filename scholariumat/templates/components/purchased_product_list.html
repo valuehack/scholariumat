@@ -19,9 +19,9 @@
         </td>
         {% if livestream_btn %}
           <td class="single right aligned line compact">
-            {% with product.livestream as livestream %}
+            {% with product.product.livestream as livestream %}
             {% if livestream %}
-              {% is_accessible request livestream.item as accessible %}
+              {% is_accessible request livestream as accessible %}
               {% if accessible %}
                   <a href="{% url 'events:event' product.slug %}"><button class="ui primary button">Zum Video</button>
               {% endif %}

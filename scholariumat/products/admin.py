@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import reverse
 
 from .models import Item, ItemType, Product, Purchase, \
-    FileAttachment, AttachmentType, Discount
+    FileAttachment, AttachmentType, Discount, ContentType
 
 
 class ProductBaseAdmin(admin.ModelAdmin):
@@ -26,6 +26,10 @@ class ItemInline(admin.TabularInline):
 
 class ProductAdmin(admin.ModelAdmin):
     inlines = [ItemInline]
+    search_fields = [
+        'event__title',
+        'zotitem__title',
+        'studyproduct__title']
     change_form_template = "admin/product_changeform.html"
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
@@ -67,3 +71,4 @@ admin.site.register(Purchase, PurchaseAdmin)
 admin.site.register(Item, ItemAdmin)
 admin.site.register(FileAttachment)
 admin.site.register(AttachmentType)
+admin.site.register(ContentType)

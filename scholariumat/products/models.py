@@ -46,6 +46,20 @@ class Product(models.Model):
         verbose_name_plural = 'Produkte'
 
 
+class ContentType(models.Model):
+    """Contains rules about how the content of a product is accessible."""
+
+    title = models.CharField(max_length=50, blank=True)
+    included_in = models.ManyToManyField("products.ItemType")
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        verbose_name = 'Inhaltstyp'
+        verbose_name_plural = 'Inhaltstypen'
+
+
 class ItemType(TitleDescriptionModel, TimeStampedModel):
     slug = models.SlugField()
     shipping = models.BooleanField(default=False)  # Calculate shipping at checkout
