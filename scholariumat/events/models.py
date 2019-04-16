@@ -86,5 +86,9 @@ class Livestream(TimeStampedModel, ProductContent):
         else:
             return True if event.date <= date.today() else False
 
+    @property
+    def show_chat(self):
+        return self.chat and self.show and self.product.event.date == date.today()
+
     def __str__(self):
         return f"Livestream: {self.product.event}"
