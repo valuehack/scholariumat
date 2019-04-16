@@ -9,8 +9,8 @@ from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionMo
 from django.urls import reverse_lazy
 from django.core.mail import mail_managers
 
-
 from framework.behaviours import CommentAble, PermalinkAble
+from .utils import SofortPayment
 
 
 logger = logging.getLogger(__name__)
@@ -182,7 +182,7 @@ class PayAble(CommentAble):
 
     @property
     def cancel_url(self):
-        return '{}{}'.format(settings.DEFAULT_DOMAIN, reverse_lazy('users:profile'))
+        return '{}{}'.format(settings.DEFAULT_DOMAIN, reverse_lazy('donations:levels'))
 
     def init(self):
         """Sets approval url. Creates payment if necessary."""
@@ -192,8 +192,20 @@ class PayAble(CommentAble):
                 return self._create_paypal()
             elif self.method.slug == 'globee':
                 return self._create_globee()
+            elif self.method.slug == 'sofort':
+                return self._create_sofort()
 
         self.approval_url = self.return_url
+        self.save()
+        return True
+
+    def _create_sofort(self):
+        payment = SofortPayment(
+                amount=self.amount,
+                success_url=self.return_url,
+                abort_url=self.cancel_url)
+        self.payment_id = payment.sofort_id
+        self.approval_url = payment.return_url
         self.save()
         return True
 
@@ -275,6 +287,8 @@ class PayAble(CommentAble):
                     success = self._execute_paypal(request)
                 elif self.method.slug == 'globee':
                     success = self._execute_globee()
+                elif self.method.slug == 'sofort':
+                    success = self._execute_sofort()
                 else:
                     success = True
             else:  # Payment to be checked manually instead
@@ -305,6 +319,10 @@ class PayAble(CommentAble):
             status = payment['data'].get('status')
             if status == 'confirmed' or status == 'paid':
                 return True
+
+    def _execute_sofort(self):
+        response = SofortPayment.check_status(self.payment_id)
+        return len(response.text) > 250
 
     class Meta:
         abstract = True
