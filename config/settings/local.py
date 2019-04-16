@@ -73,7 +73,3 @@ PAYPAL_SETTINGS = {
 
 # Globee
 GLOBEE_API_KEY = env('GLOBEE_API_KEY', default='')
-
-# Sofort
-SOFORT_KEY = env('SOFORT_KEY', default='')
-SOFORT_PROJECT_ID = env('SOFORT_PROJECT_ID', default='')

@@ -61,6 +61,12 @@
     "GLOBEE_API_KEY": {
       "required": true
     },
+    "SOFORT_KEY": {
+      "required": true
+    },
+    "SOFORT_PROJECT_ID": {
+      "required": true
+    },
     "RECAPTCHA_PUBLIC_KEY": {
       "required": true
     },

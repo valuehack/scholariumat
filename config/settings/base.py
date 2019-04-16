@@ -342,3 +342,7 @@ MARKUP_SETTINGS = {
         'safe_mode': False,
     }
 }
+
+# Sofort
+SOFORT_KEY = env('SOFORT_KEY', default='')
+SOFORT_PROJECT_ID = env('SOFORT_PROJECT_ID', default='')
