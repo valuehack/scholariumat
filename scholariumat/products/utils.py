@@ -70,12 +70,16 @@ class SofortPayment(object):
 
     def __init__(self, **kwargs):
         """ Initializes new payment """
-        r = self.post(self.creation_string(**kwargs))
+        response = self.post(self.creation_string(**kwargs))
 
-        self.init_response = r
-        # this is not sooo robust, but should work if the api doesnt change^^:
-        self.return_url = r.text.split('payment_url')[1][1:-2]
-        self.sofort_id = r.text.split('<transaction>')[1].split('</transaction>')[0]
+        self.init_response = response
+
+        if response.status_code != 200 or 'error' in response.text:
+            logger.exception(f'Failed initiating SOFORT payment. Status code: {response.status_code}, text: {response.text}')
+            raise Exception('SOFORT init failed.')
+
+        self.return_url = response.text.split('payment_url')[1][1:-2]
+        self.sofort_id = response.text.split('<transaction>')[1].split('</transaction>')[0]
 
         return None
 
