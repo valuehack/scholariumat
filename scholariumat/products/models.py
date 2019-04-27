@@ -336,7 +336,10 @@ class Purchase(TimeStampedModel, CommentAble):
     @property
     def method(self):
         try:
-            return str(self.payment.method)
+            message = f'{self.payment.method} ({self.payment.amount}€)'
+            if self.payment.payment_id:
+                message += f' ({self.payment.payment_id})'
+            return message
         except Payment.DoesNotExist:
             return 'Guthaben'
 
@@ -364,11 +367,12 @@ class Purchase(TimeStampedModel, CommentAble):
                 if self.item.type.inform_staff:
                     mail_managers(
                         f'Neuer Kauf: {self.item.product}',
-                        f'Nutzer {self.profile} hat {self.item.product} ({self.item.type}) gekauft.')
+                        f'Nutzer {self.profile} hat {self.item.product} ({self.item}) gekauft. '
+                        f'Zahlung: {self.method}.')
                 if self.item.type.shipping:
                     mail_managers(
                         f'Versand notwendig: {self.item.product}',
-                        f'Nutzer {self.profile} hat {self.item.product} im Format {self.item.type} bestellt. '
+                        f'Nutzer {self.profile} hat {self.item.product} im Format {self.item} bestellt. '
                         f'Adresse: {self.profile.address}')
                 self.executed = True
                 self.date = date.today()
