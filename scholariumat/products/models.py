@@ -147,6 +147,10 @@ class Item(TimeStampedModel):
         return self.purchase_set.filter(executed=True)
 
     @property
+    def amount_bought(self):
+        return sum([purchase.amount for purchase in self.purchases])
+
+    @property
     def show_remaining(self):
         if self.amount and self.type.show_remaining_at:
             return self.type.show_remaining_at >= self.amount
