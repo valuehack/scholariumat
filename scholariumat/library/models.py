@@ -22,11 +22,6 @@ from framework.behaviours import CommentAble, PermalinkAble
 logger = logging.getLogger(__name__)
 
 
-def handle_protected(error):
-    logger.error(f'Failed to delete item: {error}')
-    mail_admins(f'Can not delete protected item', f"{error}")
-
-
 class ZotAttachment(AttachmentBase):
 
     FORMAT_CHOICES = [
@@ -83,7 +78,7 @@ class ZotAttachment(AttachmentBase):
                 try:
                     self.item.delete()
                 except models.ProtectedError as e:
-                    handle_protected(e)
+                    self.item.handle_protected()
             return None
 
         if self.format == 'note':
@@ -145,6 +140,10 @@ class Collection(TitleSlugDescriptionModel, PermalinkAble):
         items += len(ZotItem.objects.filter(collection=self))
         return items
 
+    def handle_protected(self):
+            logger.error(f'Failed to delete collection: {self}')
+            mail_admins(f'Can not delete collection {self}')
+
     def sync(self):
         """
         Retrieves and saves metadata from all items, attachments and notes inside the collection from zotero.
@@ -196,10 +195,12 @@ class Collection(TitleSlugDescriptionModel, PermalinkAble):
         try:
             attachments = ZotAttachment.objects.filter(zotitem__collection=self).exclude(
                 type__slug__in=settings.DOWNLOAD_FORMATS, key__in=child_keys)
-            Item.objects.filter(zotattachment__in=attachments).delete()
+            items = Item.objects.filter(zotattachment__in=attachments)
+            items.delete()
             attachments.delete()
         except models.ProtectedError as e:
-            handle_protected(e)
+            for item in items:
+                item.handle_protected()
 
         logger.info('Sync finished.')
 
@@ -246,7 +247,7 @@ class Collection(TitleSlugDescriptionModel, PermalinkAble):
                 try:
                     local_collection.delete()
                 except models.ProtectedError as e:
-                    handle_protected(e)
+                    local_collection.handle_protected()
 
         save_collections(False, collections)
 
@@ -402,7 +403,7 @@ class ZotItem(ProductBase):
             try:
                 item.delete()  # Avoid bulk_delete
             except models.ProtectedError as e:
-                handle_protected(e)
+                item.handle_protected()
 
     def update_or_create_purchase_item(self, amount_changed=False):
         """

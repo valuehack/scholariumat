@@ -155,6 +155,11 @@ class Item(TimeStampedModel):
         if self.amount and self.type.show_remaining_at:
             return self.type.show_remaining_at >= self.amount
 
+    def handle_protected(self):
+        logger.error(f'Failed to delete item: {self}')
+        self.amount = 0
+        self.save()
+
     def get_status(self, user):
         state = {
             'accessible': self.is_accessible(user),
