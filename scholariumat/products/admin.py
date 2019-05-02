@@ -46,8 +46,23 @@ class ProductAdmin(admin.ModelAdmin):
 
 
 class PurchaseAdmin(admin.ModelAdmin):
+    search_fields = [
+        'item__title',
+        'item__type__title',
+        'item__product__event__title',
+        'item__product__zotitem__title',
+        'item__product__studyproduct__title',
+        'profile__first_name',
+        'profile__last_name',
+        'profile__user__email'
+    ]
+    list_filter = ['executed']
+    list_display = ['item', 'product', 'profile', 'amount', 'date', 'executed', 'shipped']
     raw_id_fields = ['profile', 'item']
     readonly_fields = ['executed']
+
+    def product(self, obj):
+        return obj.item.product
 
 
 class ItemAdmin(admin.ModelAdmin):
