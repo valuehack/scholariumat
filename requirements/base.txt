@@ -30,7 +30,7 @@ django-braces==1.13.0  # https://github.com/brack3t/django-braces
 django-sendgrid-v5==0.6.893  # https://github.com/sklarsa/django-sendgrid-v5
 django-semanticui-forms==1.6.5  # https://github.com/thetarkus/django-semanticui-forms
 django-markup==1.4.1
-Markdown==3.1
+Markdown==3.1.1
 webstack-django-sorting==1.0.1
 django-analytical==2.4.0
 
