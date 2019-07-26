@@ -2,7 +2,7 @@
 -r ./test.txt
 
 Werkzeug==0.14.1  # https://github.com/pallets/werkzeug
-ipdb==0.12  # https://github.com/gotcha/ipdb
+ipdb==0.12.1  # https://github.com/gotcha/ipdb
 
 # Django
 # ------------------------------------------------------------------------------
