@@ -309,7 +309,8 @@ ZOTERO_OWNER_TAGS = [
     'Taghizadegan'
 ]
 ZOTERO_EXCLUDED_TAGS = [
-    'WienerSchulen'
+    'WienerSchulen',
+    'Austrian Schools'
 ]
 
 ZOTERO_PRINTING_TAG = 'Druck'
