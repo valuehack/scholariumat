@@ -35,7 +35,7 @@ class ProfileAdmin(admin.ModelAdmin):
         response['Content-Disposition'] = f'attachment; filename="profiles.csv"'
         writer = csv.writer(response, quoting=csv.QUOTE_MINIMAL)
         writer.writerow([
-            'Anrede', 'Vorname', 'Nachname', 'Email', 'Firma', 'Straße',
+            'Anrede', 'Vorname', 'Nachname', 'Email', 'Firma', 'Straße', 'PLZ',
             'Stadt', 'Land', 'Stufe', 'Ablaufdatum', 'Guthaben'])
 
         active_donations = Donation.objects.filter(
@@ -52,6 +52,7 @@ class ProfileAdmin(admin.ModelAdmin):
             'user__email',
             'organization',
             'street',
+            'postcode',
             'city',
             'country',
             'active_donation',
