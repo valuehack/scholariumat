@@ -64,7 +64,8 @@ class ProfileForm(forms.ModelForm):
                 ("Field", "first_name"),
                 ("Field", "last_name")),
             ("Field", "organization"),
+            ("Field", "street"),
             ("Two Fields",
-                ("Field", "street"),
-                ("Field", "postcode")),
+                ("Field", "postcode"),
+                ("Field", "city")),
         ]
