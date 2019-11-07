@@ -215,3 +215,7 @@ class HistoryView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         return self.request.user.profile.purchases.order_by('-date')
+
+
+class DownloadView(TemplateView):
+    template_name = 'mises_songs.html'

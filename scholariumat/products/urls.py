@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import BasketView, PurchaseView, HistoryView, PaymentView, ApprovalView
+from .views import BasketView, PurchaseView, HistoryView, PaymentView, ApprovalView, DownloadView
 
 app_name = 'products'
 
@@ -10,4 +10,6 @@ urlpatterns = [
     path('historie', HistoryView.as_view(), name='purchase_history'),
     path('zahlung', PaymentView.as_view(), name='payment'),
     path('bestaetigung/<slug:slug>', ApprovalView.as_view(), name='approve'),
+
+    path('miseskreis82236442', DownloadView.as_view(), name="miseskreis")
 ]
