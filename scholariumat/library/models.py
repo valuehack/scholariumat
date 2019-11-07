@@ -141,8 +141,8 @@ class Collection(TitleSlugDescriptionModel, PermalinkAble):
         return items
 
     def handle_protected(self):
-            logger.error(f'Failed to delete collection: {self}')
-            mail_admins(f'Can not delete collection {self}')
+        logger.error(f'Failed to delete collection: {self}')
+        mail_admins(f'Can not delete collection {self}')
 
     def sync(self):
         """
@@ -404,6 +404,9 @@ class ZotItem(ProductBase):
                 item.delete()  # Avoid bulk_delete
             except models.ProtectedError as e:
                 item.handle_protected()
+
+    def handle_protected(self):
+        logger.info(f'Skipping deletion of {self}')
 
     def update_or_create_purchase_item(self, amount_changed=False):
         """
