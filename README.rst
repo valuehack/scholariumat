@@ -1,6 +1,3 @@
-.. image:: https://drive.google.com/uc?id=0B58q9z1XmLXIUDdDMXpoZFEyZDQ
-   :target: https://scholarium.at/
-
 .. image:: https://img.shields.io/badge/built%20with-Cookiecutter%20Django-ff69b4.svg
      :target: https://github.com/pydanny/cookiecutter-django/
      :alt: Built with Cookiecutter Django
@@ -11,13 +8,24 @@
 .. image:: https://coveralls.io/repos/github/valuehack/scholariumat/badge.svg?branch=master
    :target: https://coveralls.io/github/valuehack/scholariumat?branch=master
 
-Setup
+Setup for MAC OS/Linux
 -----
-* This project runs on Python >= 3.6 (and Django >= 2.0)
-* Requirements for local virtual environments can be found in requirement/local.txt. Install with ``pip install -r requirements/local.txt``
+* Create an virtual environment
+    * Install venv ``python3 -m pip install --user virtualenv``
+    * Create venv ``python3 -m venv .venv``
+    * Activate venv ``source .venv/bin/activate``
+    * Example: ``.venv/bin/pip install -r requirements``
+* Install Requirenments pip install -r requirements.txt``
+* Install Cairo and Pago ``brew install cairo`, ``brew install pago``
+* Install Django Debugger Toolbar pip install django-debug-toolbar``
 * API/Secret keys are managed as environmental variables. There a no required variables but some functionality depends on certain keys. A list variables needed for production can be found in ``app.json``.
-* Create accessible postgres database with same name (or at location specified in the ``DATABASE_URL`` environmental variable) and run ``python manage.py migrate``
 * Default settings for local runs are ``config/settings/local.py``. Tests (including Travis) use ``config/settings/test.py`` and production environments use ``config/settings/production.py``.
+
+Database Setup
+------
+* Create a database dump on your server ``pg_dump dbname > outfile``
+* Restore dump ``psql dbname < infile``
+* Create accessible postgres database with same name (or at location specified in the ``DATABASE_URL`` environmental variable) and run ``python manage.py migrate``
 
 Running Tests
 -------------
