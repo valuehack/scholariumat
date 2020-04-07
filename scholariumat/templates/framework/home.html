@@ -90,6 +90,9 @@
       <i><b>digital entrepreneurship</b></i>, d.h. praktische Aneignung jener Fertigkeiten, die nötig sind, um den ungeheuren ökonomischen und technologischen Wandel einzuholen und zu überholen – mit dem Ziel eigener unternehmerischer Projekte.
     </p>
   <div class="ui hidden section divider"></div>
+  {% if not request.user.is_authenticated %}
+    {% include 'components/registration_form.html' %}
+  {% endif %}
 </div>
 {% endif %}
 {% endblock %}
